@@ -5,3 +5,5 @@ JS Inflator, the copy of Sonox Inflator, in vstsdk
 
 VSTSDK 3.7.7 used  
 VSTGUI 4.12 used  
+
+Built in VST3, but compatible to VST2, too.  
