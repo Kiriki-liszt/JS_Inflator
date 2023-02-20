@@ -1,0 +1,309 @@
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"bitmaps": {
+			"background": {
+				"path": "background.png"
+			},
+			"handle": {
+				"path": "handle.png"
+			},
+			"knob_red": {
+				"path": "knob_red.png"
+			},
+			"knob_green": {
+				"path": "knob_green.png"
+			},
+			"button_onoff": {
+				"path": "button_onoff.png"
+			},
+			"vu_on": {
+				"path": "vu_on.png"
+			},
+			"vu_off": {
+				"path": "vu_off.png"
+			}
+		},
+		"fonts": {
+			"Monoplex KR 10": {
+				"font-name": "Monoplex KR",
+				"italic": "true",
+				"size": "10"
+			}
+		},
+		"colors": {},
+		"gradients": {},
+		"control-tags": {
+			"Input": "0",
+			"Effect": "1",
+			"Curve": "2",
+			"Clip": "3",
+			"Output": "4",
+			"InVuPPM": "5",
+			"OutVuPPM": "6",
+			"Bypass": "7"
+		},
+		"custom": {
+			"FocusDrawing": {},
+			"VST3Editor": {
+				"Path": "C:\\VST_make\\Kiriki_yg_Liszt\\generator\\InflatorPackage\\resource\\InflatorPackageeditor.uidesc"
+			},
+			"UIGridController": {
+				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
+				"Size": "1, 1"
+			},
+			"UIEditController": {
+				"EditViewScale": "1",
+				"EditorSize": "0, 0, 717, 598",
+				"EncodeBitmaps": "false",
+				"SplitViewSize_0_0": "0.7727272727272727070868540977244265377522",
+				"SplitViewSize_0_1": "0.1923076923076923183675290829341975040734",
+				"SplitViewSize_1_0": "0.4772727272727272929131459022755734622478",
+				"SplitViewSize_1_1": "0.5139860139860139565115559889818541705608",
+				"SplitViewSize_2_0": "0.5927475592747559751671815320150926709175",
+				"SplitViewSize_2_1": "0.4002789400278939924149312901135999709368",
+				"TabSwitchValue": "0",
+				"Version": "1",
+				"WriteRCFile": "false"
+			},
+			"UITemplateController": {
+				"SelectedTemplate": "view"
+			},
+			"UIAttributesController": {},
+			"UIViewCreatorDataSource": {
+				"SelectedRow": "27"
+			},
+			"UIGradientsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIBitmapsDataSource": {
+				"SelectedRow": "2"
+			},
+			"UIFontsDataSource": {
+				"SelectedRow": "0"
+			},
+			"UITagsDataSource": {
+				"SelectedRow": "7"
+			}
+		},
+		"templates": {
+			"view": {
+				"attributes": {
+					"background-color": "~ BlackCColor",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "236, 400",
+					"transparent": "false",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CView": {
+						"attributes": {
+							"bitmap": "background",
+							"class": "CView",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "0, 0",
+							"size": "236, 400",
+							"transparent": "false",
+							"wants-focus": "false"
+						}
+					},
+					"COnOffButton": {
+						"attributes": {
+							"bitmap": "button_onoff",
+							"class": "COnOffButton",
+							"control-tag": "Bypass",
+							"default-value": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "11, 82",
+							"size": "43, 59",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"COnOffButton": {
+						"attributes": {
+							"bitmap": "button_onoff",
+							"class": "COnOffButton",
+							"control-tag": "Clip",
+							"default-value": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "11, 128",
+							"size": "43, 59",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CVuMeter": {
+						"attributes": {
+							"bitmap": "vu_on",
+							"class": "CVuMeter",
+							"control-tag": "InVuPPM",
+							"custom-view-name": "VuPPM_In",
+							"decrease-step-value": "0.1",
+							"default-value": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"num-led": "100",
+							"off-bitmap": "vu_off",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "145, 50",
+							"size": "12, 105",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CVuMeter": {
+						"attributes": {
+							"bitmap": "vu_on",
+							"class": "CVuMeter",
+							"control-tag": "OutVuPPM",
+							"custom-view-name": "VuPPM_Out",
+							"decrease-step-value": "0.1",
+							"default-value": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"num-led": "100",
+							"off-bitmap": "vu_off",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "198, 50",
+							"size": "12, 105",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CSlider": {
+						"attributes": {
+							"bitmap-offset": "0, 0",
+							"class": "CSlider",
+							"control-tag": "Input",
+							"default-value": "0.5",
+							"draw-back": "false",
+							"draw-back-color": "~ BlackCColor",
+							"draw-frame": "false",
+							"draw-frame-color": "~ GreyCColor",
+							"draw-value": "false",
+							"draw-value-color": "~ WhiteCColor",
+							"draw-value-from-center": "false",
+							"draw-value-inverted": "false",
+							"frame-width": "1",
+							"handle-bitmap": "handle",
+							"handle-offset": "0, 0",
+							"max-value": "1",
+							"min-value": "0",
+							"mode": "touch",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "135, 172",
+							"reverse-orientation": "false",
+							"size": "32, 232",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "10"
+						}
+					},
+					"CSlider": {
+						"attributes": {
+							"bitmap-offset": "0, 0",
+							"class": "CSlider",
+							"control-tag": "Output",
+							"default-value": "1",
+							"draw-back": "false",
+							"draw-back-color": "~ BlackCColor",
+							"draw-frame": "false",
+							"draw-frame-color": "~ GreyCColor",
+							"draw-value": "false",
+							"draw-value-color": "~ WhiteCColor",
+							"draw-value-from-center": "false",
+							"draw-value-inverted": "false",
+							"frame-width": "1",
+							"handle-bitmap": "handle",
+							"handle-offset": "0, 0",
+							"max-value": "1",
+							"min-value": "0",
+							"mode": "touch",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "189, 172",
+							"reverse-orientation": "false",
+							"size": "32, 232",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "10"
+						}
+					},
+					"CAnimKnob": {
+						"attributes": {
+							"angle-range": "270",
+							"angle-start": "135",
+							"bitmap": "knob_red",
+							"class": "CAnimKnob",
+							"control-tag": "Effect",
+							"default-value": "1",
+							"height-of-one-image": "64",
+							"inverse-bitmap": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "29, 217",
+							"size": "64, 64",
+							"sub-pixmaps": "127",
+							"transparent": "false",
+							"value-inset": "0",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "1.5"
+						}
+					},
+					"CAnimKnob": {
+						"attributes": {
+							"angle-range": "270",
+							"angle-start": "135",
+							"bitmap": "knob_green",
+							"class": "CAnimKnob",
+							"control-tag": "Curve",
+							"default-value": "0.5",
+							"height-of-one-image": "64",
+							"inverse-bitmap": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "29, 323",
+							"size": "64, 64",
+							"sub-pixmaps": "127",
+							"transparent": "false",
+							"value-inset": "0",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "1.5"
+						}
+					}
+				}
+			}
+		}
+	}
+}
