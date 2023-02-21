@@ -62,12 +62,16 @@ namespace yg331 {
 	Vst::ParamValue SliderParameter::toPlain(Vst::ParamValue normValue) const
 	{
 		Vst::ParamValue plainValue = ((getMax() - getMin()) * normValue) + getMin();
+		if (plainValue > getMax()) plainValue = getMax();
+		else if (plainValue < getMin()) plainValue = getMin();
 		return plainValue;
 	}
 
 	Vst::ParamValue SliderParameter::toNormalized(Vst::ParamValue plainValue) const
 	{
 		Vst::ParamValue normValue = (plainValue - getMin()) / (getMax() - getMin());
+		if (normValue > 1.0) normValue = 1.0;
+		else if (normValue < 0.0) normValue = 0.0;
 		return normValue;
 	}
 
@@ -117,37 +121,60 @@ tresult PLUGIN_API InflatorPackageController::initialize (FUnknown* context)
 		return result;
 	}
 
-	//---Gain parameter--
-	Vst::ParamValue minPlain;
-	Vst::ParamValue maxPlain;
-	Vst::ParamValue defaultPlain;
-
-	minPlain = -12.0;
-	maxPlain = 12.0;
-	defaultPlain = 0.0;
-	auto* gainParam = new SliderParameter(USTRING("Input"), minPlain, maxPlain, defaultPlain, Vst::ParameterInfo::kCanAutomate, kParamInput);
-	parameters.addParameter(gainParam);
-
-	minPlain = -12.0;
-	maxPlain = 0.0;
-	defaultPlain = 0.0;
-	auto* gainParamOut = new SliderParameter(USTRING("Output"), minPlain, maxPlain, defaultPlain, Vst::ParameterInfo::kCanAutomate, kParamOutput);
-	parameters.addParameter(gainParamOut);
-
-	// Here you could register some parameters
-
 	int32 stepCount;
 	int32 flags;
 	int32 tag;
 	Vst::ParamValue defaultVal;
+	Vst::ParamValue minPlain;
+	Vst::ParamValue maxPlain;
+	Vst::ParamValue defaultPlain;
 
-	/*
 	tag = kParamInput;
-	stepCount = 0;
-	defaultVal = 0.5;
 	flags = Vst::ParameterInfo::kCanAutomate;
-	parameters.addParameter(STR16("Input"), STR16("dB"), stepCount, defaultVal, flags, tag);
-	*/
+	minPlain = -12.0;
+	maxPlain =  12.0;
+	defaultPlain = 0.0;
+	auto* gainParamIn = new SliderParameter(USTRING("Input"), minPlain, maxPlain, defaultPlain, flags, tag);
+	parameters.addParameter(gainParamIn);
+
+	tag = kParamOutput;
+	flags = Vst::ParameterInfo::kCanAutomate;
+	minPlain = -12.0;
+	maxPlain =   0.0;
+	defaultPlain = 0.0;
+	auto* gainParamOut = new SliderParameter(USTRING("Output"), minPlain, maxPlain, defaultPlain, flags, tag);
+	parameters.addParameter(gainParamOut);
+
+	tag = kParamInVuPPML;
+	flags = Vst::ParameterInfo::kIsReadOnly;
+	minPlain = -48.0;
+	maxPlain =  12.0;
+	defaultPlain = -48.0;
+	auto* InVuPPML = new SliderParameter(USTRING("InVuPPML"), minPlain, maxPlain, defaultPlain, flags, tag);
+	parameters.addParameter(InVuPPML);
+	tag = kParamInVuPPMR;
+	flags = Vst::ParameterInfo::kIsReadOnly;
+	minPlain = -48.0;
+	maxPlain = 12.0;
+	defaultPlain = -48.0;
+	auto* InVuPPMR = new SliderParameter(USTRING("InVuPPMR"), minPlain, maxPlain, defaultPlain, flags, tag);
+	parameters.addParameter(InVuPPMR);
+	tag = kParamOutVuPPML;
+	flags = Vst::ParameterInfo::kIsReadOnly;
+	minPlain = -48.0;
+	maxPlain = 12.0;
+	defaultPlain = -48.0;
+	auto* OutVuPPML = new SliderParameter(USTRING("OutVuPPML"), minPlain, maxPlain, defaultPlain, flags, tag);
+	parameters.addParameter(OutVuPPML);
+	tag = kParamOutVuPPMR;
+	flags = Vst::ParameterInfo::kIsReadOnly;
+	minPlain = -48.0;
+	maxPlain = 12.0; 
+	defaultPlain = -48.0;
+	auto* OutVuPPMR = new SliderParameter(USTRING("OutVuPPMR"), minPlain, maxPlain, defaultPlain, flags, tag);
+	parameters.addParameter(OutVuPPMR);
+
+	// Here you could register some parameters
 
 	tag = kParamEffect;
 	stepCount = 0;
@@ -168,24 +195,28 @@ tresult PLUGIN_API InflatorPackageController::initialize (FUnknown* context)
 	parameters.addParameter(STR16("Clip"), nullptr, stepCount, defaultVal, flags, tag);
 
 	/*
-	tag = kParamOutput;
+	tag = kParamInVuPPML;
 	stepCount = 0;
-	defaultVal = 0.5;
-	flags = Vst::ParameterInfo::kCanAutomate;
-	parameters.addParameter(STR16("Output"), STR16("dB"), stepCount, defaultVal, flags, tag);
+	defaultVal = 0.0;
+	flags = Vst::ParameterInfo::kIsReadOnly;
+	parameters.addParameter(STR16("InVuPPML"), nullptr, stepCount, defaultVal, flags, tag);
+	tag = kParamInVuPPMR;
+	stepCount = 0;
+	defaultVal = 0.0;
+	flags = Vst::ParameterInfo::kIsReadOnly;
+	parameters.addParameter(STR16("InVuPPMR"), nullptr, stepCount, defaultVal, flags, tag);
+
+	tag = kParamOutVuPPML;
+	stepCount = 0;
+	defaultVal = 0.0;
+	flags = Vst::ParameterInfo::kIsReadOnly;
+	parameters.addParameter(STR16("OutVuPPML"), nullptr, stepCount, defaultVal, flags, tag);
+	tag = kParamOutVuPPMR;
+	stepCount = 0;
+	defaultVal = 0.0;
+	flags = Vst::ParameterInfo::kIsReadOnly;
+	parameters.addParameter(STR16("OutVuPPMR"), nullptr, stepCount, defaultVal, flags, tag);
 	*/
-
-	tag = kParamInVuPPM;
-	stepCount = 0;
-	defaultVal = 0.0;
-	flags = Vst::ParameterInfo::kIsReadOnly;
-	parameters.addParameter(STR16("InVuPPM"), nullptr, stepCount, defaultVal, flags, tag);
-
-	tag = kParamOutVuPPM;
-	stepCount = 0;
-	defaultVal = 0.0;
-	flags = Vst::ParameterInfo::kIsReadOnly;
-	parameters.addParameter(STR16("OutVuPPM"), nullptr, stepCount, defaultVal, flags, tag);
 
 	
 	tag = kParamBypass;

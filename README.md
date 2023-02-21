@@ -8,6 +8,9 @@ VSTGUI 4.12 used
 
 Built in VST3, but compatible to VST2, too.  
 
+v1.0: intial try.  
+v1.1: VuPPM meter change, but not complete!  
+
 
 This is my first attempt with VSTSDK & VSTGUI.  
 Some codes might be inefficent...  
@@ -36,4 +39,4 @@ ex)
 
 
 Todo  
-1. Input Vu meter -> -40 to +6?  
+1. Input Vu meter is now at Zero-crossing, but LED spacing does not match clean dB counts.  

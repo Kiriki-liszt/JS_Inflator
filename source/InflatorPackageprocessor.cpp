@@ -75,8 +75,10 @@ namespace yg331 {
 		}
 
 		// reset the VuMeter value
-		fInVuPPMOld = 0.f;
-		fOutVuPPMOld = 0.f;
+		fInVuPPMLOld = 0.f;
+		fInVuPPMROld = 0.f;
+		fOutVuPPMLOld = 0.f;
+		fOutVuPPMROld = 0.f;
 
 		//--- called when the Plug-in is enable/disable (On/Off) -----
 		return AudioEffect::setActive(state);
@@ -148,40 +150,46 @@ namespace yg331 {
 
 		//---get audio buffers----------------
 		uint32 sampleFramesSize = getSampleFramesSizeInBytes(processSetup, data.numSamples);
-		void** in = getChannelBuffersPointer(processSetup, data.inputs[0]);
+		void** in  = getChannelBuffersPointer(processSetup, data.inputs[0]);
 		void** out = getChannelBuffersPointer(processSetup, data.outputs[0]);
 
+		bool chk = true;
 
 		//---check if silence---------------
 		// normally we have to check each channel (simplification)
-		if (data.inputs[0].silenceFlags != 0)
-		{
-			// mark output silence too (it will help the host to propagate the silence)
-			data.outputs[0].silenceFlags = data.inputs[0].silenceFlags;
-
-			// the plug-in has to be sure that if it sets the flags silence that the output buffer are
-			// clear
-			for (int32 i = 0; i < numChannels; i++)
+		for (int32 ch = 0; ch < numChannels; ch++) {
+			if (data.inputs[ch].silenceFlags != 0)
 			{
-				// do not need to be cleared if the buffers are the same (in this case input buffer are
-				// already cleared by the host)
-				if (in[i] != out[i])
+				// mark output silence too (it will help the host to propagate the silence)
+				data.outputs[ch].silenceFlags = data.inputs[ch].silenceFlags;
+
+				// the plug-in has to be sure that if it sets the flags silence that the output buffer are
+				// clear
+					// do not need to be cleared if the buffers are the same (in this case input buffer are
+					// already cleared by the host)
+				if (in[ch] != out[ch])
 				{
-					memset(out[i], 0, sampleFramesSize);
+					memset(out[ch], 0, sampleFramesSize);
 				}
 			}
-
-			// nothing to do at this point
+			// mark our outputs has not silents
+			else {
+				data.outputs[ch].silenceFlags = 0;
+				chk = false;
+			}
+		}
+		if (chk) { // nothing to do at this point
 			return kResultOk;
 		}
 
-		// mark our outputs has not silent
-		data.outputs[0].silenceFlags = 0;
 
+		float fInVuPPML = 0.f;
+		float fInVuPPMR = 0.f;
+		float fOutVuPPML = 0.f;
+		float fOutVuPPMR = 0.f;
 
-		float fInVuPPM = 0.f;
-		float fOutVuPPM = 0.f;
-
+		fIn_db  = expf(logf(10.f) * (24.0 * fInput  - 12.0) / 20.f);
+		fOut_db = expf(logf(10.f) * (12.0 * fOutput - 12.0) / 20.f);
 		
 
 		//---in bypass mode outputs should be like inputs-----
@@ -197,23 +205,37 @@ namespace yg331 {
 			}
 
 			if (data.symbolicSampleSize == Vst::kSample32) {
-				fInVuPPM = processVuPPM((Vst::Sample32**)in, (int32)numChannels, (int32)data.numSamples);
-				fOutVuPPM = fInVuPPM;
+										fInVuPPML = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
+				if (numChannels > 1)	fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)1, data.numSamples);
+				else					fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
 			}
 			else {
-				fInVuPPM = processVuPPM((Vst::Sample64**)in, (int32)numChannels, (int32)data.numSamples);
-				fOutVuPPM = fInVuPPM;
+										fInVuPPML = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
+				if (numChannels > 1)	fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)1, data.numSamples);
+				else					fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
 			}
+			fOutVuPPML = fInVuPPML;
+			fOutVuPPMR = fInVuPPMR;
 		}
 		else
 		{
 			if (data.symbolicSampleSize == Vst::kSample32) {
-				fInVuPPM = processVuPPM((Vst::Sample32**)in, (int32)numChannels, (int32)data.numSamples);
-				fOutVuPPM = processAudio((Vst::Sample32**)in, (Vst::Sample32**)out, (int32)numChannels, (int32)data.numSamples);
+										fInVuPPML = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
+				if (numChannels > 1)	fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)1, data.numSamples);
+				else					fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
+				processAudio((Vst::Sample32**)in, (Vst::Sample32**)out, numChannels, data.numSamples);
+										fOutVuPPML = processOutVuPPM((Vst::Sample32**)out, (int32)0, data.numSamples);
+				if (numChannels > 1)	fOutVuPPMR = processOutVuPPM((Vst::Sample32**)out, (int32)1, data.numSamples);
+				else					fOutVuPPMR = processOutVuPPM((Vst::Sample32**)out, (int32)0, data.numSamples);
 			}
 			else {
-				fInVuPPM = processVuPPM((Vst::Sample64**)in, (int32)numChannels, (int32)data.numSamples);
-				fOutVuPPM = processAudio((Vst::Sample64**)in, (Vst::Sample64**)out, (int32)numChannels, (int32)data.numSamples);
+										fInVuPPML = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
+				if (numChannels > 1)	fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)1, data.numSamples);
+				else					fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
+				processAudio((Vst::Sample64**)in, (Vst::Sample64**)out, numChannels, data.numSamples);
+										fOutVuPPML = processOutVuPPM((Vst::Sample64**)out, (int32)0, data.numSamples);
+				if (numChannels > 1)	fOutVuPPMR = processOutVuPPM((Vst::Sample64**)out, (int32)1, data.numSamples);
+				else					fOutVuPPMR = processOutVuPPM((Vst::Sample64**)out, (int32)0, data.numSamples);
 			}
 		}
 
@@ -221,27 +243,42 @@ namespace yg331 {
 		Vst::IParameterChanges* outParamChanges = data.outputParameterChanges;
 		// a new value of VuMeter will be send to the host
 		// (the host will send it back in sync to our controller for updating our editor)
-		if (outParamChanges && (fInVuPPMOld != fInVuPPM || fOutVuPPMOld != fOutVuPPM))
+		if (outParamChanges && (fInVuPPMLOld != fInVuPPML || fInVuPPMROld != fInVuPPMR || fOutVuPPMLOld != fOutVuPPML || fOutVuPPMLOld != fOutVuPPMR) )
 		{
 			int32 index = 0;
-			Vst::IParamValueQueue* paramQueue = outParamChanges->addParameterData(kParamInVuPPM, index);
+			Vst::IParamValueQueue* paramQueue = outParamChanges->addParameterData(kParamInVuPPML, index);
 			if (paramQueue)
 			{
 				int32 index2 = 0;
-				paramQueue->addPoint(0, fInVuPPM, index2);
+				paramQueue->addPoint(0, fInVuPPML, index2);
 			}
-
 			index = 0;
-			paramQueue = outParamChanges->addParameterData(kParamOutVuPPM, index);
+			paramQueue = outParamChanges->addParameterData(kParamInVuPPMR, index);
 			if (paramQueue)
 			{
 				int32 index2 = 0;
-				paramQueue->addPoint(0, fOutVuPPM, index2);
+				paramQueue->addPoint(0, fInVuPPMR, index2);
+			}
+			index = 0;
+			paramQueue = outParamChanges->addParameterData(kParamOutVuPPML, index);
+			if (paramQueue)
+			{
+				int32 index2 = 0;
+				paramQueue->addPoint(0, fOutVuPPML, index2);
+			}
+			index = 0;
+			paramQueue = outParamChanges->addParameterData(kParamOutVuPPMR, index);
+			if (paramQueue)
+			{
+				int32 index2 = 0;
+				paramQueue->addPoint(0, fOutVuPPMR, index2);
 			}
 
 		}
-		fInVuPPMOld = fInVuPPM;
-		fOutVuPPMOld = fOutVuPPM;
+		fInVuPPMLOld = fInVuPPML;
+		fInVuPPMROld = fInVuPPMR;
+		fOutVuPPMLOld = fOutVuPPMR;
+		fOutVuPPMLOld = fOutVuPPMR;
 
 		return kResultOk;
 	}
@@ -349,13 +386,8 @@ namespace yg331 {
 	//------------------------------------------------------------------------
 
 	template <typename SampleType, typename num>
-	SampleType InflatorPackageProcessor::processAudio(SampleType** input, SampleType** output, num numChannels, num sampleFrames)
+	bool InflatorPackageProcessor::processAudio(SampleType** input, SampleType** output, num numChannels, num sampleFrames)
 	{
-		SampleType vuPPM = 0;
-
-		SampleType fIn_db  = expf(logf(10.f) * (      24.0 * fInput - 12.0     ) / 20.f);
-		SampleType fOut_db  = expf(logf(10.f) * (    12.0 * fOutput - 12.0      ) / 20.f);
-
 		for (num ch = 0; ch < numChannels; ch++)
 		{
 			num samples = sampleFrames;
@@ -397,42 +429,56 @@ namespace yg331 {
 
 				ptrIn++;
 				ptrOut++;
-
-				// check only positive values
-				if (tmp > vuPPM)
-				{
-					vuPPM = tmp;
-				}
 			}
 		}
-		return vuPPM;
+		return kResultOk;
 	}
 
-	template <typename SampleType, typename	num>
-	SampleType InflatorPackageProcessor::processVuPPM(SampleType** input, num numChannels, num sampleFrames)
+	template <typename SampleType>
+	SampleType InflatorPackageProcessor::processInVuPPM(SampleType** input, int32 ch, int32 sampleFrames)
 	{
-		SampleType vuPPM = 0;
-		
-		SampleType fIn_db = expf(logf(10.f) * (24.0 * (fInput - 0.5)) / 20.f);
+		SampleType vuPPM = 0.0;
 
 		SampleType bg = (bBypass) ? 1.0 : fIn_db;
 
-		for (num ch = 0; ch < numChannels; ch++)
-		{
-			num samples = sampleFrames;
-			SampleType* ptrIn = (SampleType*)input[ch];
-			SampleType tmp;
-			while (--samples >= 0)
-			{
-				tmp = bg * (*ptrIn++);
+		int32 samples = sampleFrames;
+		SampleType* ptrIn = (SampleType*)input[ch];
+		SampleType tmp;
 
-				// check only positive values
-				if (tmp > vuPPM)
-				{
-					vuPPM = tmp;
-				}
+		while (--samples >= 0)
+		{
+			tmp = bg * (*ptrIn++);
+
+			// check only positive values
+			if (tmp > vuPPM)
+			{
+				vuPPM = tmp;
 			}
 		}
+		vuPPM = ((20 * log10f((float)(vuPPM))) + 48.0) / 60.0;
+		return vuPPM;
+	}
+
+	template <typename SampleType>
+	SampleType InflatorPackageProcessor::processOutVuPPM(SampleType** output, int32 ch, int32 sampleFrames)
+	{
+		SampleType vuPPM = 0;
+
+		int32 samples = sampleFrames;
+		SampleType* ptrOut = (SampleType*)output[ch];
+		SampleType tmp;
+
+		while (--samples >= 0)
+		{
+			tmp = (*ptrOut++);
+
+			// check only positive values
+			if (tmp > vuPPM)
+			{
+				vuPPM = tmp;
+			}
+		}
+		vuPPM = ((20 * log10f((float)(vuPPM))) + 48.0) / 60.0;
 		return vuPPM;
 	}
 

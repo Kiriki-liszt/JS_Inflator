@@ -64,23 +64,31 @@ namespace yg331 {
 	protected:
 		//==============================================================================
 		template <typename SampleType, typename num>
-		SampleType processAudio(SampleType** input, SampleType** output, num numChannels, num sampleFrames);
+		bool processAudio(SampleType** input, SampleType** output, num numChannels, num sampleFrames);
 
-		template <typename SampleType, typename	num>
-		SampleType processVuPPM(SampleType** input, num numChannels, num sampleFrames);
+		template <typename SampleType>
+		SampleType processInVuPPM(SampleType** input, int32 ch, int32 sampleFrames);
+
+		template <typename SampleType>
+		SampleType processOutVuPPM(SampleType** output, int32 ch, int32 sampleFrames);
 
 		float fInput  = 0.5;
 		float fOutput = 1.0;
 		float fEffect = 1.0;
 		float fCurve  = 0.5;
 
-		float fInVuPPMOld = 0.0;
-		float fOutVuPPMOld = 0.0;
+		float fInVuPPMLOld = 0.0;
+		float fInVuPPMROld = 0.0;
+		float fOutVuPPMLOld = 0.0;
+		float fOutVuPPMROld = 0.0;
 		// int32 currentProcessMode;
 
 		bool bHalfGain{ false };
 		bool bBypass{ false };
 		bool bClip{ false };
+
+		float fIn_db  = expf(logf(10.f) * (24.0 * fInput - 12.0) / 20.f);
+		float fOut_db = expf(logf(10.f) * (12.0 * fOutput - 12.0) / 20.f);
 
 		float wet = fEffect;
 		float dry = 1.0 - wet;

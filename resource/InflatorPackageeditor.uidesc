@@ -22,6 +22,15 @@
 			},
 			"vu_off": {
 				"path": "vu_off.png"
+			},
+			"LED_ON": {
+				"path": "LED_ON.png"
+			},
+			"LED_OFF": {
+				"path": "LED_OFF.png"
+			},
+			"LED_cover": {
+				"path": "LED_cover.png"
 			}
 		},
 		"fonts": {
@@ -34,14 +43,16 @@
 		"colors": {},
 		"gradients": {},
 		"control-tags": {
-			"Input": "0",
-			"Effect": "1",
-			"Curve": "2",
 			"Clip": "3",
+			"Curve": "2",
+			"Effect": "1",
+			"InVuPPML": "5",
+			"InVuPPMR": "6",
+			"Input": "0",
+			"OutVuPPML": "7",
+			"OutVuPPMR": "8",
 			"Output": "4",
-			"InVuPPM": "5",
-			"OutVuPPM": "6",
-			"Bypass": "7"
+			"Bypass": "9"
 		},
 		"custom": {
 			"FocusDrawing": {},
@@ -62,7 +73,7 @@
 				"SplitViewSize_1_1": "0.5139860139860139565115559889818541705608",
 				"SplitViewSize_2_0": "0.5927475592747559751671815320150926709175",
 				"SplitViewSize_2_1": "0.4002789400278939924149312901135999709368",
-				"TabSwitchValue": "0",
+				"TabSwitchValue": "4",
 				"Version": "1",
 				"WriteRCFile": "false"
 			},
@@ -77,13 +88,13 @@
 				"SelectedRow": "-1"
 			},
 			"UIBitmapsDataSource": {
-				"SelectedRow": "2"
+				"SelectedRow": "9"
 			},
 			"UIFontsDataSource": {
 				"SelectedRow": "0"
 			},
 			"UITagsDataSource": {
-				"SelectedRow": "7"
+				"SelectedRow": "5"
 			}
 		},
 		"templates": {
@@ -141,50 +152,6 @@
 							"opacity": "1",
 							"origin": "11, 128",
 							"size": "43, 59",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CVuMeter": {
-						"attributes": {
-							"bitmap": "vu_on",
-							"class": "CVuMeter",
-							"control-tag": "InVuPPM",
-							"custom-view-name": "VuPPM_In",
-							"decrease-step-value": "0.1",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "false",
-							"num-led": "100",
-							"off-bitmap": "vu_off",
-							"opacity": "1",
-							"orientation": "vertical",
-							"origin": "145, 50",
-							"size": "12, 105",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CVuMeter": {
-						"attributes": {
-							"bitmap": "vu_on",
-							"class": "CVuMeter",
-							"control-tag": "OutVuPPM",
-							"custom-view-name": "VuPPM_Out",
-							"decrease-step-value": "0.1",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "false",
-							"num-led": "100",
-							"off-bitmap": "vu_off",
-							"opacity": "1",
-							"orientation": "vertical",
-							"origin": "198, 50",
-							"size": "12, 105",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
@@ -300,6 +267,102 @@
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1",
 							"zoom-factor": "1.5"
+						}
+					},
+					"CVuMeter": {
+						"attributes": {
+							"bitmap": "LED_ON",
+							"class": "CVuMeter",
+							"control-tag": "InVuPPML",
+							"decrease-step-value": "0.1",
+							"default-value": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"num-led": "27",
+							"off-bitmap": "LED_OFF",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "138, 40",
+							"size": "10, 108",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CVuMeter": {
+						"attributes": {
+							"bitmap": "LED_ON",
+							"class": "CVuMeter",
+							"control-tag": "InVuPPMR",
+							"decrease-step-value": "0.1",
+							"default-value": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"num-led": "27",
+							"off-bitmap": "LED_OFF",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "154, 40",
+							"size": "10, 108",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CVuMeter": {
+						"attributes": {
+							"bitmap": "LED_ON",
+							"class": "CVuMeter",
+							"control-tag": "OutVuPPML",
+							"decrease-step-value": "0.1",
+							"default-value": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"num-led": "27",
+							"off-bitmap": "LED_OFF",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "191, 40",
+							"size": "10, 108",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CVuMeter": {
+						"attributes": {
+							"bitmap": "LED_ON",
+							"class": "CVuMeter",
+							"control-tag": "OutVuPPMR",
+							"decrease-step-value": "0.1",
+							"default-value": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"num-led": "27",
+							"off-bitmap": "LED_OFF",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "207, 40",
+							"size": "10, 108",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CView": {
+						"attributes": {
+							"bitmap": "LED_cover",
+							"class": "CView",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "117, 22",
+							"size": "117, 155",
+							"transparent": "false",
+							"wants-focus": "false"
 						}
 					}
 				}
