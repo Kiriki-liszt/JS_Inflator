@@ -35,3 +35,5 @@ ex)
 
 
 
+Todo  
+1. Input Vu meter -> -40 to +6?  
