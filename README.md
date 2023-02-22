@@ -1,7 +1,7 @@
 # JS_Inflator_to_VST2_VST3
 JS Inflator, the copy of Sonox Inflator, in vstsdk
 
-![screenshot](screenshot.png)
+![screenshot](screenshot.png){: width="50px" height="50px"}
 
 Windows only. No Mac nor Linux campatible.  
 
