@@ -72,7 +72,9 @@ namespace yg331 {
 		template <typename SampleType>
 		SampleType processOutVuPPM(SampleType** output, int32 ch, int32 sampleFrames);
 
-		float fInput  = 0.5;
+		float InflatorPackageProcessor::VuPPMconvert(float plainValue);
+
+		float fInput  = 0.5; 
 		float fOutput = 1.0;
 		float fEffect = 1.0;
 		float fCurve  = 0.5;

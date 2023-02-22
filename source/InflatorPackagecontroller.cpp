@@ -145,34 +145,36 @@ tresult PLUGIN_API InflatorPackageController::initialize (FUnknown* context)
 	auto* gainParamOut = new SliderParameter(USTRING("Output"), minPlain, maxPlain, defaultPlain, flags, tag);
 	parameters.addParameter(gainParamOut);
 
+	
 	tag = kParamInVuPPML;
 	flags = Vst::ParameterInfo::kIsReadOnly;
-	minPlain = -48.0;
-	maxPlain =  12.0;
-	defaultPlain = -48.0;
+	minPlain = -44.0;
+	maxPlain =  6.0;
+	defaultPlain = -44.0;
 	auto* InVuPPML = new SliderParameter(USTRING("InVuPPML"), minPlain, maxPlain, defaultPlain, flags, tag);
 	parameters.addParameter(InVuPPML);
 	tag = kParamInVuPPMR;
 	flags = Vst::ParameterInfo::kIsReadOnly;
-	minPlain = -48.0;
-	maxPlain = 12.0;
-	defaultPlain = -48.0;
+	minPlain = -44.0;
+	maxPlain = 6.0;
+	defaultPlain = -44.0;
 	auto* InVuPPMR = new SliderParameter(USTRING("InVuPPMR"), minPlain, maxPlain, defaultPlain, flags, tag);
 	parameters.addParameter(InVuPPMR);
 	tag = kParamOutVuPPML;
 	flags = Vst::ParameterInfo::kIsReadOnly;
-	minPlain = -48.0;
-	maxPlain = 12.0;
-	defaultPlain = -48.0;
+	minPlain = -44.0;
+	maxPlain = 6.0;
+	defaultPlain = -44.0;
 	auto* OutVuPPML = new SliderParameter(USTRING("OutVuPPML"), minPlain, maxPlain, defaultPlain, flags, tag);
 	parameters.addParameter(OutVuPPML);
 	tag = kParamOutVuPPMR;
 	flags = Vst::ParameterInfo::kIsReadOnly;
-	minPlain = -48.0;
-	maxPlain = 12.0; 
-	defaultPlain = -48.0;
+	minPlain = -44.0;
+	maxPlain = 6.0;
+	defaultPlain = -44.0;
 	auto* OutVuPPMR = new SliderParameter(USTRING("OutVuPPMR"), minPlain, maxPlain, defaultPlain, flags, tag);
 	parameters.addParameter(OutVuPPMR);
+	
 
 	// Here you could register some parameters
 

@@ -434,10 +434,75 @@ namespace yg331 {
 		return kResultOk;
 	}
 
+	/*
+	1.	6.0 	1.00
+	2.	5.0 	0.96
+	3.	4.0 	0.92
+	4.	3.0 	0.88
+	5.	2.0 	0.84
+	6.	1.0 	0.80
+	7.	0.0 	0.76
+	8.	1.0 	0.72
+	9.	2.0 	0.68
+	10.	3.0 	0.64
+	11.	4.0 	0.60
+	12.	5.0 	0.56
+	13.	6.0 	0.52
+	14.	8.0 	0.48
+	15.	10.0	0.44
+	16.	12.0	0.40
+	17.	14.0	0.36
+	18.	16.0	0.32
+	19.	18.0	0.28
+	20.	22.0	0.24
+	21.	26.0	0.20
+	22.	30.0	0.16
+	23.	34.0	0.12
+	24.	38.0	0.08
+	25.	42.0	0.04
+	26.	----	0.00
+	*/
+	
+	float InflatorPackageProcessor::VuPPMconvert(float plainValue)
+	{
+		float dB = 20 * log10f(plainValue);
+		float normValue;
+
+		if (dB >= 6.0) normValue = 1.0;
+		else if (dB >= 5.0) normValue = 0.96;
+		else if (dB >= 4.0) normValue = 0.92;
+		else if (dB >= 3.0) normValue = 0.88;
+		else if (dB >= 2.0) normValue = 0.84;
+		else if (dB >= 1.0) normValue = 0.80;
+		else if (dB >= 0.0) normValue = 0.76;
+		else if (dB >= -1.0) normValue = 0.72;
+		else if (dB >= -2.0) normValue = 0.68;
+		else if (dB >= -3.0) normValue = 0.64;
+		else if (dB >= -4.0) normValue = 0.60;
+		else if (dB >= -5.0) normValue = 0.56;
+		else if (dB >= -6.0) normValue = 0.52;
+		else if (dB >= -8.0) normValue = 0.48;
+		else if (dB >= -10) normValue = 0.44;
+		else if (dB >= -12) normValue = 0.40;
+		else if (dB >= -14) normValue = 0.36;
+		else if (dB >= -16) normValue = 0.32;
+		else if (dB >= -18) normValue = 0.28;
+		else if (dB >= -22) normValue = 0.24;
+		else if (dB >= -26) normValue = 0.20;
+		else if (dB >= -30) normValue = 0.16;
+		else if (dB >= -34) normValue = 0.12;
+		else if (dB >= -38) normValue = 0.08;
+		else if (dB >= -42) normValue = 0.04;
+		else normValue = 0.0;
+
+		return normValue;
+	}
+
+
 	template <typename SampleType>
 	SampleType InflatorPackageProcessor::processInVuPPM(SampleType** input, int32 ch, int32 sampleFrames)
 	{
-		SampleType vuPPM = 0.0;
+		SampleType InGain = 0.0;
 
 		SampleType bg = (bBypass) ? 1.0 : fIn_db;
 
@@ -445,41 +510,45 @@ namespace yg331 {
 		SampleType* ptrIn = (SampleType*)input[ch];
 		SampleType tmp;
 
+		SampleType normValue;
+
 		while (--samples >= 0)
 		{
 			tmp = bg * (*ptrIn++);
 
 			// check only positive values
-			if (tmp > vuPPM)
+			if (tmp > InGain)
 			{
-				vuPPM = tmp;
+				InGain = tmp;
 			}
 		}
-		vuPPM = ((20 * log10f((float)(vuPPM))) + 48.0) / 60.0;
-		return vuPPM;
+		if (bClip) InGain = max((SampleType)-1.0, min((SampleType)1.0, InGain));
+		normValue = VuPPMconvert((float)InGain);
+		return normValue;
 	}
 
 	template <typename SampleType>
 	SampleType InflatorPackageProcessor::processOutVuPPM(SampleType** output, int32 ch, int32 sampleFrames)
 	{
-		SampleType vuPPM = 0;
+		SampleType OutGain = 0;
 
 		int32 samples = sampleFrames;
 		SampleType* ptrOut = (SampleType*)output[ch];
 		SampleType tmp;
+		SampleType normValue;
 
 		while (--samples >= 0)
 		{
 			tmp = (*ptrOut++);
 
 			// check only positive values
-			if (tmp > vuPPM)
+			if (tmp > OutGain)
 			{
-				vuPPM = tmp;
+				OutGain = tmp;
 			}
 		}
-		vuPPM = ((20 * log10f((float)(vuPPM))) + 48.0) / 60.0;
-		return vuPPM;
+		normValue = VuPPMconvert((float)OutGain);
+		return normValue;
 	}
 
 } // namespace yg331
