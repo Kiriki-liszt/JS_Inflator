@@ -1,9 +1,11 @@
 # JS_Inflator_to_VST2_VST3
 JS Inflator, the copy of Sonox Inflator, in vstsdk
 
+![screenshot](screenshot.png)
+
 Windows only. No Mac nor Linux campatible.  
 
-![VST](VST_Compatible_Logo_Steinberg_with_TM.png)
+![VST](VST_Compatible_Logo_Steinberg_with_TM.png){: width="50px" height="50px"}
 
 VSTSDK 3.7.7 used  
 VSTGUI 4.12 used  
