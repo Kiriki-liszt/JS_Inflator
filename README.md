@@ -17,7 +17,7 @@ Built as VST3, but compatible to VST2, too.
 
 v1.0.0: intial try.  
 v1.1.0: VuPPM meter change(mono -> stereo, continuous to discrete), but not complete!  
-v1.2.0: VuPPM meter corrected!
+v1.2.0: VuPPM meter corrected!  
 v1.2.1: Channel configuration corrected. probably a bug fix for crashing sometimes.  
 
 
