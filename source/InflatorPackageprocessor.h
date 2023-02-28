@@ -44,6 +44,12 @@ namespace yg331 {
 		/** Called at the end before destructor */
 		Steinberg::tresult PLUGIN_API terminate() SMTG_OVERRIDE;
 
+		tresult PLUGIN_API setBusArrangements(
+			Vst::SpeakerArrangement* inputs, int32 numIns,
+			Vst::SpeakerArrangement* outputs, int32 numOuts
+		) SMTG_OVERRIDE;
+
+
 		/** Switch the Plug-in on/off */
 		Steinberg::tresult PLUGIN_API setActive(Steinberg::TBool state) SMTG_OVERRIDE;
 

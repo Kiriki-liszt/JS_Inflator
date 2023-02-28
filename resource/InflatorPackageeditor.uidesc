@@ -17,12 +17,6 @@
 			"button_onoff": {
 				"path": "button_onoff.png"
 			},
-			"vu_on": {
-				"path": "vu_on.png"
-			},
-			"vu_off": {
-				"path": "vu_off.png"
-			},
 			"LED_ON": {
 				"path": "LED_ON.png"
 			},

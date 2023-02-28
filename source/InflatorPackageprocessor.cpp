@@ -53,6 +53,66 @@ namespace yg331 {
 		return kResultOk;
 	}
 
+
+	tresult PLUGIN_API InflatorPackageProcessor::setBusArrangements(
+		Vst::SpeakerArrangement* inputs, int32 numIns,
+		Vst::SpeakerArrangement* outputs, int32 numOuts)
+	{
+
+		/*
+		// we only support one in and output bus and these busses must have the same number of channels
+		if (numIns == 1 && numOuts == 1 && inputs[0] == outputs[0])
+			return AudioEffect::setBusArrangements(inputs, numIns, outputs, numOuts);
+		return kResultFalse;
+		*/
+
+
+		if (numIns == 1 && numOuts == 1)
+		{
+			// the host wants Stereo => Stereo (or 2 channel -> 2 channel)
+			if (Vst::SpeakerArr::getChannelCount(inputs[0]) == 2 &&
+				Vst::SpeakerArr::getChannelCount(outputs[0]) == 2)
+			{
+				auto* bus = FCast<Vst::AudioBus>(audioInputs.at(0));
+				if (bus)
+				{
+					// check if we are Mono => Mono, if not we need to recreate the busses
+					if (bus->getArrangement() != inputs[0])
+					{
+						getAudioInput(0)->setArrangement(inputs[0]);
+						getAudioInput(0)->setName(STR16("Stereo In"));
+						getAudioOutput(0)->setArrangement(outputs[0]);
+						getAudioOutput(0)->setName(STR16("Stereo Out"));
+					}
+					return kResultOk;
+				}
+			}
+			// the host wants something else than Stereo => Stereo
+			// in this case we are always Stereo => Stereo
+			else
+			{
+				auto* bus = FCast<Vst::AudioBus>(audioInputs.at(0));
+				if (bus)
+				{
+					tresult result = kResultFalse;
+
+					if (bus->getArrangement() != Vst::SpeakerArr::kStereo)
+					{
+						getAudioInput(0)->setArrangement(Vst::SpeakerArr::kStereo);
+						getAudioInput(0)->setName(STR16("Stereo In"));
+						getAudioOutput(0)->setArrangement(Vst::SpeakerArr::kStereo);
+						getAudioOutput(0)->setName(STR16("Stereo Out"));
+						result = kResultFalse;
+					}
+
+					return result;
+				}
+			}
+		}
+		return kResultFalse;
+	}
+
+
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API InflatorPackageProcessor::terminate()
 	{
@@ -153,34 +213,38 @@ namespace yg331 {
 		void** in  = getChannelBuffersPointer(processSetup, data.inputs[0]);
 		void** out = getChannelBuffersPointer(processSetup, data.outputs[0]);
 
-		bool chk = true;
-
 		//---check if silence---------------
 		// normally we have to check each channel (simplification)
-		for (int32 ch = 0; ch < numChannels; ch++) {
-			if (data.inputs[ch].silenceFlags != 0)
-			{
-				// mark output silence too (it will help the host to propagate the silence)
-				data.outputs[ch].silenceFlags = data.inputs[ch].silenceFlags;
+		if (data.inputs[0].silenceFlags != 0) // if flags is not zero => then it means that we have silent!
+		{
+			// in the example we are applying a gain to the input signal
+			// As we know that the input is only filled with zero, the output will be then filled with zero too!
 
-				// the plug-in has to be sure that if it sets the flags silence that the output buffer are
-				// clear
-					// do not need to be cleared if the buffers are the same (in this case input buffer are
-					// already cleared by the host)
-				if (in[ch] != out[ch])
+			data.outputs[0].silenceFlags = 0;
+
+			if (data.inputs[0].silenceFlags & (uint64)1) { // Left
+				if (in[0] != out[0])
 				{
-					memset(out[ch], 0, sampleFramesSize);
+					memset(out[0], 0, sampleFramesSize); // this is faster than applying a gain to each sample!
 				}
+				data.outputs[0].silenceFlags |= (uint64)1 << (uint64)0;
 			}
-			// mark our outputs has not silents
-			else {
-				data.outputs[ch].silenceFlags = 0;
-				chk = false;
+
+			if (data.inputs[0].silenceFlags & (uint64)2) { // Right
+				if (in[1] != out[1])
+				{
+					memset(out[1], 0, sampleFramesSize); // this is faster than applying a gain to each sample!
+				}
+				data.outputs[0].silenceFlags |= (uint64)1 << (uint64)1;
+			}
+
+			if (data.inputs[0].silenceFlags & (uint64)3) {
+				return kResultOk;
 			}
 		}
-		if (chk) { // nothing to do at this point
-			return kResultOk;
-		}
+
+		data.outputs[0].silenceFlags = data.inputs[0].silenceFlags;
+
 
 
 		float fInVuPPML = 0.f;
@@ -205,14 +269,12 @@ namespace yg331 {
 			}
 
 			if (data.symbolicSampleSize == Vst::kSample32) {
-										fInVuPPML = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
-				if (numChannels > 1)	fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)1, data.numSamples);
-				else					fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
+				fInVuPPML = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
+				fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)1, data.numSamples);
 			}
 			else {
-										fInVuPPML = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
-				if (numChannels > 1)	fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)1, data.numSamples);
-				else					fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
+				fInVuPPML = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
+				fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)1, data.numSamples);
 			}
 			fOutVuPPML = fInVuPPML;
 			fOutVuPPMR = fInVuPPMR;
@@ -220,22 +282,18 @@ namespace yg331 {
 		else
 		{
 			if (data.symbolicSampleSize == Vst::kSample32) {
-										fInVuPPML = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
-				if (numChannels > 1)	fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)1, data.numSamples);
-				else					fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
+				fInVuPPML = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
+				fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)1, data.numSamples);
 				processAudio((Vst::Sample32**)in, (Vst::Sample32**)out, numChannels, data.numSamples);
-										fOutVuPPML = processOutVuPPM((Vst::Sample32**)out, (int32)0, data.numSamples);
-				if (numChannels > 1)	fOutVuPPMR = processOutVuPPM((Vst::Sample32**)out, (int32)1, data.numSamples);
-				else					fOutVuPPMR = processOutVuPPM((Vst::Sample32**)out, (int32)0, data.numSamples);
+				fOutVuPPML = processOutVuPPM((Vst::Sample32**)out, (int32)0, data.numSamples);
+				fOutVuPPMR = processOutVuPPM((Vst::Sample32**)out, (int32)1, data.numSamples);
 			}
 			else {
-										fInVuPPML = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
-				if (numChannels > 1)	fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)1, data.numSamples);
-				else					fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
+				fInVuPPML = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
+				fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)1, data.numSamples);
 				processAudio((Vst::Sample64**)in, (Vst::Sample64**)out, numChannels, data.numSamples);
-										fOutVuPPML = processOutVuPPM((Vst::Sample64**)out, (int32)0, data.numSamples);
-				if (numChannels > 1)	fOutVuPPMR = processOutVuPPM((Vst::Sample64**)out, (int32)1, data.numSamples);
-				else					fOutVuPPMR = processOutVuPPM((Vst::Sample64**)out, (int32)0, data.numSamples);
+				fOutVuPPML = processOutVuPPM((Vst::Sample64**)out, (int32)0, data.numSamples);
+				fOutVuPPMR = processOutVuPPM((Vst::Sample64**)out, (int32)1, data.numSamples);
 			}
 		}
 
