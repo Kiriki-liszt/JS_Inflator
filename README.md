@@ -13,7 +13,7 @@ Windows only. No Mac nor Linux campatible.
 VSTSDK 3.7.7 used  
 VSTGUI 4.12 used  
 
-Built in VST3, but compatible to VST2, too.  
+Built as VST3, but compatible to VST2, too.  
 
 v1.0.0: intial try.  
 v1.1.0: VuPPM meter change(mono -> stereo, continuous to discrete), but not complete!  
