@@ -13,12 +13,13 @@ Windows only. No Mac nor Linux campatible.
 VSTSDK 3.7.7 used  
 VSTGUI 4.12 used  
 
-Built in VST3, but compatible to VST2, too.  
+Built as VST3, but compatible to VST2, too.  
 
-v1.0: intial try.  
-v1.1: VuPPM meter change(mono -> stereo, continuous to discrete), but not complete!  
-v1.2: VuPPM meter corrected!
-v1.3.0: Curve fixed!!! and 32FP dither  
+v1.0.0: intial try.  
+v1.1.0: VuPPM meter change(mono -> stereo, continuous to discrete), but not complete!  
+v1.2.0: VuPPM meter corrected!  
+v1.2.1: Channel configuration corrected. probably a bug fix for crashing sometimes.  
+v1.3.0: Curve knob fixed!!! and 32FP dither by airwindows.  
 
 
 This is my first attempt with VSTSDK & VSTGUI.  
