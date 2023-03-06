@@ -16,3 +16,16 @@ static const Steinberg::FUID kInflatorPackageControllerUID (0x8565C317, 0x780F5A
 
 //------------------------------------------------------------------------
 } // namespace yg331
+
+enum {
+	kParamInput = 0,	// Input
+	kParamEffect,		// Effect
+	kParamCurve,		// Curve
+	kParamClip,			// Clip
+	kParamOutput,		// Output
+	kParamInVuPPML,		// Input VuPPM
+	kParamInVuPPMR,
+	kParamOutVuPPML,		// Output VuPPM
+	kParamOutVuPPMR,
+	kParamBypass		// ByPass
+};

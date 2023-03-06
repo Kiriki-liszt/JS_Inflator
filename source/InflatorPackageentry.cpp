@@ -9,6 +9,9 @@
 
 #include "public.sdk/source/main/pluginfactory.h"
 
+#include "public.sdk/source/vst/vst2wrapper/vst2wrapper.h"
+
+
 #define stringPluginName "InflatorPackage"
 
 using namespace Steinberg::Vst;
@@ -51,3 +54,8 @@ BEGIN_FACTORY_DEF ("yg331",
 	//----for others Plug-ins contained in this factory, put like for the first Plug-in different DEF_CLASS2---
 
 END_FACTORY
+
+::AudioEffect* createEffectInstance(audioMasterCallback audioMaster)
+{
+	return Steinberg::Vst::Vst2Wrapper::create(GetPluginFactory(), yg331::kInflatorPackageProcessorUID, 'ygIN', audioMaster);
+}

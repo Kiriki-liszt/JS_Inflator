@@ -27,10 +27,7 @@ smtg_add_vst3plugin(InflatorPackage
     source/InflatorPackagecontroller.h
     source/InflatorPackagecontroller.cpp
     source/InflatorPackageentry.cpp
-    source/param.h
-    resource/InflatorPackageeditor.rc
     ${vst3sdk_SOURCE_DIR}/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
-    source/InflatorPackageentry_vst2.cpp
 )
 
 #- VSTGUI Wanted ----
@@ -52,10 +49,6 @@ endif(SMTG_ADD_VSTGUI)
 smtg_target_add_plugin_resources(InflatorPackage
     RESOURCES
         resource/InflatorPackageeditor.uidesc
-        resource/background.png
-        resource/handle.png
-        resource/knob1.png
-        resource/knob2.png
 )
 smtg_target_add_plugin_snapshots (InflatorPackage
     RESOURCES
@@ -83,7 +76,6 @@ if(SMTG_MAC)
 elseif(SMTG_WIN)
     target_sources(InflatorPackage PRIVATE 
         resource/win32resource.rc
-        resource/InflatorPackageeditor.rc
     )
     if(MSVC)
         set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT InflatorPackage)

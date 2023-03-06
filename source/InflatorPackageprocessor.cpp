@@ -20,7 +20,10 @@ namespace yg331 {
 	//------------------------------------------------------------------------
 	// InflatorPackageProcessor
 	//------------------------------------------------------------------------
-	InflatorPackageProcessor::InflatorPackageProcessor()
+	InflatorPackageProcessor::InflatorPackageProcessor():
+		fInput(0.5), fOutput(1.0), fEffect(1.0), fCurve(0.5),
+		fInVuPPML(0.0), fInVuPPMR(0.0), fOutVuPPML(0.0), fOutVuPPMR(0.0),
+		fInVuPPMLOld(0.0), fInVuPPMROld(0.0), fOutVuPPMLOld(0.0), fOutVuPPMROld(0.0)
 	{
 		//--- set the wanted controller for our processor
 		setControllerClass(kInflatorPackageControllerUID);
@@ -48,7 +51,10 @@ namespace yg331 {
 		addAudioOutput(STR16("Stereo Out"), Steinberg::Vst::SpeakerArr::kStereo);
 
 		/* If you don't need an event bus, you can remove the next line */
-		addEventInput(STR16("Event In"), 1);
+		// addEventInput(STR16("Event In"), 1);
+
+		fpdL = 1.0; while (fpdL < 16386) fpdL = rand() * UINT32_MAX;
+		fpdR = 1.0; while (fpdR < 16386) fpdR = rand() * UINT32_MAX;
 
 		return kResultOk;
 	}
@@ -58,57 +64,9 @@ namespace yg331 {
 		Vst::SpeakerArrangement* inputs, int32 numIns,
 		Vst::SpeakerArrangement* outputs, int32 numOuts)
 	{
-
-		/*
 		// we only support one in and output bus and these busses must have the same number of channels
-		if (numIns == 1 && numOuts == 1 && inputs[0] == outputs[0])
+		if (numIns == 1 && numOuts == 1 && Vst::SpeakerArr::getChannelCount(inputs[0]) == 2 && Vst::SpeakerArr::getChannelCount(outputs[0]) == 2)
 			return AudioEffect::setBusArrangements(inputs, numIns, outputs, numOuts);
-		return kResultFalse;
-		*/
-
-
-		if (numIns == 1 && numOuts == 1)
-		{
-			// the host wants Stereo => Stereo (or 2 channel -> 2 channel)
-			if (Vst::SpeakerArr::getChannelCount(inputs[0]) == 2 &&
-				Vst::SpeakerArr::getChannelCount(outputs[0]) == 2)
-			{
-				auto* bus = FCast<Vst::AudioBus>(audioInputs.at(0));
-				if (bus)
-				{
-					// check if we are Mono => Mono, if not we need to recreate the busses
-					if (bus->getArrangement() != inputs[0])
-					{
-						getAudioInput(0)->setArrangement(inputs[0]);
-						getAudioInput(0)->setName(STR16("Stereo In"));
-						getAudioOutput(0)->setArrangement(outputs[0]);
-						getAudioOutput(0)->setName(STR16("Stereo Out"));
-					}
-					return kResultOk;
-				}
-			}
-			// the host wants something else than Stereo => Stereo
-			// in this case we are always Stereo => Stereo
-			else
-			{
-				auto* bus = FCast<Vst::AudioBus>(audioInputs.at(0));
-				if (bus)
-				{
-					tresult result = kResultFalse;
-
-					if (bus->getArrangement() != Vst::SpeakerArr::kStereo)
-					{
-						getAudioInput(0)->setArrangement(Vst::SpeakerArr::kStereo);
-						getAudioInput(0)->setName(STR16("Stereo In"));
-						getAudioOutput(0)->setArrangement(Vst::SpeakerArr::kStereo);
-						getAudioOutput(0)->setName(STR16("Stereo Out"));
-						result = kResultFalse;
-					}
-
-					return result;
-				}
-			}
-		}
 		return kResultFalse;
 	}
 
@@ -173,17 +131,9 @@ namespace yg331 {
 							break;
 						case kParamEffect:
 							fEffect = (float)value;
-							wet = fEffect;
-							dry = 1.0 - fEffect;
-							dry2 = dry * 2.0;
 							break;
 						case kParamCurve:
 							fCurve = (float)value;
-							curvepct = fCurve;
-							curveA = 1.5 + curvepct;			// 1 + (curve + 50) / 100
-							curveB = -(curvepct + curvepct);	// - curve / 50
-							curveC = curvepct - 0.5;			// (curve - 50) / 100
-							curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;	// 1 / 16 - curve / 400 + curve ^ 2 / (4 * 10 ^ 4)
 							break;
 						case kParamClip:
 							bClip = (value > 0.5f);
@@ -199,19 +149,16 @@ namespace yg331 {
 			}
 		}
 
-		//--- Here you have to implement your processing
-
 		if (data.numInputs == 0 || data.numOutputs == 0) {
 			return kResultOk;
 		}
 
-		// (simplification) we suppose in this example that we have the same input channel count than the output
-		int32 numChannels = data.inputs[0].numChannels;
-
 		//---get audio buffers----------------
 		uint32 sampleFramesSize = getSampleFramesSizeInBytes(processSetup, data.numSamples);
-		void** in  = getChannelBuffersPointer(processSetup, data.inputs[0]);
+		void** in = getChannelBuffersPointer(processSetup, data.inputs[0]);
 		void** out = getChannelBuffersPointer(processSetup, data.outputs[0]);
+		double getSampleRate = processSetup.sampleRate;
+
 
 		//---check if silence---------------
 		// normally we have to check each channel (simplification)
@@ -245,55 +192,32 @@ namespace yg331 {
 
 		data.outputs[0].silenceFlags = data.inputs[0].silenceFlags;
 
+		fInVuPPML = 0.f;
+		fInVuPPMR = 0.f;
+		fOutVuPPML = 0.f;
+		fOutVuPPMR = 0.f;
 
-
-		float fInVuPPML = 0.f;
-		float fInVuPPMR = 0.f;
-		float fOutVuPPML = 0.f;
-		float fOutVuPPMR = 0.f;
-
-		fIn_db  = expf(logf(10.f) * (24.0 * fInput  - 12.0) / 20.f);
-		fOut_db = expf(logf(10.f) * (12.0 * fOutput - 12.0) / 20.f);
-		
 
 		//---in bypass mode outputs should be like inputs-----
 		if (bBypass)
 		{
-			for (int32 ch = 0; ch < numChannels; ch++)
-			{
-				// do not need to be copied if the buffers are the same
-				if (in[ch] != out[ch])
-				{
-					memcpy(out[ch], in[ch], sampleFramesSize);
-				}
-			}
+			if (in[0] != out[0]) { memcpy(out[0], in[0], sampleFramesSize); }
+			if (in[1] != out[1]) { memcpy(out[1], in[1], sampleFramesSize); }
 
 			if (data.symbolicSampleSize == Vst::kSample32) {
-				fInVuPPML = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
-				fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)1, data.numSamples);
+				processVuPPM<Vst::Sample32>((Vst::Sample32**)in, data.numSamples);
 			}
-			else {
-				fInVuPPML = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
-				fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)1, data.numSamples);
+			else if (data.symbolicSampleSize == Vst::kSample64) {
+				processVuPPM<Vst::Sample64>((Vst::Sample64**)in, data.numSamples);
 			}
-			fOutVuPPML = fInVuPPML;
-			fOutVuPPMR = fInVuPPMR;
 		}
 		else
 		{
 			if (data.symbolicSampleSize == Vst::kSample32) {
-				fInVuPPML = processInVuPPM((Vst::Sample32**)in, (int32)0, data.numSamples);
-				fInVuPPMR = processInVuPPM((Vst::Sample32**)in, (int32)1, data.numSamples);
-				processAudio((Vst::Sample32**)in, (Vst::Sample32**)out, numChannels, data.numSamples);
-				fOutVuPPML = processOutVuPPM((Vst::Sample32**)out, (int32)0, data.numSamples);
-				fOutVuPPMR = processOutVuPPM((Vst::Sample32**)out, (int32)1, data.numSamples);
+				processAudio<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, getSampleRate, data.numSamples, Vst::kSample32);
 			}
 			else {
-				fInVuPPML = processInVuPPM((Vst::Sample64**)in, (int32)0, data.numSamples);
-				fInVuPPMR = processInVuPPM((Vst::Sample64**)in, (int32)1, data.numSamples);
-				processAudio((Vst::Sample64**)in, (Vst::Sample64**)out, numChannels, data.numSamples);
-				fOutVuPPML = processOutVuPPM((Vst::Sample64**)out, (int32)0, data.numSamples);
-				fOutVuPPMR = processOutVuPPM((Vst::Sample64**)out, (int32)1, data.numSamples);
+				processAudio<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples, Vst::kSample64);
 			}
 		}
 
@@ -340,6 +264,231 @@ namespace yg331 {
 
 		return kResultOk;
 	}
+
+
+	template <typename SampleType>
+	void InflatorPackageProcessor::processAudio(SampleType** inputs, SampleType** outputs, Vst::Sample64 getSampleRate, int32 sampleFrames, int32 precision)
+	{
+		SampleType* In_L = (SampleType*)inputs[0];
+		SampleType* In_R = (SampleType*)inputs[1];
+		SampleType* Out_L = (SampleType*)outputs[0];
+		SampleType* Out_R = (SampleType*)outputs[1];
+		SampleType tmpInL = 0.0; /*/ VuPPM /*/
+		SampleType tmpInR = 0.0; /*/ VuPPM /*/
+		SampleType tmpOutL = 0.0; /*/ VuPPM /*/
+		SampleType tmpOutR = 0.0; /*/ VuPPM /*/
+
+		Vst::Sample64 wet = fEffect;
+		Vst::Sample64 In_db = expf(logf(10.f) * (24.0 * fInput - 12.0) / 20.f);
+		Vst::Sample64 Out_db = expf(logf(10.f) * (12.0 * fOutput - 12.0) / 20.f);
+
+		Vst::Sample64 curvepct = fCurve - 0.5;
+		Vst::Sample64 curveA = 1.5 + curvepct;			// 1 + (curve + 50) / 100
+		Vst::Sample64 curveB = -(curvepct + curvepct);	// - curve / 50
+		Vst::Sample64 curveC = curvepct - 0.5;			// (curve - 50) / 100
+		Vst::Sample64 curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;	// 1 / 16 - curve / 400 + curve ^ 2 / (4 * 10 ^ 4)
+
+		Vst::Sample64 s1_L;
+		Vst::Sample64 s1_R;
+		Vst::Sample64 s2_L;
+		Vst::Sample64 s2_R;
+		Vst::Sample64 s3_L;
+		Vst::Sample64 s3_R;
+		Vst::Sample64 s4_L;
+		Vst::Sample64 s4_R;
+
+		Vst::Sample64 signL;
+		Vst::Sample64 signR;
+
+		while (--sampleFrames >= 0)
+		{
+			Vst::Sample64 inputSampleL = *In_L;
+			Vst::Sample64 inputSampleR = *In_R;
+
+			/*/ VuPPM /*/
+			inputSampleL *= In_db;
+			inputSampleR *= In_db;
+			if (inputSampleL > tmpInL) { tmpInL = inputSampleL; }
+			if (inputSampleR > tmpInR) { tmpInR = inputSampleR; }
+
+
+			if (fabs(inputSampleL) < 1.18e-23) inputSampleL = fpdL * 1.18e-17;
+			if (fabs(inputSampleR) < 1.18e-23) inputSampleR = fpdR * 1.18e-17;
+			Vst::Sample64 drySampleL = inputSampleL;
+			Vst::Sample64 drySampleR = inputSampleR;
+
+			if (bClip) {
+				if (inputSampleL > 1.0)
+					inputSampleL = 1.0;
+				else if (inputSampleL < -1.0)
+					inputSampleL = -1.0;
+
+				if (inputSampleR > 1.0)
+					inputSampleR = 1.0;
+				else if (inputSampleR < -1.0)
+					inputSampleR = -1.0;
+			}
+
+			if (inputSampleL > 0.0)
+				signL = 1.0;
+			else
+				signL = -1.0;
+
+			if (inputSampleR > 0.0)
+				signR = 1.0;
+			else
+				signR = -1.0;
+
+			s1_L = fabs(inputSampleL);
+			s2_L = s1_L * s1_L;
+			s3_L = s2_L * s1_L;
+			s4_L = s2_L * s2_L;
+
+			s1_R = fabs(inputSampleR);
+			s2_R = s1_R * s1_R;
+			s3_R = s2_R * s1_R;
+			s4_R = s2_R * s2_R;
+
+			if (s1_L >= 2.0)
+				inputSampleL = 0.0;
+			else if (s1_L > 1.0)
+				inputSampleL = (2.0 * s1_L) - s2_L;
+			else
+				inputSampleL = (curveA * s1_L) + (curveB * s2_L) + (curveC * s3_L) - (curveD * (s2_L - (2.0 * s3_L) + s4_L));
+
+			if (s1_R >= 2.0)
+				inputSampleR = 0.0;
+			else if (s1_R > 1.0)
+				inputSampleR = (2.0 * s1_R) - s2_R;
+			else
+				inputSampleR = (curveA * s1_R) + (curveB * s2_R) + (curveC * s3_R) - (curveD * (s2_R - (2.0 * s3_R) + s4_R));
+
+			inputSampleL *= signL;
+			inputSampleR *= signR;
+
+			if (wet != 1.0) {
+				inputSampleL = (drySampleL * (1.0 - wet)) + (inputSampleL * wet);
+				inputSampleR = (drySampleR * (1.0 - wet)) + (inputSampleR * wet);
+			}
+
+
+			if (bClip) {
+				if (inputSampleL > 1.0)
+					inputSampleL = 1.0;
+				else if (inputSampleL < -1.0)
+					inputSampleL = -1.0;
+
+				if (inputSampleR > 1.0)
+					inputSampleR = 1.0;
+				else if (inputSampleR < -1.0)
+					inputSampleR = -1.0;
+			}
+
+			inputSampleL *= Out_db;
+			inputSampleR *= Out_db;
+			if (inputSampleL > tmpOutL) { tmpOutL = inputSampleL; }
+			if (inputSampleR > tmpOutR) { tmpOutR = inputSampleR; }
+
+
+			if (precision == 0) {
+				//begin 32 bit stereo floating point dither
+				int expon; frexpf((float)inputSampleL, &expon);
+				fpdL ^= fpdL << 13; fpdL ^= fpdL >> 17; fpdL ^= fpdL << 5;
+				inputSampleL += ((double(fpdL) - uint32_t(0x7fffffff)) * 5.5e-36l * pow(2, expon + 62));
+				frexpf((float)inputSampleR, &expon);
+				fpdR ^= fpdR << 13; fpdR ^= fpdR >> 17; fpdR ^= fpdR << 5;
+				inputSampleR += ((double(fpdR) - uint32_t(0x7fffffff)) * 5.5e-36l * pow(2, expon + 62));
+				//end 32 bit stereo floating point dither
+			}
+			else {
+				//begin 64 bit stereo floating point dither
+				//int expon; frexp((double)inputSampleL, &expon);
+				fpdL ^= fpdL << 13; fpdL ^= fpdL >> 17; fpdL ^= fpdL << 5;
+				//inputSampleL += ((double(fpdL)-uint32_t(0x7fffffff)) * 1.1e-44l * pow(2,expon+62));
+				//frexp((double)inputSampleR, &expon);
+				fpdR ^= fpdR << 13; fpdR ^= fpdR >> 17; fpdR ^= fpdR << 5;
+				//inputSampleR += ((double(fpdR)-uint32_t(0x7fffffff)) * 1.1e-44l * pow(2,expon+62));
+				//end 64 bit stereo floating point dither
+			}
+			*Out_L = inputSampleL;
+			*Out_R = inputSampleR;
+
+			In_L++;
+			In_R++;
+			Out_L++;
+			Out_R++;
+		}
+		fInVuPPML = VuPPMconvert(tmpInL);
+		fInVuPPMR = VuPPMconvert(tmpInR);
+		fOutVuPPML = VuPPMconvert(tmpOutL);
+		fOutVuPPMR = VuPPMconvert(tmpOutR);
+		return;
+	}
+
+
+	template <typename SampleType>
+	void InflatorPackageProcessor::processVuPPM(SampleType** inputs, int32 sampleFrames)
+	{
+		SampleType* In_L = (SampleType*)inputs[0];
+		SampleType* In_R = (SampleType*)inputs[1];
+
+		SampleType tmpInL = 0.0; /*/ VuPPM /*/
+		SampleType tmpInR = 0.0; /*/ VuPPM /*/
+
+		while (--sampleFrames >= 0)
+		{
+			Vst::Sample64 inputSampleL = *In_L;
+			Vst::Sample64 inputSampleR = *In_R;
+			if (inputSampleL > tmpInL) { tmpInL = inputSampleL; }
+			if (inputSampleR > tmpInR) { tmpInR = inputSampleR; }
+			In_L++;
+			In_R++;
+		}
+
+		fInVuPPML = VuPPMconvert(tmpInL);
+		fInVuPPMR = VuPPMconvert(tmpInR);
+		fOutVuPPML = fInVuPPML;
+		fOutVuPPMR = fInVuPPMR;
+
+		return;
+	}
+
+	float InflatorPackageProcessor::VuPPMconvert(float plainValue)
+	{
+		float dB = 20 * log10f(plainValue);
+		float normValue;
+
+		if (dB >= 6.0) normValue = 1.0;
+		else if (dB >= 5.0) normValue = 0.96;
+		else if (dB >= 4.0) normValue = 0.92;
+		else if (dB >= 3.0) normValue = 0.88;
+		else if (dB >= 2.0) normValue = 0.84;
+		else if (dB >= 1.0) normValue = 0.80;
+		else if (dB >= 0.0) normValue = 0.76;
+		else if (dB >= -1.0) normValue = 0.72;
+		else if (dB >= -2.0) normValue = 0.68;
+		else if (dB >= -3.0) normValue = 0.64;
+		else if (dB >= -4.0) normValue = 0.60;
+		else if (dB >= -5.0) normValue = 0.56;
+		else if (dB >= -6.0) normValue = 0.52;
+		else if (dB >= -8.0) normValue = 0.48;
+		else if (dB >= -10) normValue = 0.44;
+		else if (dB >= -12) normValue = 0.40;
+		else if (dB >= -14) normValue = 0.36;
+		else if (dB >= -16) normValue = 0.32;
+		else if (dB >= -18) normValue = 0.28;
+		else if (dB >= -22) normValue = 0.24;
+		else if (dB >= -26) normValue = 0.20;
+		else if (dB >= -30) normValue = 0.16;
+		else if (dB >= -34) normValue = 0.12;
+		else if (dB >= -38) normValue = 0.08;
+		else if (dB >= -42) normValue = 0.04;
+		else normValue = 0.0;
+
+		return normValue;
+	}
+
+
 
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API InflatorPackageProcessor::setupProcessing(Vst::ProcessSetup& newSetup)
@@ -443,170 +592,5 @@ namespace yg331 {
 
 	//------------------------------------------------------------------------
 
-	template <typename SampleType, typename num>
-	bool InflatorPackageProcessor::processAudio(SampleType** input, SampleType** output, num numChannels, num sampleFrames)
-	{
-		for (num ch = 0; ch < numChannels; ch++)
-		{
-			num samples = sampleFrames;
-			SampleType* ptrIn  = (SampleType*)input[ch];
-			SampleType* ptrOut = (SampleType*)output[ch];
-			SampleType tmp;
-
-			SampleType each_in;
-			SampleType each_out;
-			SampleType s_1;
-			SampleType s_2;
-			SampleType s_3;
-			SampleType s;
-
-			SampleType sign;
-
-			while (--samples >= 0)
-			{
-				each_in = *ptrIn * fIn_db;
-				if (bClip) each_in = max((SampleType)-1.0, min((SampleType)1.0, each_in));
-				(each_in > 0.0) ? (sign = 1.0) : (sign = -1.0);
-				s_1 = abs(each_in);
-				s_2 = s_1 * s_1;
-				s_3 = s_2 * s_1;
-				s = (s_1 >= 2.0) ? (
-					0.0
-					) : (s_1 > 1.0) ? (
-						2.0 * s_1 - s_2
-						) : (
-							curveA * s_1 + curveB * s_2 + curveC * s_3 - curveD * (s_2 - 2.0 * s_3 + s_2 * s_2)
-							);
-
-
-
-				each_out = sign * s * wet + min(max(each_in * dry, (SampleType) -dry2), (SampleType) dry2);
-				if (bClip) each_out = max((SampleType)-1.0, min((SampleType)1.0, each_out));
-				tmp = each_out * fOut_db;
-				*ptrOut = tmp;
-
-				ptrIn++;
-				ptrOut++;
-			}
-		}
-		return kResultOk;
-	}
-
-	/*
-	1.	6.0 	1.00
-	2.	5.0 	0.96
-	3.	4.0 	0.92
-	4.	3.0 	0.88
-	5.	2.0 	0.84
-	6.	1.0 	0.80
-	7.	0.0 	0.76
-	8.	1.0 	0.72
-	9.	2.0 	0.68
-	10.	3.0 	0.64
-	11.	4.0 	0.60
-	12.	5.0 	0.56
-	13.	6.0 	0.52
-	14.	8.0 	0.48
-	15.	10.0	0.44
-	16.	12.0	0.40
-	17.	14.0	0.36
-	18.	16.0	0.32
-	19.	18.0	0.28
-	20.	22.0	0.24
-	21.	26.0	0.20
-	22.	30.0	0.16
-	23.	34.0	0.12
-	24.	38.0	0.08
-	25.	42.0	0.04
-	26.	----	0.00
-	*/
-	
-	float InflatorPackageProcessor::VuPPMconvert(float plainValue)
-	{
-		float dB = 20 * log10f(plainValue);
-		float normValue;
-
-		if (dB >= 6.0) normValue = 1.0;
-		else if (dB >= 5.0) normValue = 0.96;
-		else if (dB >= 4.0) normValue = 0.92;
-		else if (dB >= 3.0) normValue = 0.88;
-		else if (dB >= 2.0) normValue = 0.84;
-		else if (dB >= 1.0) normValue = 0.80;
-		else if (dB >= 0.0) normValue = 0.76;
-		else if (dB >= -1.0) normValue = 0.72;
-		else if (dB >= -2.0) normValue = 0.68;
-		else if (dB >= -3.0) normValue = 0.64;
-		else if (dB >= -4.0) normValue = 0.60;
-		else if (dB >= -5.0) normValue = 0.56;
-		else if (dB >= -6.0) normValue = 0.52;
-		else if (dB >= -8.0) normValue = 0.48;
-		else if (dB >= -10) normValue = 0.44;
-		else if (dB >= -12) normValue = 0.40;
-		else if (dB >= -14) normValue = 0.36;
-		else if (dB >= -16) normValue = 0.32;
-		else if (dB >= -18) normValue = 0.28;
-		else if (dB >= -22) normValue = 0.24;
-		else if (dB >= -26) normValue = 0.20;
-		else if (dB >= -30) normValue = 0.16;
-		else if (dB >= -34) normValue = 0.12;
-		else if (dB >= -38) normValue = 0.08;
-		else if (dB >= -42) normValue = 0.04;
-		else normValue = 0.0;
-
-		return normValue;
-	}
-
-
-	template <typename SampleType>
-	SampleType InflatorPackageProcessor::processInVuPPM(SampleType** input, int32 ch, int32 sampleFrames)
-	{
-		SampleType InGain = 0.0;
-
-		SampleType bg = (bBypass) ? 1.0 : fIn_db;
-
-		int32 samples = sampleFrames;
-		SampleType* ptrIn = (SampleType*)input[ch];
-		SampleType tmp;
-
-		SampleType normValue;
-
-		while (--samples >= 0)
-		{
-			tmp = bg * (*ptrIn++);
-
-			// check only positive values
-			if (tmp > InGain)
-			{
-				InGain = tmp;
-			}
-		}
-		if (bClip) InGain = max((SampleType)-1.0, min((SampleType)1.0, InGain));
-		normValue = VuPPMconvert((float)InGain);
-		return normValue;
-	}
-
-	template <typename SampleType>
-	SampleType InflatorPackageProcessor::processOutVuPPM(SampleType** output, int32 ch, int32 sampleFrames)
-	{
-		SampleType OutGain = 0;
-
-		int32 samples = sampleFrames;
-		SampleType* ptrOut = (SampleType*)output[ch];
-		SampleType tmp;
-		SampleType normValue;
-
-		while (--samples >= 0)
-		{
-			tmp = (*ptrOut++);
-
-			// check only positive values
-			if (tmp > OutGain)
-			{
-				OutGain = tmp;
-			}
-		}
-		normValue = VuPPMconvert((float)OutGain);
-		return normValue;
-	}
 
 } // namespace yg331

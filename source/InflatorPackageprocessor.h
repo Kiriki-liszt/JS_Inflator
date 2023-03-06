@@ -6,16 +6,6 @@
 
 #include "public.sdk/source/vst/vstaudioeffect.h"
 
-#include "param.h"
-
-// return larger of _Left and _Right
-template <class _Ty>
-_NODISCARD _Post_equal_to_(_Left < _Right ? _Right : _Left) constexpr const _Ty& (max)(const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Left < _Right)) /* strengthened */ {return _Left < _Right ? _Right : _Left;}
-
-// return smaller of _Left and _Right
-template <class _Ty>
-_NODISCARD _Post_equal_to_(_Right < _Left ? _Right : _Left) constexpr const _Ty& (min)(const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */ {return _Right < _Left ? _Right : _Left;}
-
 using namespace Steinberg;
 
 namespace yg331 {
@@ -69,43 +59,34 @@ namespace yg331 {
 		//------------------------------------------------------------------------
 	protected:
 		//==============================================================================
-		template <typename SampleType, typename num>
-		bool processAudio(SampleType** input, SampleType** output, num numChannels, num sampleFrames);
+		template <typename SampleType>
+		void processAudio(SampleType** inputs, SampleType** outputs, Vst::Sample64 getSampleRate, int32 sampleFrames, int32 precision);
 
 		template <typename SampleType>
-		SampleType processInVuPPM(SampleType** input, int32 ch, int32 sampleFrames);
+		void processVuPPM(SampleType** inputs, int32 sampleFrames);
 
-		template <typename SampleType>
-		SampleType processOutVuPPM(SampleType** output, int32 ch, int32 sampleFrames);
+		float VuPPMconvert(float plainValue);
 
-		float InflatorPackageProcessor::VuPPMconvert(float plainValue);
+		Vst::Sample32 fInput;
+		Vst::Sample32 fOutput;
+		Vst::Sample32 fEffect;
+		Vst::Sample32 fCurve;
 
-		float fInput  = 0.5; 
-		float fOutput = 1.0;
-		float fEffect = 1.0;
-		float fCurve  = 0.5;
-
-		float fInVuPPMLOld = 0.0;
-		float fInVuPPMROld = 0.0;
-		float fOutVuPPMLOld = 0.0;
-		float fOutVuPPMROld = 0.0;
+		Vst::Sample32 fInVuPPML;
+		Vst::Sample32 fInVuPPMR;
+		Vst::Sample32 fOutVuPPML;
+		Vst::Sample32 fOutVuPPMR;
+		Vst::Sample32 fInVuPPMLOld;
+		Vst::Sample32 fInVuPPMROld;
+		Vst::Sample32 fOutVuPPMLOld;
+		Vst::Sample32 fOutVuPPMROld;
 		// int32 currentProcessMode;
 
-		bool bHalfGain{ false };
 		bool bBypass{ false };
 		bool bClip{ false };
 
-		float fIn_db  = expf(logf(10.f) * (24.0 * fInput - 12.0) / 20.f);
-		float fOut_db = expf(logf(10.f) * (12.0 * fOutput - 12.0) / 20.f);
-
-		float wet = fEffect;
-		float dry = 1.0 - wet;
-		float dry2 = dry * 2.0;
-
-		float curvepct = fCurve;
-		float curveA = 1.5 + curvepct;			// 1 + (curve + 50) / 100
-		float curveB = -(curvepct + curvepct);	// - curve / 50
-		float curveC = curvepct - 0.5;			// (curve - 50) / 100
-		float curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;	// 1 / 16 - curve / 400 + curve ^ 2 / (4 * 10 ^ 4)
+		uint32_t fpdL = 1;
+		uint32_t fpdR = 1;
+		
 	};
 } // namespace yg331

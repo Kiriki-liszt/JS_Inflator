@@ -1,0 +1,10 @@
+build/*.*
+build/.vs
+build/Airwindows_VariMu.dir
+build/bin
+build/CMakeFiles
+build/lib
+build/VST3/Debug
+build/vst3sdk
+build/WIN_PDB64
+build/x64
