@@ -11,9 +11,6 @@
 #include "public.sdk/source/vst/vstaudioprocessoralgo.h"
 #include "public.sdk/source/vst/vsthelpers.h"
 
-
-#include "param.h"
-
 using namespace Steinberg;
 
 namespace yg331 {
