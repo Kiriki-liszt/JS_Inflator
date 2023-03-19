@@ -49,9 +49,14 @@ ex)
 | 1.0   	| 0   	| 1    	|  
 
 
-## references  
-HIIR resampling codes by 'Laurent De Soras'.  
-http://ldesoras.free.fr/index.html  
+## references
+
+1. RC Inflator
+<https://forum.cockos.com/showthread.php?t=256286>  
+
+
+2. HIIR resampling codes by 'Laurent De Soras'.  
+<http://ldesoras.free.fr/index.html>  
 
 ## Todo  
 done: Input Vu meter correct dB count  
