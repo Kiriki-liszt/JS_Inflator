@@ -1,4 +1,10 @@
 # JS_Inflator_to_VST2_VST3
+
+## Branch - Oversampling  
+## TODO  
+* PDC is not acting at param change.  
+* Two instance of plugin cause buffer-related issue. Assuming hiir class.  
+
 JS Inflator, the copy of Sonox Inflator, in vstsdk
 
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot.png"  width="200"/>
