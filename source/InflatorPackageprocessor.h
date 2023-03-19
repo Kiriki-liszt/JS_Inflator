@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "public.sdk/source/vst/vstaudioeffect.h"
 
+//------------------------------------------------------------------------
+// HIIR library Start
+//------------------------------------------------------------------------
 #include <array>
 #include <cassert>
 #include <cstdio>
-
-
 
 namespace hiir {
 
@@ -571,7 +571,18 @@ namespace hiir {
 	typedef Downsampler2xFpu <coef_8x_1_num>  downSample_8x_1;
 	typedef Downsampler2xFpu <coef_8x_2_num>  downSample_8x_2;
 	typedef Downsampler2xFpu <coef_8x_3_num>  downSample_8x_3;
-} // namespace hiir
+} 
+//------------------------------------------------------------------------
+// HIIR library End
+//------------------------------------------------------------------------
+
+
+
+
+//------------------------------------------------------------------------
+// VST3 plugin Start
+//------------------------------------------------------------------------
+#include "public.sdk/source/vst/vstaudioeffect.h"
 
 using namespace Steinberg;
 
@@ -637,7 +648,7 @@ namespace yg331 {
 		void processVuPPM_Out(SampleType** outputs, int32 sampleFrames);
 
 		template <typename SampleType>
-		void overSampling(SampleType** inputs, SampleType** outputs, Vst::Sample64 getSampleRate, int32 sampleFrames);
+		void overSampling(SampleType** inputs, SampleType** outputs, Vst::SampleRate getSampleRate, int32 sampleFrames);
 
 		template <typename SampleType>
 		void proc_in(SampleType** inputs, Vst::Sample64** outputs, int32 sampleFrames);
@@ -711,3 +722,6 @@ namespace yg331 {
 
 	};	
 } // namespace yg331
+//------------------------------------------------------------------------
+// VST3 plugin End
+//------------------------------------------------------------------------
