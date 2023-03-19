@@ -66,6 +66,17 @@ Filter choice is most critical, I think.
 HIIR code used Polyphase Filter, which is minimun phase filter.  
 Has some letency, has some phase issue, but both very low.  
 
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_freq.png"  width="400"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_phase_RC.png"  width="400"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_phase_JS.png"  width="400"/>
+
+Compared to 31-tap filter, polyphase has more flat frequency and phase response.  
+
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_H_RC.png"  width="400"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_H_JS.png"  width="400"/>  
+
+Meaning, HIIR is better at anti-alising.  
+
 * Latency Reporting  
 
 Naive implementaiton could use 'sendTextMessage' and 'receiveText' pair.  
