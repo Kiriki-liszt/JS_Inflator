@@ -3,7 +3,6 @@
 ## Branch - Oversampling  
 ## TODO  
 * PDC is not acting at param change.  
-* Two instance of plugin cause buffer-related issue. Assuming hiir class.  
 
 JS Inflator, the copy of Sonox Inflator, in vstsdk
 
