@@ -13,6 +13,9 @@ button_onoff.png	PNG "button_onoff.png"
 LED_OFF.png			PNG "LED_OFF.png"
 LED_ON.png			PNG "LED_ON.png"
 LED_cover.png		PNG "LED_cover.png"
+OS_text.png			PNG	"OS_text.png"
+oversample_bg.png		PNG "oversample_bg.png"
+oversample_handle.png PNG "oversample_handle.png"
 
 /////////////////////////////////////////////////////////////////////////////
 // Version
