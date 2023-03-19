@@ -25,6 +25,15 @@
 			},
 			"LED_cover": {
 				"path": "LED_cover.png"
+			},
+			"OS_text.png": {
+				"path": "OS_text.png"
+			},
+			"oversample_bg": {
+				"path": "oversample_bg.png"
+			},
+			"oversample_handle": {
+				"path": "oversample_handle.png"
 			}
 		},
 		"fonts": {
@@ -34,7 +43,9 @@
 				"size": "10"
 			}
 		},
-		"colors": {},
+		"colors": {
+			"transparent": "#ffffff00"
+		},
 		"gradients": {},
 		"control-tags": {
 			"Clip": "3",
@@ -46,12 +57,13 @@
 			"OutVuPPML": "7",
 			"OutVuPPMR": "8",
 			"Output": "4",
-			"Bypass": "9"
+			"Bypass": "9",
+			"OS": "10"
 		},
 		"custom": {
 			"FocusDrawing": {},
 			"VST3Editor": {
-				"Path": "InflatorPackageeditor.uidesc"
+				"Path": "C:\\VST_make\\Kiriki_yg_Liszt\\generator\\InflatorPackage\\resource\\InflatorPackageeditor.uidesc"
 			},
 			"UIGridController": {
 				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
@@ -76,19 +88,22 @@
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
-				"SelectedRow": "27"
+				"SelectedRow": "21"
 			},
 			"UIGradientsDataSource": {
 				"SelectedRow": "-1"
 			},
 			"UIBitmapsDataSource": {
-				"SelectedRow": "9"
+				"SelectedRow": "8"
 			},
 			"UIFontsDataSource": {
 				"SelectedRow": "0"
 			},
 			"UITagsDataSource": {
 				"SelectedRow": "5"
+			},
+			"UIColorsDataSource": {
+				"SelectedRow": "0"
 			}
 		},
 		"templates": {
@@ -188,7 +203,7 @@
 							"bitmap-offset": "0, 0",
 							"class": "CSlider",
 							"control-tag": "Output",
-							"default-value": "1",
+							"default-value": "0.5",
 							"draw-back": "false",
 							"draw-back-color": "~ BlackCColor",
 							"draw-frame": "false",
@@ -355,6 +370,78 @@
 							"opacity": "1",
 							"origin": "117, 22",
 							"size": "117, 155",
+							"transparent": "false",
+							"wants-focus": "false"
+						}
+					},
+					"CSlider": {
+						"attributes": {
+							"bitmap": "oversample_bg",
+							"bitmap-offset": "0, 0",
+							"class": "CSlider",
+							"control-tag": "OS",
+							"default-value": "0",
+							"draw-back": "false",
+							"draw-back-color": "~ BlackCColor",
+							"draw-frame": "false",
+							"draw-frame-color": "~ GreyCColor",
+							"draw-value": "false",
+							"draw-value-color": "~ WhiteCColor",
+							"draw-value-from-center": "false",
+							"draw-value-inverted": "false",
+							"frame-width": "1",
+							"handle-bitmap": "oversample_handle",
+							"handle-offset": "0, 0",
+							"max-value": "1",
+							"min-value": "0",
+							"mode": "relative touch",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"orientation": "horizontal",
+							"origin": "105, 2",
+							"reverse-orientation": "false",
+							"size": "130, 20",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.333",
+							"zoom-factor": "1.5"
+						}
+					},
+					"CSegmentButton": {
+						"attributes": {
+							"class": "CSegmentButton",
+							"control-tag": "OS",
+							"default-value": "0",
+							"font": "~ NormalFontSmall",
+							"frame-color": "transparent",
+							"frame-width": "0",
+							"icon-text-margin": "3",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "105, 2",
+							"round-radius": "0",
+							"segment-names": "0.0000,0.3333,0.6667,1.0000",
+							"selection-mode": "Single",
+							"size": "130, 20",
+							"style": "horizontal",
+							"text-alignment": "center",
+							"text-color": "transparent",
+							"text-color-highlighted": "transparent",
+							"transparent": "false",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CView": {
+						"attributes": {
+							"bitmap": "OS_text.png",
+							"class": "CView",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "68, 2",
+							"size": "34, 20",
 							"transparent": "false",
 							"wants-focus": "false"
 						}

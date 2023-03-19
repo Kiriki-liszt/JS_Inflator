@@ -35,14 +35,23 @@ namespace yg331 {
 		Steinberg::IPlugView* PLUGIN_API createView(Steinberg::FIDString name) SMTG_OVERRIDE;
 		Steinberg::tresult PLUGIN_API setState(Steinberg::IBStream* state) SMTG_OVERRIDE;
 		Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream* state) SMTG_OVERRIDE;
-		Steinberg::tresult PLUGIN_API setParamNormalized(Steinberg::Vst::ParamID tag,
-			Steinberg::Vst::ParamValue value) SMTG_OVERRIDE;
-		Steinberg::tresult PLUGIN_API getParamStringByValue(Steinberg::Vst::ParamID tag,
+		Steinberg::tresult PLUGIN_API setParamNormalized(
+			Steinberg::Vst::ParamID tag,
+			Steinberg::Vst::ParamValue value
+		) SMTG_OVERRIDE;
+		Steinberg::tresult PLUGIN_API getParamStringByValue(
+			Steinberg::Vst::ParamID tag,
 			Steinberg::Vst::ParamValue valueNormalized,
-			Steinberg::Vst::String128 string) SMTG_OVERRIDE;
-		Steinberg::tresult PLUGIN_API getParamValueByString(Steinberg::Vst::ParamID tag,
+			Steinberg::Vst::String128 string
+		) SMTG_OVERRIDE;
+		Steinberg::tresult PLUGIN_API getParamValueByString(
+			Steinberg::Vst::ParamID tag,
 			Steinberg::Vst::TChar* string,
-			Steinberg::Vst::ParamValue& valueNormalized) SMTG_OVERRIDE;
+			Steinberg::Vst::ParamValue& valueNormalized
+		) SMTG_OVERRIDE;
+
+		//---from ComponentBase-----
+		tresult receiveText(const char* text) SMTG_OVERRIDE;
 
 		//---Interface---------
 		DEFINE_INTERFACES
@@ -53,6 +62,8 @@ namespace yg331 {
 
 			//------------------------------------------------------------------------
 	protected:
+		int32 OSnow = 1;
+		int32 Bnow = 0;
 	};
 
 	//------------------------------------------------------------------------

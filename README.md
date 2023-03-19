@@ -1,4 +1,9 @@
 # JS_Inflator_to_VST2_VST3
+
+## Branch - Oversampling  
+## TODO  
+* DONE!  
+
 JS Inflator, the copy of Sonox Inflator, in vstsdk
 
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot.png"  width="200"/>
@@ -47,7 +52,10 @@ ex)
 | 1.0   	| 0   	| 1    	|  
 
 
+## references  
+HIIR resampling codes by 'Laurent De Soras'.  
+http://ldesoras.free.fr/index.html  
 
-Todo  
+## Todo  
 done: Input Vu meter correct dB count  
 now: Preset save & import  

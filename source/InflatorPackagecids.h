@@ -27,5 +27,6 @@ enum {
 	kParamInVuPPMR,
 	kParamOutVuPPML,		// Output VuPPM
 	kParamOutVuPPMR,
-	kParamBypass		// ByPass
+	kParamBypass,		// ByPass
+	kParamOS
 };

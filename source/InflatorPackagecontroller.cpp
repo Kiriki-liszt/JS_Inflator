@@ -9,6 +9,8 @@
 #include "pluginterfaces/base/ustring.h"
 #include "base/source/fstreamer.h"
 
+#include "pluginterfaces/vst/ivsteditcontroller.h"
+
 using namespace Steinberg;
 
 namespace yg331 {
@@ -151,10 +153,14 @@ namespace yg331 {
 		tag = kParamBypass;
 		stepCount = 1;
 		defaultVal = 0;
-		flags = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsBypass;
+		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
 
-
+		tag = kParamOS;
+		stepCount = 3;
+		defaultVal = 0;
+		flags = Vst::ParameterInfo::kCanAutomate;
+		parameters.addParameter(STR16("OS"), nullptr, stepCount, defaultVal, flags, tag);
 
 		return result;
 	}
@@ -172,7 +178,6 @@ namespace yg331 {
 	tresult PLUGIN_API InflatorPackageController::setComponentState(IBStream* state)
 	{
 		// we receive the current state of the component (processor part)
-		// we read only the gain and bypass value...
 		if (!state)
 			return kResultFalse;
 
@@ -203,14 +208,37 @@ namespace yg331 {
 			return kResultFalse;
 		setParamNormalized(kParamOutput, savedOutput);
 
-
-		// jump the GainReduction
-		// streamer.seek(sizeof(float), kSeekCurrent);
-
 		int32 bypassState = 0;
 		if (streamer.readInt32(bypassState) == false)
 			return kResultFalse;
 		setParamNormalized(kParamBypass, bypassState ? 1 : 0);
+
+		int32 savedOS = 0;
+		if (streamer.readInt32(savedOS) == false)
+			return kResultFalse;
+		double normalized;
+		if (savedOS == 2) normalized = 1.0 / 4.0;
+		else if (savedOS == 4) normalized = 2.0 / 4.0;
+		else if (savedOS == 8) normalized = 3.0 / 4.0;
+		else normalized = 0.0;
+		setParamNormalized(kParamOS, normalized);
+
+		/*
+		if (OSnow != savedOS) {
+			OSnow = savedOS;
+			getComponentHandler()->restartComponent(Vst::kLatencyChanged);
+		}
+		if (Bnow != bypassState) {
+			Bnow = bypassState;
+			getComponentHandler()->restartComponent(Vst::kLatencyChanged);
+		}
+		*/
+		if (OSnow != savedOS) {
+			OSnow = savedOS;
+			FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
+			handler->restartComponent(Vst::kLatencyChanged);
+		}
+		
 
 		return kResultOk;
 	}
@@ -244,6 +272,29 @@ namespace yg331 {
 		}
 		return nullptr;
 	}
+
+
+
+
+	//------------------------------------------------------------------------
+	tresult InflatorPackageController::receiveText(const char* text)
+	{
+		// received from Component
+		if (text)
+		{	
+			/*
+			fprintf(stderr, "[AGainController] received: ");
+			fprintf(stderr, "%s", text);
+			fprintf(stderr, "\n");
+			*/
+				FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
+				handler->restartComponent(Vst::kLatencyChanged);
+		}
+		
+		return kResultOk;
+	}
+
+
 
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API InflatorPackageController::setParamNormalized(Vst::ParamID tag, Vst::ParamValue value)
