@@ -184,14 +184,12 @@ namespace yg331 {
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API InflatorPackageProcessor::setActive(TBool state)
 	{
+		/*
 		if (state)
-		{
 			sendTextMessage("InflatorPackageProcessor::setActive (true)");
-		}
 		else
-		{
 			sendTextMessage("InflatorPackageProcessor::setActive (false)");
-		}
+		*/
 
 		// reset the VuMeter value
 		fInVuPPMLOld = 0.f;
@@ -244,11 +242,13 @@ namespace yg331 {
 							bBypass = (value > 0.5f);
 							break;
 						case kParamOS:
+							int32 fParamOSOld = fParamOS;
 							int32 dem = floor(fmin(3.0, 4.0 * value));
 							if (dem == 0) fParamOS = 1;
 							else if (dem == 1) fParamOS = 2;
 							else if (dem == 2) fParamOS = 4;
 							else fParamOS = 8;
+							if (fParamOSOld != fParamOS) sendTextMessage("OS");
 							break;
 						}
 					}
@@ -298,28 +298,11 @@ namespace yg331 {
 
 
 		//---in bypass mode outputs should be like inputs-----
-		if (bBypass)
-		{
-			if (in[0] != out[0]) { memcpy(out[0], in[0], sampleFramesSize); }
-			if (in[1] != out[1]) { memcpy(out[1], in[1], sampleFramesSize); }
-
-			if (data.symbolicSampleSize == Vst::kSample32) {
-				processVuPPM_In <Vst::Sample32>((Vst::Sample32**)in, data.numSamples);
-				processVuPPM_Out<Vst::Sample32>((Vst::Sample32**)out, data.numSamples);
-			}
-			else if (data.symbolicSampleSize == Vst::kSample64) {
-				processVuPPM_In <Vst::Sample64>((Vst::Sample64**)in, data.numSamples);
-				processVuPPM_Out<Vst::Sample64>((Vst::Sample64**)out, data.numSamples);
-			}
+		if (data.symbolicSampleSize == Vst::kSample32) {
+			overSampling<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, getSampleRate, data.numSamples);
 		}
-		else
-		{
-			if (data.symbolicSampleSize == Vst::kSample32) {
-				overSampling<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, getSampleRate, data.numSamples);
-			}
-			else {
-				overSampling<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples);
-			}
+		else {
+			overSampling<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples);
 		}
 
 		//---3) Write outputs parameter changes-----------
@@ -403,11 +386,10 @@ namespace yg331 {
 		return AudioEffect::setupProcessing(newSetup);
 	}
 
-	uint32 PLUGIN_API InflatorPackageProcessor::getLatencySamples() {
-		
-		if (bBypass) return 0;
-
-		if (fParamOS == 2) return hiir::os_2x_latency;
+	uint32 PLUGIN_API InflatorPackageProcessor::getLatencySamples() 
+	{
+		if (fParamOS == 1) return 0;
+		else if (fParamOS == 2) return hiir::os_2x_latency;
 		else if (fParamOS == 4) return hiir::os_4x_latency;
 		else if (fParamOS == 8) return hiir::os_8x_latency;
 		else return 0;
@@ -616,8 +598,10 @@ namespace yg331 {
 			if (fabs(inputSampleL) < 1.18e-23) inputSampleL = fpdL * 1.18e-17;
 			if (fabs(inputSampleR) < 1.18e-23) inputSampleR = fpdR * 1.18e-17;
 
-			inputSampleL *= In_db;
-			inputSampleR *= In_db;
+			if (!bBypass) {
+				inputSampleL *= In_db;
+				inputSampleR *= In_db;
+			}
 
 			*Out_L = inputSampleL;
 			*Out_R = inputSampleR;
@@ -645,8 +629,10 @@ namespace yg331 {
 			Vst::Sample64 inputSampleL = *In_L;
 			Vst::Sample64 inputSampleR = *In_R;
 
-			inputSampleL *= Out_db;
-			inputSampleR *= Out_db;
+			if (!bBypass) {
+				inputSampleL *= Out_db;
+				inputSampleR *= Out_db;
+			}
 
 			if (is_32fp) {
 				//begin 32 bit stereo floating point dither
@@ -688,6 +674,12 @@ namespace yg331 {
 		long long sampleFrames
 	)
 	{
+		if (bBypass) {
+			memcpy(outputs[0], inputs[0], sizeof(SampleType) * sampleFrames);
+			memcpy(outputs[1], inputs[1], sizeof(SampleType) * sampleFrames);
+			return;
+		}
+
 		SampleType* In_L = (SampleType*)inputs[0];
 		SampleType* In_R = (SampleType*)inputs[1];
 		SampleType* Out_L = (SampleType*)outputs[0];

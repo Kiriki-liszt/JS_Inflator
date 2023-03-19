@@ -50,6 +50,9 @@ namespace yg331 {
 			Steinberg::Vst::ParamValue& valueNormalized
 		) SMTG_OVERRIDE;
 
+		//---from ComponentBase-----
+		tresult receiveText(const char* text) SMTG_OVERRIDE;
+
 		//---Interface---------
 		DEFINE_INTERFACES
 			// Here you can add more supported VST3 interfaces

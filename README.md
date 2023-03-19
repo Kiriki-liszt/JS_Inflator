@@ -2,7 +2,7 @@
 
 ## Branch - Oversampling  
 ## TODO  
-* PDC is not acting at param change.  
+* DONE!  
 
 JS Inflator, the copy of Sonox Inflator, in vstsdk
 

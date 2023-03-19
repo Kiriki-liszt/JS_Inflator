@@ -153,7 +153,7 @@ namespace yg331 {
 		tag = kParamBypass;
 		stepCount = 1;
 		defaultVal = 0;
-		flags = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsBypass ;
+		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
 
 		tag = kParamOS;
@@ -272,6 +272,29 @@ namespace yg331 {
 		}
 		return nullptr;
 	}
+
+
+
+
+	//------------------------------------------------------------------------
+	tresult InflatorPackageController::receiveText(const char* text)
+	{
+		// received from Component
+		if (text)
+		{	
+			/*
+			fprintf(stderr, "[AGainController] received: ");
+			fprintf(stderr, "%s", text);
+			fprintf(stderr, "\n");
+			*/
+				FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
+				handler->restartComponent(Vst::kLatencyChanged);
+		}
+		
+		return kResultOk;
+	}
+
+
 
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API InflatorPackageController::setParamNormalized(Vst::ParamID tag, Vst::ParamValue value)
