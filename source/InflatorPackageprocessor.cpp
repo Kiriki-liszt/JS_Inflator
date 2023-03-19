@@ -402,14 +402,14 @@ namespace yg331 {
 	}
 
 	uint32 PLUGIN_API InflatorPackageProcessor::getLatencySamples() {
-		/*
+		
 		if (bBypass) return 0;
 
 		if (fParamOS == 2) return hiir::os_2x_latency;
 		else if (fParamOS == 4) return hiir::os_4x_latency;
 		else if (fParamOS == 8) return hiir::os_8x_latency;
 		else return 0;
-		*/
+		
 		return 0;
 	}
 

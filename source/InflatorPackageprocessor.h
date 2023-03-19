@@ -126,7 +126,6 @@ namespace yg331 {
 
 namespace hiir {
 
-	const double	PI = 3.1415926535897932384626433832795;
 
 	constexpr int coef_2x_1_num = 10;
 	constexpr int coef_4x_1_num = 4;

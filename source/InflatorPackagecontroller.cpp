@@ -233,6 +233,11 @@ namespace yg331 {
 			getComponentHandler()->restartComponent(Vst::kLatencyChanged);
 		}
 		*/
+		if (OSnow != savedOS) {
+			OSnow = savedOS;
+			FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
+			handler->restartComponent(Vst::kLatencyChanged);
+		}
 		
 
 		return kResultOk;
