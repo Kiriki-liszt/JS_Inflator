@@ -47,7 +47,10 @@ ex)
 | 1.0   	| 0   	| 1    	|  
 
 
+## references  
+HIIR resampling codes by 'Laurent De Soras'.  
+http://ldesoras.free.fr/index.html  
 
-Todo  
+## Todo  
 done: Input Vu meter correct dB count  
 now: Preset save & import  

@@ -5,6 +5,7 @@ build/bin
 build/CMakeFiles
 build/lib
 build/VST3/Debug
+build/VST3/Release
 build/vst3sdk
 build/WIN_PDB64
 build/x64

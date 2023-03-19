@@ -20,7 +20,8 @@ namespace yg331 {
 	InflatorPackageProcessor::InflatorPackageProcessor():
 		fInput(0.5), fOutput(1.0), fEffect(1.0), fCurve(0.5),
 		fInVuPPML(0.0), fInVuPPMR(0.0), fOutVuPPML(0.0), fOutVuPPMR(0.0),
-		fInVuPPMLOld(0.0), fInVuPPMROld(0.0), fOutVuPPMLOld(0.0), fOutVuPPMROld(0.0)
+		fInVuPPMLOld(0.0), fInVuPPMROld(0.0), fOutVuPPMLOld(0.0), fOutVuPPMROld(0.0),
+		fParamOS(1)
 	{
 		//--- set the wanted controller for our processor
 		setControllerClass(kInflatorPackageControllerUID);
@@ -53,6 +54,121 @@ namespace yg331 {
 		fpdL = 1.0; while (fpdL < 16386) fpdL = rand() * UINT32_MAX;
 		fpdR = 1.0; while (fpdR < 16386) fpdR = rand() * UINT32_MAX;
 
+		in_1_32.numChannels = 2;
+		in_2_32.numChannels = 2;
+		in_3_32.numChannels = 2;
+		out_1_32.numChannels = 2;
+		out_2_32.numChannels = 2;
+		out_3_32.numChannels = 2;
+		in_1_64.numChannels = 2;
+		in_2_64.numChannels = 2;
+		in_3_64.numChannels = 2;
+		out_1_64.numChannels = 2;
+		out_2_64.numChannels = 2;
+		out_3_64.numChannels = 2;
+
+		in_1_32.channelBuffers32 = (Vst::Sample32**)malloc(sizeof(Vst::Sample32*) * 2);
+		in_2_32.channelBuffers32 = (Vst::Sample32**)malloc(sizeof(Vst::Sample32*) * 2);
+		in_3_32.channelBuffers32 = (Vst::Sample32**)malloc(sizeof(Vst::Sample32*) * 2);
+		out_1_32.channelBuffers32 = (Vst::Sample32**)malloc(sizeof(Vst::Sample32*) * 2);
+		out_2_32.channelBuffers32 = (Vst::Sample32**)malloc(sizeof(Vst::Sample32*) * 2);
+		out_3_32.channelBuffers32 = (Vst::Sample32**)malloc(sizeof(Vst::Sample32*) * 2);
+		if ((in_1_32.channelBuffers32 == NULL) || (in_2_32.channelBuffers32 == NULL) || (in_3_32.channelBuffers32 == NULL)) return kResultFalse;
+		if ((out_1_32.channelBuffers32 == NULL) || (out_2_32.channelBuffers32 == NULL) || (out_3_32.channelBuffers32 == NULL)) return kResultFalse;
+
+		in_1_32.channelBuffers32[0] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample);
+		in_1_32.channelBuffers32[1] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample);
+		in_2_32.channelBuffers32[0] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample * 2);
+		in_2_32.channelBuffers32[1] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample * 2);
+		in_3_32.channelBuffers32[0] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample * 4);
+		in_3_32.channelBuffers32[1] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample * 4);
+		out_1_32.channelBuffers32[0] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample);
+		out_1_32.channelBuffers32[1] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample);
+		out_2_32.channelBuffers32[0] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample * 2);
+		out_2_32.channelBuffers32[1] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample * 2);
+		out_3_32.channelBuffers32[0] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample * 4);
+		out_3_32.channelBuffers32[1] = (Vst::Sample32*)malloc(sizeof(Vst::Sample32) * maxSample * 4);
+		if ((in_1_32.channelBuffers32[0] == NULL) || (in_2_32.channelBuffers32[0] == NULL) || (in_3_32.channelBuffers32[0] == NULL)) return kResultFalse;
+		if ((in_1_32.channelBuffers32[1] == NULL) || (in_2_32.channelBuffers32[1] == NULL) || (in_3_32.channelBuffers32[1] == NULL)) return kResultFalse;
+		if ((out_1_32.channelBuffers32[0] == NULL) || (out_2_32.channelBuffers32[0] == NULL) || (out_3_32.channelBuffers32[0] == NULL)) return kResultFalse;
+		if ((out_1_32.channelBuffers32[1] == NULL) || (out_2_32.channelBuffers32[1] == NULL) || (out_3_32.channelBuffers32[1] == NULL)) return kResultFalse;
+
+
+		in_1_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		in_2_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		in_3_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		out_1_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		out_2_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		out_3_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		if ((in_1_64.channelBuffers64 == NULL) || (in_2_64.channelBuffers64 == NULL) || (in_3_64.channelBuffers64 == NULL)) return kResultFalse;
+		if ((out_1_64.channelBuffers64 == NULL) || (out_2_64.channelBuffers64 == NULL) || (out_3_64.channelBuffers64 == NULL)) return kResultFalse;
+
+		in_1_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
+		in_1_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
+		in_2_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
+		in_2_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
+		in_3_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+		in_3_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+		out_1_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
+		out_1_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
+		out_2_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
+		out_2_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
+		out_3_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+		out_3_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+		if ((in_1_64.channelBuffers64[0] == NULL) || (in_2_64.channelBuffers64[0] == NULL) || (in_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
+		if ((in_1_64.channelBuffers64[1] == NULL) || (in_2_64.channelBuffers64[1] == NULL) || (in_3_64.channelBuffers64[1] == NULL)) return kResultFalse;
+		if ((out_1_64.channelBuffers64[0] == NULL) || (out_2_64.channelBuffers64[0] == NULL) || (out_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
+		if ((out_1_64.channelBuffers64[1] == NULL) || (out_2_64.channelBuffers64[1] == NULL) || (out_3_64.channelBuffers64[1] == NULL)) return kResultFalse;
+
+		hiir::upSample_2x_1_L_32.set_coefs(hiir::coef_2x_1);
+		hiir::upSample_2x_1_R_32.set_coefs(hiir::coef_2x_1);
+		hiir::downSample_2x_1_L_32.set_coefs(hiir::coef_2x_1);
+		hiir::downSample_2x_1_R_32.set_coefs(hiir::coef_2x_1);
+		hiir::upSample_4x_1_L_32.set_coefs(hiir::coef_4x_1);
+		hiir::upSample_4x_1_R_32.set_coefs(hiir::coef_4x_1);
+		hiir::upSample_4x_2_L_32.set_coefs(hiir::coef_4x_2);
+		hiir::upSample_4x_2_R_32.set_coefs(hiir::coef_4x_2);
+		hiir::downSample_4x_2_L_32.set_coefs(hiir::coef_4x_1);
+		hiir::downSample_4x_2_R_32.set_coefs(hiir::coef_4x_1);
+		hiir::downSample_4x_2_L_32.set_coefs(hiir::coef_4x_2);
+		hiir::downSample_4x_2_R_32.set_coefs(hiir::coef_4x_2);
+		hiir::upSample_8x_1_L_32.set_coefs(hiir::coef_8x_1);
+		hiir::upSample_8x_1_R_32.set_coefs(hiir::coef_8x_1);
+		hiir::upSample_8x_2_L_32.set_coefs(hiir::coef_8x_2);
+		hiir::upSample_8x_2_R_32.set_coefs(hiir::coef_8x_2);
+		hiir::upSample_8x_3_L_32.set_coefs(hiir::coef_8x_3);
+		hiir::upSample_8x_3_R_32.set_coefs(hiir::coef_8x_3);
+		hiir::downSample_8x_1_L_32.set_coefs(hiir::coef_8x_1);
+		hiir::downSample_8x_1_R_32.set_coefs(hiir::coef_8x_1);
+		hiir::downSample_8x_2_L_32.set_coefs(hiir::coef_8x_2);
+		hiir::downSample_8x_2_R_32.set_coefs(hiir::coef_8x_2);
+		hiir::downSample_8x_3_L_32.set_coefs(hiir::coef_8x_3);
+		hiir::downSample_8x_3_R_32.set_coefs(hiir::coef_8x_3);
+		hiir::upSample_2x_1_L_64.set_coefs(hiir::coef_2x_1);
+		hiir::upSample_2x_1_R_64.set_coefs(hiir::coef_2x_1);
+		hiir::downSample_2x_1_L_64.set_coefs(hiir::coef_2x_1);
+		hiir::downSample_2x_1_R_64.set_coefs(hiir::coef_2x_1);
+		hiir::upSample_4x_1_L_64.set_coefs(hiir::coef_4x_1);
+		hiir::upSample_4x_1_R_64.set_coefs(hiir::coef_4x_1);
+		hiir::upSample_4x_2_L_64.set_coefs(hiir::coef_4x_2);
+		hiir::upSample_4x_2_R_64.set_coefs(hiir::coef_4x_2);
+		hiir::downSample_4x_2_L_64.set_coefs(hiir::coef_4x_1);
+		hiir::downSample_4x_2_R_64.set_coefs(hiir::coef_4x_1);
+		hiir::downSample_4x_2_L_64.set_coefs(hiir::coef_4x_2);
+		hiir::downSample_4x_2_R_64.set_coefs(hiir::coef_4x_2);
+		hiir::upSample_8x_1_L_64.set_coefs(hiir::coef_8x_1);
+		hiir::upSample_8x_1_R_64.set_coefs(hiir::coef_8x_1);
+		hiir::upSample_8x_2_L_64.set_coefs(hiir::coef_8x_2);
+		hiir::upSample_8x_2_R_64.set_coefs(hiir::coef_8x_2);
+		hiir::upSample_8x_3_L_64.set_coefs(hiir::coef_8x_3);
+		hiir::upSample_8x_3_R_64.set_coefs(hiir::coef_8x_3);
+		hiir::downSample_8x_1_L_64.set_coefs(hiir::coef_8x_1);
+		hiir::downSample_8x_1_R_64.set_coefs(hiir::coef_8x_1);
+		hiir::downSample_8x_2_L_64.set_coefs(hiir::coef_8x_2);
+		hiir::downSample_8x_2_R_64.set_coefs(hiir::coef_8x_2);
+		hiir::downSample_8x_3_L_64.set_coefs(hiir::coef_8x_3);
+		hiir::downSample_8x_3_R_64.set_coefs(hiir::coef_8x_3);
+
 		return kResultOk;
 	}
 
@@ -72,7 +188,31 @@ namespace yg331 {
 	tresult PLUGIN_API InflatorPackageProcessor::terminate()
 	{
 		// Here the Plug-in will be de-instantiated, last possibility to remove some memory!
+		free(in_1_32.channelBuffers32[0]);  free(in_1_32.channelBuffers32[1]);
+		free(out_1_32.channelBuffers32[0]); free(out_1_32.channelBuffers32[1]);
+		free(in_2_32.channelBuffers32[0]);  free(in_2_32.channelBuffers32[1]);
+		free(out_2_32.channelBuffers32[0]); free(out_2_32.channelBuffers32[1]);
+		free(in_3_32.channelBuffers32[0]);  free(in_3_32.channelBuffers32[1]);
+		free(out_3_32.channelBuffers32[0]); free(out_3_32.channelBuffers32[1]);
+		free(in_1_32.channelBuffers32);
+		free(out_1_32.channelBuffers32);
+		free(in_2_32.channelBuffers32);
+		free(out_2_32.channelBuffers32);
+		free(in_3_32.channelBuffers32);
+		free(out_3_32.channelBuffers32);
 
+		free(in_1_64.channelBuffers64[0]);  free(in_1_64.channelBuffers64[1]);
+		free(out_1_64.channelBuffers64[0]); free(out_1_64.channelBuffers64[1]);
+		free(in_2_64.channelBuffers64[0]);  free(in_2_64.channelBuffers64[1]);
+		free(out_2_64.channelBuffers64[0]); free(out_2_64.channelBuffers64[1]);
+		free(in_3_64.channelBuffers64[0]);  free(in_3_64.channelBuffers64[1]);
+		free(out_3_64.channelBuffers64[0]); free(out_3_64.channelBuffers64[1]);
+		free(in_1_64.channelBuffers64);
+		free(out_1_64.channelBuffers64);
+		free(in_2_64.channelBuffers64);
+		free(out_2_64.channelBuffers64);
+		free(in_3_64.channelBuffers64);
+		free(out_3_64.channelBuffers64);
 		//---do not forget to call parent ------
 		return AudioEffect::terminate();
 	}
@@ -103,7 +243,7 @@ namespace yg331 {
 	tresult PLUGIN_API InflatorPackageProcessor::process(Vst::ProcessData& data)
 	{
 		//---1) Read inputs parameter changes-----------
-
+		
 		Vst::IParameterChanges* paramChanges = data.inputParameterChanges;
 
 		if (paramChanges)
@@ -140,6 +280,14 @@ namespace yg331 {
 							break;
 						case kParamBypass:
 							bBypass = (value > 0.5f);
+							break;
+						case kParamOS:
+							int32 dem = floor(fmin(3.0, 4.0 * value));
+							if (dem == 0) fParamOS = 1;
+							else if (dem == 1) fParamOS = 2;
+							else if (dem == 2) fParamOS = 4;
+							else fParamOS = 8;
+							break;
 						}
 					}
 				}
@@ -202,19 +350,29 @@ namespace yg331 {
 			if (in[1] != out[1]) { memcpy(out[1], in[1], sampleFramesSize); }
 
 			if (data.symbolicSampleSize == Vst::kSample32) {
-				processVuPPM<Vst::Sample32>((Vst::Sample32**)in, data.numSamples);
+				processVuPPM_In <Vst::Sample32>((Vst::Sample32**)in, data.numSamples);
+				processVuPPM_Out<Vst::Sample32>((Vst::Sample32**)out, data.numSamples);
 			}
 			else if (data.symbolicSampleSize == Vst::kSample64) {
-				processVuPPM<Vst::Sample64>((Vst::Sample64**)in, data.numSamples);
+				processVuPPM_In <Vst::Sample64>((Vst::Sample64**)in, data.numSamples);
+				processVuPPM_Out<Vst::Sample64>((Vst::Sample64**)out, data.numSamples);
 			}
 		}
 		else
 		{
 			if (data.symbolicSampleSize == Vst::kSample32) {
-				processAudio<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, getSampleRate, data.numSamples, Vst::kSample32);
+				processVuPPM_In <Vst::Sample32>((Vst::Sample32**)in, data.numSamples);
+				overSampling<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, getSampleRate, data.numSamples);
+				// processAudio((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples);
+				processVuPPM_Out<Vst::Sample32>((Vst::Sample32**)out, data.numSamples);
+				// dither_32((Vst::Sample32**)out, (Vst::Sample32**)out, data.numSamples);
 			}
 			else {
-				processAudio<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples, Vst::kSample64);
+				processVuPPM_In <Vst::Sample64>((Vst::Sample64**)in, data.numSamples);
+				overSampling<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples);
+				// processAudio((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples);
+				processVuPPM_Out<Vst::Sample64>((Vst::Sample64**)out, data.numSamples);
+				// dither_32((Vst::Sample64**)out, (Vst::Sample64**)out, data.numSamples);
 			}
 		}
 
@@ -263,21 +421,334 @@ namespace yg331 {
 	}
 
 
+	//------------------------------------------------------------------------
+	tresult PLUGIN_API InflatorPackageProcessor::setupProcessing(Vst::ProcessSetup& newSetup)
+	{
+		if (newSetup.maxSamplesPerBlock > 16384) {
+			return kResultFalse;
+		}
+		
+		if (newSetup.symbolicSampleSize == Vst::kSample32) {
+			hiir::upSample_2x_1_L_32.clear_buffers();
+			hiir::upSample_2x_1_R_32.clear_buffers();
+			hiir::downSample_2x_1_L_32.clear_buffers();
+			hiir::downSample_2x_1_R_32.clear_buffers();
+			hiir::upSample_4x_1_L_32.clear_buffers();
+			hiir::upSample_4x_1_R_32.clear_buffers();
+			hiir::upSample_4x_2_L_32.clear_buffers();
+			hiir::upSample_4x_2_R_32.clear_buffers();
+			hiir::downSample_4x_1_L_32.clear_buffers();
+			hiir::downSample_4x_1_R_32.clear_buffers();
+			hiir::downSample_4x_2_L_32.clear_buffers();
+			hiir::downSample_4x_2_R_32.clear_buffers();
+			hiir::upSample_8x_1_L_32.clear_buffers();
+			hiir::upSample_8x_1_R_32.clear_buffers();
+			hiir::upSample_8x_2_L_32.clear_buffers();
+			hiir::upSample_8x_2_R_32.clear_buffers();
+			hiir::upSample_8x_3_L_32.clear_buffers();
+			hiir::upSample_8x_3_R_32.clear_buffers();
+			hiir::downSample_8x_1_L_32.clear_buffers();
+			hiir::downSample_8x_1_R_32.clear_buffers();
+			hiir::downSample_8x_2_L_32.clear_buffers();
+			hiir::downSample_8x_2_R_32.clear_buffers();
+			hiir::downSample_8x_3_L_32.clear_buffers();
+			hiir::downSample_8x_3_R_32.clear_buffers();
+		}
+		else {
+			hiir::upSample_2x_1_L_64.clear_buffers();
+			hiir::upSample_2x_1_R_64.clear_buffers();
+			hiir::downSample_2x_1_L_64.clear_buffers();
+			hiir::downSample_2x_1_R_64.clear_buffers();
+			hiir::upSample_4x_1_L_64.clear_buffers();
+			hiir::upSample_4x_1_R_64.clear_buffers();
+			hiir::upSample_4x_2_L_64.clear_buffers();
+			hiir::upSample_4x_2_R_64.clear_buffers();
+			hiir::downSample_4x_1_L_64.clear_buffers();
+			hiir::downSample_4x_1_R_64.clear_buffers();
+			hiir::downSample_4x_2_L_64.clear_buffers();
+			hiir::downSample_4x_2_R_64.clear_buffers();
+			hiir::upSample_8x_1_L_64.clear_buffers();
+			hiir::upSample_8x_1_R_64.clear_buffers();
+			hiir::upSample_8x_2_L_64.clear_buffers();
+			hiir::upSample_8x_2_R_64.clear_buffers();
+			hiir::upSample_8x_3_L_64.clear_buffers();
+			hiir::upSample_8x_3_R_64.clear_buffers();
+			hiir::downSample_8x_1_L_64.clear_buffers();
+			hiir::downSample_8x_1_R_64.clear_buffers();
+			hiir::downSample_8x_2_L_64.clear_buffers();
+			hiir::downSample_8x_2_R_64.clear_buffers();
+			hiir::downSample_8x_3_L_64.clear_buffers();
+			hiir::downSample_8x_3_R_64.clear_buffers();
+		}
+
+		//--- called before any processing ----
+		return AudioEffect::setupProcessing(newSetup);
+	}
+
+	uint32 PLUGIN_API InflatorPackageProcessor::getLatencySamples() {
+		/*
+		if (bBypass) return 0;
+
+		if (fParamOS == 2) return hiir::os_2x_latency;
+		else if (fParamOS == 4) return hiir::os_4x_latency;
+		else if (fParamOS == 8) return hiir::os_8x_latency;
+		else return 0;
+		*/
+		return 0;
+	}
+
+	//------------------------------------------------------------------------
+	tresult PLUGIN_API InflatorPackageProcessor::canProcessSampleSize(int32 symbolicSampleSize)
+	{
+		// by default kSample32 is supported
+		if (symbolicSampleSize == Vst::kSample32)
+			return kResultTrue;
+
+		// disable the following comment if your processing support kSample64
+		// if (symbolicSampleSize == Vst::kSample64)
+		//	return kResultTrue;
+
+		return kResultFalse;
+	}
+
+	//------------------------------------------------------------------------
+	tresult PLUGIN_API InflatorPackageProcessor::setState(IBStream* state)
+	{
+		// called when we load a preset, the model has to be reloaded
+		IBStreamer streamer(state, kLittleEndian);
+
+		float savedInput = 0.f;
+		if (streamer.readFloat(savedInput) == false)
+			return kResultFalse;
+
+		float savedEffect = 0.f;
+		if (streamer.readFloat(savedEffect) == false)
+			return kResultFalse;
+
+		float savedCurve = 0.f;
+		if (streamer.readFloat(savedCurve) == false)
+			return kResultFalse;
+
+		int32 savedClip = 0;
+		if (streamer.readInt32(savedClip) == false)
+			return kResultFalse;
+
+		float savedOutput = 0.f;
+		if (streamer.readFloat(savedOutput) == false)
+			return kResultFalse;
+
+		int32 savedBypass = 0;
+		if (streamer.readInt32(savedBypass) == false)
+			return kResultFalse;
+
+		int32 savedOS = 0;
+		if (streamer.readInt32(savedOS) == false)
+			return kResultFalse;
+
+		fInput = savedInput;
+		fEffect = savedEffect;
+		fCurve = savedCurve;
+		bClip = savedClip > 0;
+		fOutput = savedOutput;
+		bBypass = savedBypass > 0;
+		fParamOS = savedOS;
+
+		if (Vst::Helpers::isProjectState(state) == kResultTrue)
+		{
+			// we are in project loading context...
+
+			// Example of using the IStreamAttributes interface
+			FUnknownPtr<Vst::IStreamAttributes> stream(state);
+			if (stream)
+			{
+				if (Vst::IAttributeList* list = stream->getAttributes())
+				{
+					// get the full file path of this state
+					Vst::TChar fullPath[1024];
+					memset(fullPath, 0, 1024 * sizeof(Vst::TChar));
+					if (list->getString(Vst::PresetAttributes::kFilePathStringType, fullPath,
+						1024 * sizeof(Vst::TChar)) == kResultTrue)
+					{
+						// here we have the full path ...
+					}
+				}
+			}
+		}
+
+
+		return kResultOk;
+	}
+
+	//------------------------------------------------------------------------
+	tresult PLUGIN_API InflatorPackageProcessor::getState(IBStream* state)
+	{
+		// here we need to save the model
+		IBStreamer streamer(state, kLittleEndian);
+
+		streamer.writeFloat(fInput);
+		streamer.writeFloat(fEffect);
+		streamer.writeFloat(fCurve);
+		streamer.writeInt32(bClip ? 1 : 0);
+		streamer.writeFloat(fOutput);
+		streamer.writeInt32(bBypass ? 1 : 0);
+		streamer.writeInt32(fParamOS);
+
+		return kResultOk;
+	}
+
+	//------------------------------------------------------------------------
 	template <typename SampleType>
-	void InflatorPackageProcessor::processAudio(SampleType** inputs, SampleType** outputs, Vst::Sample64 getSampleRate, int32 sampleFrames, int32 precision)
+	void InflatorPackageProcessor::processVuPPM_In(SampleType** inputs, int32 sampleFrames)
+	{
+		SampleType* In_L = (SampleType*)inputs[0];
+		SampleType* In_R = (SampleType*)inputs[1];
+		SampleType In_db = expf(logf(10.f) * (24.0 * fInput - 12.0) / 20.f);
+		
+		SampleType tmpL = 0.0; /*/ VuPPM /*/
+		SampleType tmpR = 0.0; /*/ VuPPM /*/
+
+		while (--sampleFrames >= 0)
+		{
+			SampleType inputSampleL = *In_L;
+			SampleType inputSampleR = *In_R;
+			if (!bBypass) {
+				inputSampleL *= In_db;
+				inputSampleR *= In_db;
+			}
+			if (inputSampleL > tmpL) { tmpL = inputSampleL; }
+			if (inputSampleR > tmpR) { tmpR = inputSampleR; }
+			if (!bBypass) {
+				*In_L = inputSampleL;
+				*In_R = inputSampleR;
+			}
+			In_L++;
+			In_R++;
+		}
+
+		fInVuPPML = VuPPMconvert(tmpL);
+		fInVuPPMR = VuPPMconvert(tmpR);
+		return;
+	}
+
+	template <typename SampleType>
+	void InflatorPackageProcessor::processVuPPM_Out(SampleType** outputs, int32 sampleFrames)
+	{
+		SampleType* Out_L = (SampleType*)outputs[0];
+		SampleType* Out_R = (SampleType*)outputs[1];
+		SampleType Out_db = expf(logf(10.f) * (12.0 * fOutput - 12.0) / 20.f);
+
+		SampleType tmpL = 0.0; /*/ VuPPM /*/
+		SampleType tmpR = 0.0; /*/ VuPPM /*/
+
+		while (--sampleFrames >= 0)
+		{
+			SampleType inputSampleL = *Out_L;
+			SampleType inputSampleR = *Out_R;
+			if (!bBypass) {
+				inputSampleL *= Out_db;
+				inputSampleR *= Out_db;
+			}
+			if (inputSampleL > tmpL) { tmpL = inputSampleL; }
+			if (inputSampleR > tmpR) { tmpR = inputSampleR; }
+			if (!bBypass) {
+				*Out_L = inputSampleL;
+				*Out_R = inputSampleR;
+			}
+			Out_L++;
+			Out_R++;
+		}
+		fOutVuPPML = VuPPMconvert(tmpL);
+		fOutVuPPMR = VuPPMconvert(tmpR);
+		return;
+	}
+
+
+	float InflatorPackageProcessor::VuPPMconvert(float plainValue)
+	{
+		float dB = 20 * log10f(plainValue);
+		float normValue;
+
+		if (dB >= 6.0) normValue = 1.0;
+		else if (dB >= 5.0) normValue = 0.96;
+		else if (dB >= 4.0) normValue = 0.92;
+		else if (dB >= 3.0) normValue = 0.88;
+		else if (dB >= 2.0) normValue = 0.84;
+		else if (dB >= 1.0) normValue = 0.80;
+		else if (dB >= 0.0) normValue = 0.76;
+		else if (dB >= -1.0) normValue = 0.72;
+		else if (dB >= -2.0) normValue = 0.68;
+		else if (dB >= -3.0) normValue = 0.64;
+		else if (dB >= -4.0) normValue = 0.60;
+		else if (dB >= -5.0) normValue = 0.56;
+		else if (dB >= -6.0) normValue = 0.52;
+		else if (dB >= -8.0) normValue = 0.48;
+		else if (dB >= -10) normValue = 0.44;
+		else if (dB >= -12) normValue = 0.40;
+		else if (dB >= -14) normValue = 0.36;
+		else if (dB >= -16) normValue = 0.32;
+		else if (dB >= -18) normValue = 0.28;
+		else if (dB >= -22) normValue = 0.24;
+		else if (dB >= -26) normValue = 0.20;
+		else if (dB >= -30) normValue = 0.16;
+		else if (dB >= -34) normValue = 0.12;
+		else if (dB >= -38) normValue = 0.08;
+		else if (dB >= -42) normValue = 0.04;
+		else normValue = 0.0;
+
+		return normValue;
+	}
+
+	template <typename SampleType>
+	void InflatorPackageProcessor::dither_32(SampleType** inputs, SampleType** outputs, int32 sampleFrames) {
+		SampleType* In_L = (SampleType*)inputs[0];
+		SampleType* In_R = (SampleType*)inputs[1];
+		SampleType* Out_L = (SampleType*)outputs[0];
+		SampleType* Out_R = (SampleType*)outputs[1];
+		bool is_32fp = std::is_same <SampleType, Vst::Sample32>::value ? true : false;
+		while (--sampleFrames >= 0)
+		{
+			Vst::Sample64 inputSampleL = *In_L;
+			Vst::Sample64 inputSampleR = *In_R;
+			if (fabs(inputSampleL) < 1.18e-23) inputSampleL = fpdL * 1.18e-17;
+			if (fabs(inputSampleR) < 1.18e-23) inputSampleR = fpdR * 1.18e-17;
+			if (is_32fp) {
+				//begin 32 bit stereo floating point dither
+				int expon; frexpf((float)inputSampleL, &expon);
+				fpdL ^= fpdL << 13; fpdL ^= fpdL >> 17; fpdL ^= fpdL << 5;
+				inputSampleL += ((double(fpdL) - uint32_t(0x7fffffff)) * 5.5e-36l * pow(2, expon + 62));
+				frexpf((float)inputSampleR, &expon);
+				fpdR ^= fpdR << 13; fpdR ^= fpdR >> 17; fpdR ^= fpdR << 5;
+				inputSampleR += ((double(fpdR) - uint32_t(0x7fffffff)) * 5.5e-36l * pow(2, expon + 62));
+				//end 32 bit stereo floating point dither
+			}
+			else {
+				//begin 64 bit stereo floating point dither
+				//int expon; frexp((double)inputSampleL, &expon);
+				fpdL ^= fpdL << 13; fpdL ^= fpdL >> 17; fpdL ^= fpdL << 5;
+				//inputSampleL += ((double(fpdL)-uint32_t(0x7fffffff)) * 1.1e-44l * pow(2,expon+62));
+				//frexp((double)inputSampleR, &expon);
+				fpdR ^= fpdR << 13; fpdR ^= fpdR >> 17; fpdR ^= fpdR << 5;
+				//inputSampleR += ((double(fpdR)-uint32_t(0x7fffffff)) * 1.1e-44l * pow(2,expon+62));
+				//end 64 bit stereo floating point dither
+			}
+			*Out_L = inputSampleL;
+			*Out_R = inputSampleR;
+
+			In_L++;
+			In_R++;
+			Out_L++;
+			Out_R++;
+		}
+	}
+	template <typename SampleType>
+	void InflatorPackageProcessor::processAudio(SampleType** inputs, SampleType** outputs, Vst::SampleRate getSampleRate, long long sampleFrames)
 	{
 		SampleType* In_L = (SampleType*)inputs[0];
 		SampleType* In_R = (SampleType*)inputs[1];
 		SampleType* Out_L = (SampleType*)outputs[0];
 		SampleType* Out_R = (SampleType*)outputs[1];
-		SampleType tmpInL = 0.0; /*/ VuPPM /*/
-		SampleType tmpInR = 0.0; /*/ VuPPM /*/
-		SampleType tmpOutL = 0.0; /*/ VuPPM /*/
-		SampleType tmpOutR = 0.0; /*/ VuPPM /*/
 
 		Vst::Sample64 wet = fEffect;
-		Vst::Sample64 In_db = expf(logf(10.f) * (24.0 * fInput - 12.0) / 20.f);
-		Vst::Sample64 Out_db = expf(logf(10.f) * (12.0 * fOutput - 12.0) / 20.f);
 
 		Vst::Sample64 curvepct = fCurve - 0.5;
 		Vst::Sample64 curveA = 1.5 + curvepct;			// 1 + (curve + 50) / 100
@@ -285,14 +756,10 @@ namespace yg331 {
 		Vst::Sample64 curveC = curvepct - 0.5;			// (curve - 50) / 100
 		Vst::Sample64 curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;	// 1 / 16 - curve / 400 + curve ^ 2 / (4 * 10 ^ 4)
 
-		Vst::Sample64 s1_L;
-		Vst::Sample64 s1_R;
-		Vst::Sample64 s2_L;
-		Vst::Sample64 s2_R;
-		Vst::Sample64 s3_L;
-		Vst::Sample64 s3_R;
-		Vst::Sample64 s4_L;
-		Vst::Sample64 s4_R;
+		Vst::Sample64 s1_L, s1_R;
+		Vst::Sample64 s2_L, s2_R;
+		Vst::Sample64 s3_L, s3_R;
+		Vst::Sample64 s4_L, s4_R;
 
 		Vst::Sample64 signL;
 		Vst::Sample64 signR;
@@ -302,15 +769,6 @@ namespace yg331 {
 			Vst::Sample64 inputSampleL = *In_L;
 			Vst::Sample64 inputSampleR = *In_R;
 
-			/*/ VuPPM /*/
-			inputSampleL *= In_db;
-			inputSampleR *= In_db;
-			if (inputSampleL > tmpInL) { tmpInL = inputSampleL; }
-			if (inputSampleR > tmpInR) { tmpInR = inputSampleR; }
-
-
-			if (fabs(inputSampleL) < 1.18e-23) inputSampleL = fpdL * 1.18e-17;
-			if (fabs(inputSampleR) < 1.18e-23) inputSampleR = fpdR * 1.18e-17;
 			Vst::Sample64 drySampleL = inputSampleL;
 			Vst::Sample64 drySampleR = inputSampleR;
 
@@ -381,213 +839,120 @@ namespace yg331 {
 					inputSampleR = -1.0;
 			}
 
-			inputSampleL *= Out_db;
-			inputSampleR *= Out_db;
-			if (inputSampleL > tmpOutL) { tmpOutL = inputSampleL; }
-			if (inputSampleR > tmpOutR) { tmpOutR = inputSampleR; }
-
-
-			if (precision == 0) {
-				//begin 32 bit stereo floating point dither
-				int expon; frexpf((float)inputSampleL, &expon);
-				fpdL ^= fpdL << 13; fpdL ^= fpdL >> 17; fpdL ^= fpdL << 5;
-				inputSampleL += ((double(fpdL) - uint32_t(0x7fffffff)) * 5.5e-36l * pow(2, expon + 62));
-				frexpf((float)inputSampleR, &expon);
-				fpdR ^= fpdR << 13; fpdR ^= fpdR >> 17; fpdR ^= fpdR << 5;
-				inputSampleR += ((double(fpdR) - uint32_t(0x7fffffff)) * 5.5e-36l * pow(2, expon + 62));
-				//end 32 bit stereo floating point dither
-			}
-			else {
-				//begin 64 bit stereo floating point dither
-				//int expon; frexp((double)inputSampleL, &expon);
-				fpdL ^= fpdL << 13; fpdL ^= fpdL >> 17; fpdL ^= fpdL << 5;
-				//inputSampleL += ((double(fpdL)-uint32_t(0x7fffffff)) * 1.1e-44l * pow(2,expon+62));
-				//frexp((double)inputSampleR, &expon);
-				fpdR ^= fpdR << 13; fpdR ^= fpdR >> 17; fpdR ^= fpdR << 5;
-				//inputSampleR += ((double(fpdR)-uint32_t(0x7fffffff)) * 1.1e-44l * pow(2,expon+62));
-				//end 64 bit stereo floating point dither
-			}
-			*Out_L = inputSampleL;
-			*Out_R = inputSampleR;
+			*Out_L = (SampleType)inputSampleL;
+			*Out_R = (SampleType)inputSampleR;
 
 			In_L++;
 			In_R++;
 			Out_L++;
 			Out_R++;
 		}
-		fInVuPPML = VuPPMconvert(tmpInL);
-		fInVuPPMR = VuPPMconvert(tmpInR);
-		fOutVuPPML = VuPPMconvert(tmpOutL);
-		fOutVuPPMR = VuPPMconvert(tmpOutR);
 		return;
 	}
-
 
 	template <typename SampleType>
-	void InflatorPackageProcessor::processVuPPM(SampleType** inputs, int32 sampleFrames)
-	{
-		SampleType* In_L = (SampleType*)inputs[0];
-		SampleType* In_R = (SampleType*)inputs[1];
+	void InflatorPackageProcessor::overSampling(SampleType** inputs, SampleType** outputs, Vst::Sample64 getSampleRate, int32 sampleFrames) {
+		
+		const long long    len_1 = sampleFrames;
+		const long long    len_2 = len_1 * 2;
+		const long long    len_4 = len_2 * 2;
+		const long long    len_8 = len_4 * 2;
+		bool is_32fp = std::is_same <SampleType, Vst::Sample32>::value ? true : false;
 
-		SampleType tmpInL = 0.0; /*/ VuPPM /*/
-		SampleType tmpInR = 0.0; /*/ VuPPM /*/
+		if (is_32fp) {
+			if (fParamOS == 1) {
+				processAudio<Vst::Sample32>((Vst::Sample32**)inputs, (Vst::Sample32**)outputs, getSampleRate, sampleFrames);
+			}
+			else if (fParamOS == 2) {
+				hiir::upSample_2x_1_L_32.process_block((Vst::Sample32*)in_1_32.channelBuffers32[0], (Vst::Sample32*)inputs[0], len_1);
+				hiir::upSample_2x_1_R_32.process_block((Vst::Sample32*)in_1_32.channelBuffers32[1], (Vst::Sample32*)inputs[1], len_1);
 
-		while (--sampleFrames >= 0)
-		{
-			Vst::Sample64 inputSampleL = *In_L;
-			Vst::Sample64 inputSampleR = *In_R;
-			if (inputSampleL > tmpInL) { tmpInL = inputSampleL; }
-			if (inputSampleR > tmpInR) { tmpInR = inputSampleR; }
-			In_L++;
-			In_R++;
+				processAudio((Vst::Sample32**)in_1_32.channelBuffers32, (Vst::Sample32**)out_1_32.channelBuffers32, getSampleRate, len_2);
+
+				hiir::downSample_2x_1_L_32.process_block((Vst::Sample32*)outputs[0], (Vst::Sample32*)out_1_32.channelBuffers32[0], len_1);
+				hiir::downSample_2x_1_R_32.process_block((Vst::Sample32*)outputs[1], (Vst::Sample32*)out_1_32.channelBuffers32[1], len_1);
+			}
+			else if (fParamOS == 4) {
+
+				hiir::upSample_4x_1_L_32.process_block((Vst::Sample32*)in_1_32.channelBuffers32[0], (Vst::Sample32*)inputs[0], len_1);
+				hiir::upSample_4x_1_R_32.process_block((Vst::Sample32*)in_1_32.channelBuffers32[1], (Vst::Sample32*)inputs[1], len_1);
+				hiir::upSample_4x_2_L_32.process_block((Vst::Sample32*)in_2_32.channelBuffers32[0], (Vst::Sample32*)in_1_32.channelBuffers32[0], len_2);
+				hiir::upSample_4x_2_R_32.process_block((Vst::Sample32*)in_2_32.channelBuffers32[1], (Vst::Sample32*)in_1_32.channelBuffers32[1], len_2);
+
+				processAudio((Vst::Sample32**)in_2_32.channelBuffers32, (Vst::Sample32**)out_2_32.channelBuffers32, getSampleRate, len_4);
+
+				hiir::downSample_4x_1_L_32.process_block((Vst::Sample32*)out_1_32.channelBuffers32[0], (Vst::Sample32*)out_2_32.channelBuffers32[0], len_2);
+				hiir::downSample_4x_1_R_32.process_block((Vst::Sample32*)out_1_32.channelBuffers32[1], (Vst::Sample32*)out_2_32.channelBuffers32[1], len_2);
+				hiir::downSample_4x_2_L_32.process_block((Vst::Sample32*)outputs[0], (Vst::Sample32*)out_1_32.channelBuffers32[0], len_1);
+				hiir::downSample_4x_2_R_32.process_block((Vst::Sample32*)outputs[1], (Vst::Sample32*)out_1_32.channelBuffers32[1], len_1);
+			}
+			else if (fParamOS == 8) {
+
+				hiir::upSample_8x_1_L_32.process_block((Vst::Sample32*)in_1_32.channelBuffers32[0], (Vst::Sample32*)inputs[0], len_1);
+				hiir::upSample_8x_1_R_32.process_block((Vst::Sample32*)in_1_32.channelBuffers32[1], (Vst::Sample32*)inputs[1], len_1);
+				hiir::upSample_8x_2_L_32.process_block((Vst::Sample32*)in_2_32.channelBuffers32[0], (Vst::Sample32*)in_1_32.channelBuffers32[0], len_2);
+				hiir::upSample_8x_2_R_32.process_block((Vst::Sample32*)in_2_32.channelBuffers32[1], (Vst::Sample32*)in_1_32.channelBuffers32[1], len_2);
+				hiir::upSample_8x_3_L_32.process_block((Vst::Sample32*)in_3_32.channelBuffers32[0], (Vst::Sample32*)in_2_32.channelBuffers32[0], len_4);
+				hiir::upSample_8x_3_R_32.process_block((Vst::Sample32*)in_3_32.channelBuffers32[1], (Vst::Sample32*)in_2_32.channelBuffers32[1], len_4);
+
+				processAudio((Vst::Sample32**)in_3_32.channelBuffers32, (Vst::Sample32**)out_3_32.channelBuffers32, getSampleRate, len_8);
+
+				hiir::downSample_8x_1_L_32.process_block((Vst::Sample32*)out_2_32.channelBuffers32[0], (Vst::Sample32*)out_3_32.channelBuffers32[0], len_4);
+				hiir::downSample_8x_1_R_32.process_block((Vst::Sample32*)out_2_32.channelBuffers32[1], (Vst::Sample32*)out_3_32.channelBuffers32[1], len_4);
+				hiir::downSample_8x_2_L_32.process_block((Vst::Sample32*)out_1_32.channelBuffers32[0], (Vst::Sample32*)out_2_32.channelBuffers32[0], len_2);
+				hiir::downSample_8x_2_R_32.process_block((Vst::Sample32*)out_1_32.channelBuffers32[1], (Vst::Sample32*)out_2_32.channelBuffers32[1], len_2);
+				hiir::downSample_8x_3_L_32.process_block((Vst::Sample32*)outputs[0], (Vst::Sample32*)out_1_32.channelBuffers32[0], len_1);
+				hiir::downSample_8x_3_R_32.process_block((Vst::Sample32*)outputs[1], (Vst::Sample32*)out_1_32.channelBuffers32[1], len_1);
+			}
 		}
+		else {
+			if (fParamOS == 1) {
+				processAudio<Vst::Sample64>((Vst::Sample64**)inputs, (Vst::Sample64**)outputs, getSampleRate, sampleFrames);
+			}
+			else if (fParamOS == 2) {
+				hiir::upSample_2x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)inputs[0], len_1);
+				hiir::upSample_2x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)inputs[1], len_1);
 
-		fInVuPPML = VuPPMconvert(tmpInL);
-		fInVuPPMR = VuPPMconvert(tmpInR);
-		fOutVuPPML = fInVuPPML;
-		fOutVuPPMR = fInVuPPMR;
+				processAudio((Vst::Sample64**)in_1_64.channelBuffers64, (Vst::Sample64**)out_1_64.channelBuffers64, getSampleRate, len_2);
 
-		return;
-	}
+				hiir::downSample_2x_1_L_64.process_block((Vst::Sample64*)outputs[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
+				hiir::downSample_2x_1_R_64.process_block((Vst::Sample64*)outputs[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
+			}
+			else if (fParamOS == 4) {
 
-	float InflatorPackageProcessor::VuPPMconvert(float plainValue)
-	{
-		float dB = 20 * log10f(plainValue);
-		float normValue;
+				hiir::upSample_4x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)inputs[0], len_1);
+				hiir::upSample_4x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)inputs[1], len_1);
+				hiir::upSample_4x_2_L_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[0], (Vst::Sample64*)in_1_64.channelBuffers64[0], len_2);
+				hiir::upSample_4x_2_R_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[1], (Vst::Sample64*)in_1_64.channelBuffers64[1], len_2);
 
-		if (dB >= 6.0) normValue = 1.0;
-		else if (dB >= 5.0) normValue = 0.96;
-		else if (dB >= 4.0) normValue = 0.92;
-		else if (dB >= 3.0) normValue = 0.88;
-		else if (dB >= 2.0) normValue = 0.84;
-		else if (dB >= 1.0) normValue = 0.80;
-		else if (dB >= 0.0) normValue = 0.76;
-		else if (dB >= -1.0) normValue = 0.72;
-		else if (dB >= -2.0) normValue = 0.68;
-		else if (dB >= -3.0) normValue = 0.64;
-		else if (dB >= -4.0) normValue = 0.60;
-		else if (dB >= -5.0) normValue = 0.56;
-		else if (dB >= -6.0) normValue = 0.52;
-		else if (dB >= -8.0) normValue = 0.48;
-		else if (dB >= -10) normValue = 0.44;
-		else if (dB >= -12) normValue = 0.40;
-		else if (dB >= -14) normValue = 0.36;
-		else if (dB >= -16) normValue = 0.32;
-		else if (dB >= -18) normValue = 0.28;
-		else if (dB >= -22) normValue = 0.24;
-		else if (dB >= -26) normValue = 0.20;
-		else if (dB >= -30) normValue = 0.16;
-		else if (dB >= -34) normValue = 0.12;
-		else if (dB >= -38) normValue = 0.08;
-		else if (dB >= -42) normValue = 0.04;
-		else normValue = 0.0;
+				processAudio((Vst::Sample64**)in_2_64.channelBuffers64, (Vst::Sample64**)out_2_64.channelBuffers64, getSampleRate, len_4);
 
-		return normValue;
-	}
+				hiir::downSample_4x_1_L_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[0], (Vst::Sample64*)out_2_64.channelBuffers64[0], len_2);
+				hiir::downSample_4x_1_R_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[1], (Vst::Sample64*)out_2_64.channelBuffers64[1], len_2);
+				hiir::downSample_4x_2_L_64.process_block((Vst::Sample64*)outputs[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
+				hiir::downSample_4x_2_R_64.process_block((Vst::Sample64*)outputs[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
+			}
+			else if (fParamOS == 8) {
 
+				hiir::upSample_8x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)inputs[0], len_1);
+				hiir::upSample_8x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)inputs[1], len_1);
+				hiir::upSample_8x_2_L_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[0], (Vst::Sample64*)in_1_64.channelBuffers64[0], len_2);
+				hiir::upSample_8x_2_R_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[1], (Vst::Sample64*)in_1_64.channelBuffers64[1], len_2);
+				hiir::upSample_8x_3_L_64.process_block((Vst::Sample64*)in_3_64.channelBuffers64[0], (Vst::Sample64*)in_2_64.channelBuffers64[0], len_4);
+				hiir::upSample_8x_3_R_64.process_block((Vst::Sample64*)in_3_64.channelBuffers64[1], (Vst::Sample64*)in_2_64.channelBuffers64[1], len_4);
 
+				processAudio((Vst::Sample64**)in_3_64.channelBuffers64, (Vst::Sample64**)out_3_64.channelBuffers64, getSampleRate, len_8);
 
-	//------------------------------------------------------------------------
-	tresult PLUGIN_API InflatorPackageProcessor::setupProcessing(Vst::ProcessSetup& newSetup)
-	{
-		//--- called before any processing ----
-		return AudioEffect::setupProcessing(newSetup);
-	}
-
-	//------------------------------------------------------------------------
-	tresult PLUGIN_API InflatorPackageProcessor::canProcessSampleSize(int32 symbolicSampleSize)
-	{
-		// by default kSample32 is supported
-		if (symbolicSampleSize == Vst::kSample32)
-			return kResultTrue;
-
-		// disable the following comment if your processing support kSample64
-		if (symbolicSampleSize == Vst::kSample64)
-			return kResultTrue; 
-
-		return kResultFalse;
-	}
-
-	//------------------------------------------------------------------------
-	tresult PLUGIN_API InflatorPackageProcessor::setState(IBStream* state)
-	{
-		// called when we load a preset, the model has to be reloaded
-		IBStreamer streamer(state, kLittleEndian);
-
-		float savedInput = 0.f;
-		if (streamer.readFloat(savedInput) == false)
-			return kResultFalse;
-
-		float savedEffect = 0.f;
-		if (streamer.readFloat(savedEffect) == false)
-			return kResultFalse;
-
-		float savedCurve = 0.f;
-		if (streamer.readFloat(savedCurve) == false)
-			return kResultFalse;
-
-		int32 savedClip = 0;
-		if (streamer.readInt32(savedClip) == false)
-			return kResultFalse;
-
-		float savedOutput = 0.f;
-		if (streamer.readFloat(savedOutput) == false)
-			return kResultFalse;
-
-		int32 savedBypass = 0;
-		if (streamer.readInt32(savedBypass) == false)
-			return kResultFalse;
-
-		fInput = savedInput;
-		fEffect = savedEffect;
-		fCurve = savedCurve;
-		bClip = savedClip > 0;
-		fOutput = savedOutput;
-		bBypass = savedBypass > 0;
-
-		if (Vst::Helpers::isProjectState(state) == kResultTrue)
-		{
-			// we are in project loading context...
-
-			// Example of using the IStreamAttributes interface
-			FUnknownPtr<Vst::IStreamAttributes> stream(state);
-			if (stream)
-			{
-				if (Vst::IAttributeList* list = stream->getAttributes())
-				{
-					// get the full file path of this state
-					Vst::TChar fullPath[1024];
-					memset(fullPath, 0, 1024 * sizeof(Vst::TChar));
-					if (list->getString(Vst::PresetAttributes::kFilePathStringType, fullPath,
-						1024 * sizeof(Vst::TChar)) == kResultTrue)
-					{
-						// here we have the full path ...
-					}
-				}
+				hiir::downSample_8x_1_L_64.process_block((Vst::Sample64*)out_2_64.channelBuffers64[0], (Vst::Sample64*)out_3_64.channelBuffers64[0], len_4);
+				hiir::downSample_8x_1_R_64.process_block((Vst::Sample64*)out_2_64.channelBuffers64[1], (Vst::Sample64*)out_3_64.channelBuffers64[1], len_4);
+				hiir::downSample_8x_2_L_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[0], (Vst::Sample64*)out_2_64.channelBuffers64[0], len_2);
+				hiir::downSample_8x_2_R_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[1], (Vst::Sample64*)out_2_64.channelBuffers64[1], len_2);
+				hiir::downSample_8x_3_L_64.process_block((Vst::Sample64*)outputs[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
+				hiir::downSample_8x_3_R_64.process_block((Vst::Sample64*)outputs[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
 			}
 		}
 
-
-		return kResultOk;
+		
+		// dither_32((Vst::Sample64**)outputs, (Vst::Sample64**)outputs, len_1);
 	}
-
-	//------------------------------------------------------------------------
-	tresult PLUGIN_API InflatorPackageProcessor::getState(IBStream* state)
-	{
-		// here we need to save the model
-		IBStreamer streamer(state, kLittleEndian);
-
-		streamer.writeFloat(fInput);
-		streamer.writeFloat(fEffect);
-		streamer.writeFloat(fCurve);
-		streamer.writeInt32(bClip ? 1 : 0);
-		streamer.writeFloat(fOutput);
-		streamer.writeInt32(bBypass ? 1 : 0);
-
-		return kResultOk;
-	}
-
-	//------------------------------------------------------------------------
-
-
 } // namespace yg331

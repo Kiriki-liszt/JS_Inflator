@@ -46,12 +46,13 @@
 			"OutVuPPML": "7",
 			"OutVuPPMR": "8",
 			"Output": "4",
-			"Bypass": "9"
+			"Bypass": "9",
+			"OS": "10"
 		},
 		"custom": {
 			"FocusDrawing": {},
 			"VST3Editor": {
-				"Path": "InflatorPackageeditor.uidesc"
+				"Path": "C:\\VST_make\\Kiriki_yg_Liszt\\generator\\InflatorPackage\\resource\\InflatorPackageeditor.uidesc"
 			},
 			"UIGridController": {
 				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
@@ -82,7 +83,7 @@
 				"SelectedRow": "-1"
 			},
 			"UIBitmapsDataSource": {
-				"SelectedRow": "9"
+				"SelectedRow": "7"
 			},
 			"UIFontsDataSource": {
 				"SelectedRow": "0"
@@ -254,6 +255,30 @@
 							"mouse-enabled": "true",
 							"opacity": "1",
 							"origin": "29, 323",
+							"size": "64, 64",
+							"sub-pixmaps": "127",
+							"transparent": "false",
+							"value-inset": "0",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1",
+							"zoom-factor": "1.5"
+						}
+					},
+					"CAnimKnob": {
+						"attributes": {
+							"angle-range": "270",
+							"angle-start": "135",
+							"bitmap": "knob_green",
+							"class": "CAnimKnob",
+							"control-tag": "OS",
+							"default-value": "0",
+							"height-of-one-image": "64",
+							"inverse-bitmap": "false",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "40, 280",
 							"size": "64, 64",
 							"sub-pixmaps": "127",
 							"transparent": "false",
