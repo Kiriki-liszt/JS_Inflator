@@ -1,9 +1,5 @@
 # JS_Inflator_to_VST2_VST3
 
-## Branch - Oversampling  
-## TODO  
-* DONE!  
-
 JS Inflator, the copy of Sonox Inflator, in vstsdk
 
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot.png"  width="200"/>
@@ -25,6 +21,7 @@ v1.1.0: VuPPM meter change(mono -> stereo, continuous to discrete), but not comp
 v1.2.0: VuPPM meter corrected!  
 v1.2.1: Channel configuration corrected. probably a bug fix for crashing sometimes.  
 v1.3.0: Curve knob fixed!!! and 32FP dither by airwindows.  
+v1.4.0: Oversampling up to x8 now works! DPC works.  
 
 
 This is my first attempt with VSTSDK & VSTGUI.  
