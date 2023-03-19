@@ -9,7 +9,7 @@
 
 #include "public.sdk/source/main/pluginfactory.h"
 
-// #include "public.sdk/source/vst/vst2wrapper/vst2wrapper.h"
+#include "public.sdk/source/vst/vst2wrapper/vst2wrapper.h"
 
 
 #define stringPluginName "InflatorPackage"
@@ -55,9 +55,7 @@ BEGIN_FACTORY_DEF ("yg331",
 
 END_FACTORY
 
-/*
 ::AudioEffect* createEffectInstance(audioMasterCallback audioMaster)
 {
 	return Steinberg::Vst::Vst2Wrapper::create(GetPluginFactory(), yg331::kInflatorPackageProcessorUID, 'ygIN', audioMaster);
 }
-*/

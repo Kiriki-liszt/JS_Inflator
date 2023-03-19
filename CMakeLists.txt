@@ -27,7 +27,7 @@ smtg_add_vst3plugin(InflatorPackage
     source/InflatorPackagecontroller.h
     source/InflatorPackagecontroller.cpp
     source/InflatorPackageentry.cpp
-    # ${vst3sdk_SOURCE_DIR}/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
+    ${vst3sdk_SOURCE_DIR}/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
 )
 
 #- VSTGUI Wanted ----
