@@ -77,7 +77,9 @@ namespace yg331 {
 		void overSampling(SampleType** inputs, SampleType** outputs, Vst::Sample64 getSampleRate, int32 sampleFrames);
 
 		template <typename SampleType>
-		void dither_32(SampleType** inputs, SampleType** outputs, int32 sampleFrames);
+		void proc_in(SampleType** inputs, Vst::Sample64** outputs, int32 sampleFrames);
+		template <typename SampleType>
+		void proc_out(Vst::Sample64** inputs, SampleType** outputs, int32 sampleFrames);
 
 		//------------------------------------------------------------------------
 	protected:
@@ -106,25 +108,11 @@ namespace yg331 {
 		uint32_t fpdL = 1;
 		uint32_t fpdR = 1;		
 
-		/*
-		void** in_1 = nullptr;
-		void** in_2 = nullptr;
-		void** in_3 = nullptr;
-		void** out_1 = nullptr;
-		void** out_2 = nullptr;
-		void** out_3 = nullptr;
-		*/
-
-		Vst::AudioBusBuffers in_1_32;
-		Vst::AudioBusBuffers in_2_32;
-		Vst::AudioBusBuffers in_3_32;
-		Vst::AudioBusBuffers out_1_32;
-		Vst::AudioBusBuffers out_2_32;
-		Vst::AudioBusBuffers out_3_32;
-
+		Vst::AudioBusBuffers in_0_64;
 		Vst::AudioBusBuffers in_1_64;
 		Vst::AudioBusBuffers in_2_64;
 		Vst::AudioBusBuffers in_3_64;
+		Vst::AudioBusBuffers out_0_64;
 		Vst::AudioBusBuffers out_1_64;
 		Vst::AudioBusBuffers out_2_64;
 		Vst::AudioBusBuffers out_3_64;
@@ -679,31 +667,6 @@ namespace hiir {
 		}
 	}
 	
-	static Upsampler2xTpl <coef_2x_1_num, Vst::Sample32, 1> upSample_2x_1_L_32;
-	static Upsampler2xTpl <coef_2x_1_num, Vst::Sample32, 1> upSample_2x_1_R_32;
-	static Upsampler2xTpl <coef_4x_1_num, Vst::Sample32, 1> upSample_4x_1_L_32;
-	static Upsampler2xTpl <coef_4x_1_num, Vst::Sample32, 1> upSample_4x_1_R_32;
-	static Upsampler2xTpl <coef_4x_2_num, Vst::Sample32, 1> upSample_4x_2_L_32;
-	static Upsampler2xTpl <coef_4x_2_num, Vst::Sample32, 1> upSample_4x_2_R_32;
-	static Upsampler2xTpl <coef_8x_1_num, Vst::Sample32, 1> upSample_8x_1_L_32;
-	static Upsampler2xTpl <coef_8x_1_num, Vst::Sample32, 1> upSample_8x_1_R_32;
-	static Upsampler2xTpl <coef_8x_2_num, Vst::Sample32, 1> upSample_8x_2_L_32;
-	static Upsampler2xTpl <coef_8x_2_num, Vst::Sample32, 1> upSample_8x_2_R_32;
-	static Upsampler2xTpl <coef_8x_3_num, Vst::Sample32, 1> upSample_8x_3_L_32;
-	static Upsampler2xTpl <coef_8x_3_num, Vst::Sample32, 1> upSample_8x_3_R_32;
-	static Downsampler2xTpl <coef_2x_1_num, Vst::Sample32, 1> downSample_2x_1_L_32;
-	static Downsampler2xTpl <coef_2x_1_num, Vst::Sample32, 1> downSample_2x_1_R_32;
-	static Downsampler2xTpl <coef_4x_1_num, Vst::Sample32, 1> downSample_4x_1_L_32;
-	static Downsampler2xTpl <coef_4x_1_num, Vst::Sample32, 1> downSample_4x_1_R_32;
-	static Downsampler2xTpl <coef_4x_2_num, Vst::Sample32, 1> downSample_4x_2_L_32;
-	static Downsampler2xTpl <coef_4x_2_num, Vst::Sample32, 1> downSample_4x_2_R_32;
-	static Downsampler2xTpl <coef_8x_1_num, Vst::Sample32, 1> downSample_8x_1_L_32;
-	static Downsampler2xTpl <coef_8x_1_num, Vst::Sample32, 1> downSample_8x_1_R_32;
-	static Downsampler2xTpl <coef_8x_2_num, Vst::Sample32, 1> downSample_8x_2_L_32;
-	static Downsampler2xTpl <coef_8x_2_num, Vst::Sample32, 1> downSample_8x_2_R_32;
-	static Downsampler2xTpl <coef_8x_3_num, Vst::Sample32, 1> downSample_8x_3_L_32;
-	static Downsampler2xTpl <coef_8x_3_num, Vst::Sample32, 1> downSample_8x_3_R_32;
-
 	static Upsampler2xTpl <coef_2x_1_num, Vst::Sample64, 1> upSample_2x_1_L_64;
 	static Upsampler2xTpl <coef_2x_1_num, Vst::Sample64, 1> upSample_2x_1_R_64;
 	static Upsampler2xTpl <coef_4x_1_num, Vst::Sample64, 1> upSample_4x_1_L_64;
