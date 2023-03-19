@@ -92,35 +92,35 @@ namespace yg331 {
 		out_2_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
 		out_3_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
 		out_3_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
-		if ((in_0_64.channelBuffers64[0] == NULL) || ((in_1_64.channelBuffers64[0] == NULL) || in_2_64.channelBuffers64[0] == NULL) || (in_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
+		if ((in_0_64.channelBuffers64[0] == NULL) || (in_1_64.channelBuffers64[0] == NULL) || (in_2_64.channelBuffers64[0] == NULL) || (in_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
 		if ((in_0_64.channelBuffers64[1] == NULL) || (in_1_64.channelBuffers64[1] == NULL) || (in_2_64.channelBuffers64[1] == NULL) || (in_3_64.channelBuffers64[1] == NULL)) return kResultFalse;
 		if ((out_0_64.channelBuffers64[0] == NULL) || (out_1_64.channelBuffers64[0] == NULL) || (out_2_64.channelBuffers64[0] == NULL) || (out_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
 		if ((out_0_64.channelBuffers64[1] == NULL) || (out_1_64.channelBuffers64[1] == NULL) || (out_2_64.channelBuffers64[1] == NULL) || (out_3_64.channelBuffers64[1] == NULL)) return kResultFalse;
 
-		hiir::upSample_2x_1_L_64.set_coefs(hiir::coef_2x_1);
-		hiir::upSample_2x_1_R_64.set_coefs(hiir::coef_2x_1);
-		hiir::downSample_2x_1_L_64.set_coefs(hiir::coef_2x_1);
-		hiir::downSample_2x_1_R_64.set_coefs(hiir::coef_2x_1);
-		hiir::upSample_4x_1_L_64.set_coefs(hiir::coef_4x_1);
-		hiir::upSample_4x_1_R_64.set_coefs(hiir::coef_4x_1);
-		hiir::upSample_4x_2_L_64.set_coefs(hiir::coef_4x_2);
-		hiir::upSample_4x_2_R_64.set_coefs(hiir::coef_4x_2);
-		hiir::downSample_4x_2_L_64.set_coefs(hiir::coef_4x_1);
-		hiir::downSample_4x_2_R_64.set_coefs(hiir::coef_4x_1);
-		hiir::downSample_4x_2_L_64.set_coefs(hiir::coef_4x_2);
-		hiir::downSample_4x_2_R_64.set_coefs(hiir::coef_4x_2);
-		hiir::upSample_8x_1_L_64.set_coefs(hiir::coef_8x_1);
-		hiir::upSample_8x_1_R_64.set_coefs(hiir::coef_8x_1);
-		hiir::upSample_8x_2_L_64.set_coefs(hiir::coef_8x_2);
-		hiir::upSample_8x_2_R_64.set_coefs(hiir::coef_8x_2);
-		hiir::upSample_8x_3_L_64.set_coefs(hiir::coef_8x_3);
-		hiir::upSample_8x_3_R_64.set_coefs(hiir::coef_8x_3);
-		hiir::downSample_8x_1_L_64.set_coefs(hiir::coef_8x_1);
-		hiir::downSample_8x_1_R_64.set_coefs(hiir::coef_8x_1);
-		hiir::downSample_8x_2_L_64.set_coefs(hiir::coef_8x_2);
-		hiir::downSample_8x_2_R_64.set_coefs(hiir::coef_8x_2);
-		hiir::downSample_8x_3_L_64.set_coefs(hiir::coef_8x_3);
-		hiir::downSample_8x_3_R_64.set_coefs(hiir::coef_8x_3);
+		upSample_2x_1_L_64.set_coefs(hiir::coef_2x_1);
+		upSample_2x_1_R_64.set_coefs(hiir::coef_2x_1);
+		upSample_4x_1_L_64.set_coefs(hiir::coef_4x_1);
+		upSample_4x_1_R_64.set_coefs(hiir::coef_4x_1);
+		upSample_4x_2_L_64.set_coefs(hiir::coef_4x_2);
+		upSample_4x_2_R_64.set_coefs(hiir::coef_4x_2);
+		upSample_8x_1_L_64.set_coefs(hiir::coef_8x_1);
+		upSample_8x_1_R_64.set_coefs(hiir::coef_8x_1);
+		upSample_8x_2_L_64.set_coefs(hiir::coef_8x_2);
+		upSample_8x_2_R_64.set_coefs(hiir::coef_8x_2);
+		upSample_8x_3_L_64.set_coefs(hiir::coef_8x_3);
+		upSample_8x_3_R_64.set_coefs(hiir::coef_8x_3);
+		downSample_2x_1_L_64.set_coefs(hiir::coef_2x_1);
+		downSample_2x_1_R_64.set_coefs(hiir::coef_2x_1);
+		downSample_4x_2_L_64.set_coefs(hiir::coef_4x_1);
+		downSample_4x_2_R_64.set_coefs(hiir::coef_4x_1);
+		downSample_4x_2_L_64.set_coefs(hiir::coef_4x_2);
+		downSample_4x_2_R_64.set_coefs(hiir::coef_4x_2);
+		downSample_8x_1_L_64.set_coefs(hiir::coef_8x_1);
+		downSample_8x_1_R_64.set_coefs(hiir::coef_8x_1);
+		downSample_8x_2_L_64.set_coefs(hiir::coef_8x_2);
+		downSample_8x_2_R_64.set_coefs(hiir::coef_8x_2);
+		downSample_8x_3_L_64.set_coefs(hiir::coef_8x_3);
+		downSample_8x_3_R_64.set_coefs(hiir::coef_8x_3);
 
 		return kResultOk;
 	}
@@ -372,30 +372,30 @@ namespace yg331 {
 			return kResultFalse;
 		}
 
-		hiir::upSample_2x_1_L_64.clear_buffers();
-		hiir::upSample_2x_1_R_64.clear_buffers();
-		hiir::downSample_2x_1_L_64.clear_buffers();
-		hiir::downSample_2x_1_R_64.clear_buffers();
-		hiir::upSample_4x_1_L_64.clear_buffers();
-		hiir::upSample_4x_1_R_64.clear_buffers();
-		hiir::upSample_4x_2_L_64.clear_buffers();
-		hiir::upSample_4x_2_R_64.clear_buffers();
-		hiir::downSample_4x_1_L_64.clear_buffers();
-		hiir::downSample_4x_1_R_64.clear_buffers();
-		hiir::downSample_4x_2_L_64.clear_buffers();
-		hiir::downSample_4x_2_R_64.clear_buffers();
-		hiir::upSample_8x_1_L_64.clear_buffers();
-		hiir::upSample_8x_1_R_64.clear_buffers();
-		hiir::upSample_8x_2_L_64.clear_buffers();
-		hiir::upSample_8x_2_R_64.clear_buffers();
-		hiir::upSample_8x_3_L_64.clear_buffers();
-		hiir::upSample_8x_3_R_64.clear_buffers();
-		hiir::downSample_8x_1_L_64.clear_buffers();
-		hiir::downSample_8x_1_R_64.clear_buffers();
-		hiir::downSample_8x_2_L_64.clear_buffers();
-		hiir::downSample_8x_2_R_64.clear_buffers();
-		hiir::downSample_8x_3_L_64.clear_buffers();
-		hiir::downSample_8x_3_R_64.clear_buffers();
+		upSample_2x_1_L_64.clear_buffers();
+		upSample_2x_1_R_64.clear_buffers();
+		upSample_4x_1_L_64.clear_buffers();
+		upSample_4x_1_R_64.clear_buffers();
+		upSample_4x_2_L_64.clear_buffers();
+		upSample_4x_2_R_64.clear_buffers();
+		upSample_8x_1_L_64.clear_buffers();
+		upSample_8x_1_R_64.clear_buffers();
+		upSample_8x_2_L_64.clear_buffers();
+		upSample_8x_2_R_64.clear_buffers();
+		upSample_8x_3_L_64.clear_buffers();
+		upSample_8x_3_R_64.clear_buffers();
+		downSample_2x_1_L_64.clear_buffers();
+		downSample_2x_1_R_64.clear_buffers();
+		downSample_4x_1_L_64.clear_buffers();
+		downSample_4x_1_R_64.clear_buffers();
+		downSample_4x_2_L_64.clear_buffers();
+		downSample_4x_2_R_64.clear_buffers();
+		downSample_8x_1_L_64.clear_buffers();
+		downSample_8x_1_R_64.clear_buffers();
+		downSample_8x_2_L_64.clear_buffers();
+		downSample_8x_2_R_64.clear_buffers();
+		downSample_8x_3_L_64.clear_buffers();
+		downSample_8x_3_R_64.clear_buffers();
 
 		//--- called before any processing ----
 		return AudioEffect::setupProcessing(newSetup);
@@ -793,52 +793,52 @@ namespace yg331 {
 		
 		proc_in<SampleType>((SampleType**)inputs, in_0_64.channelBuffers64, sampleFrames);
 
-
 		if (fParamOS == 1) {
 			processAudio<Vst::Sample64>(in_0_64.channelBuffers64, out_0_64.channelBuffers64, getSampleRate, sampleFrames);
 		}
 		else if (fParamOS == 2) {
-			hiir::upSample_2x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
-			hiir::upSample_2x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
+			upSample_2x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
+			upSample_2x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
 
 			processAudio<Vst::Sample64>((Vst::Sample64**)in_1_64.channelBuffers64, (Vst::Sample64**)out_1_64.channelBuffers64, getSampleRate, len_2);
 
-			hiir::downSample_2x_1_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
-			hiir::downSample_2x_1_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
+			downSample_2x_1_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
+			downSample_2x_1_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
 		}
 		else if (fParamOS == 4) {
 
-			hiir::upSample_4x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
-			hiir::upSample_4x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
-			hiir::upSample_4x_2_L_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[0], (Vst::Sample64*)in_1_64.channelBuffers64[0], len_2);
-			hiir::upSample_4x_2_R_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[1], (Vst::Sample64*)in_1_64.channelBuffers64[1], len_2);
+			upSample_4x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
+			upSample_4x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
+			upSample_4x_2_L_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[0], (Vst::Sample64*)in_1_64.channelBuffers64[0], len_2);
+			upSample_4x_2_R_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[1], (Vst::Sample64*)in_1_64.channelBuffers64[1], len_2);
 
 			processAudio<Vst::Sample64>((Vst::Sample64**)in_2_64.channelBuffers64, (Vst::Sample64**)out_2_64.channelBuffers64, getSampleRate, len_4);
 
-			hiir::downSample_4x_1_L_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[0], (Vst::Sample64*)out_2_64.channelBuffers64[0], len_2);
-			hiir::downSample_4x_1_R_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[1], (Vst::Sample64*)out_2_64.channelBuffers64[1], len_2);
-			hiir::downSample_4x_2_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
-			hiir::downSample_4x_2_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
+			downSample_4x_1_L_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[0], (Vst::Sample64*)out_2_64.channelBuffers64[0], len_2);
+			downSample_4x_1_R_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[1], (Vst::Sample64*)out_2_64.channelBuffers64[1], len_2);
+			downSample_4x_2_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
+			downSample_4x_2_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
 		}
 		else if (fParamOS == 8) {
 
-			hiir::upSample_8x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
-			hiir::upSample_8x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
-			hiir::upSample_8x_2_L_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[0], (Vst::Sample64*)in_1_64.channelBuffers64[0], len_2);
-			hiir::upSample_8x_2_R_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[1], (Vst::Sample64*)in_1_64.channelBuffers64[1], len_2);
-			hiir::upSample_8x_3_L_64.process_block((Vst::Sample64*)in_3_64.channelBuffers64[0], (Vst::Sample64*)in_2_64.channelBuffers64[0], len_4);
-			hiir::upSample_8x_3_R_64.process_block((Vst::Sample64*)in_3_64.channelBuffers64[1], (Vst::Sample64*)in_2_64.channelBuffers64[1], len_4);
+			upSample_8x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
+			upSample_8x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
+			upSample_8x_2_L_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[0], (Vst::Sample64*)in_1_64.channelBuffers64[0], len_2);
+			upSample_8x_2_R_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[1], (Vst::Sample64*)in_1_64.channelBuffers64[1], len_2);
+			upSample_8x_3_L_64.process_block((Vst::Sample64*)in_3_64.channelBuffers64[0], (Vst::Sample64*)in_2_64.channelBuffers64[0], len_4);
+			upSample_8x_3_R_64.process_block((Vst::Sample64*)in_3_64.channelBuffers64[1], (Vst::Sample64*)in_2_64.channelBuffers64[1], len_4);
 
 			processAudio<Vst::Sample64>((Vst::Sample64**)in_3_64.channelBuffers64, (Vst::Sample64**)out_3_64.channelBuffers64, getSampleRate, len_8);
 
-			hiir::downSample_8x_1_L_64.process_block((Vst::Sample64*)out_2_64.channelBuffers64[0], (Vst::Sample64*)out_3_64.channelBuffers64[0], len_4);
-			hiir::downSample_8x_1_R_64.process_block((Vst::Sample64*)out_2_64.channelBuffers64[1], (Vst::Sample64*)out_3_64.channelBuffers64[1], len_4);
-			hiir::downSample_8x_2_L_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[0], (Vst::Sample64*)out_2_64.channelBuffers64[0], len_2);
-			hiir::downSample_8x_2_R_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[1], (Vst::Sample64*)out_2_64.channelBuffers64[1], len_2);
-			hiir::downSample_8x_3_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
-			hiir::downSample_8x_3_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
+			downSample_8x_1_L_64.process_block((Vst::Sample64*)out_2_64.channelBuffers64[0], (Vst::Sample64*)out_3_64.channelBuffers64[0], len_4);
+			downSample_8x_1_R_64.process_block((Vst::Sample64*)out_2_64.channelBuffers64[1], (Vst::Sample64*)out_3_64.channelBuffers64[1], len_4);
+			downSample_8x_2_L_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[0], (Vst::Sample64*)out_2_64.channelBuffers64[0], len_2);
+			downSample_8x_2_R_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[1], (Vst::Sample64*)out_2_64.channelBuffers64[1], len_2);
+			downSample_8x_3_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
+			downSample_8x_3_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
 		}
 
+		
 		proc_out<SampleType>(out_0_64.channelBuffers64, (SampleType**)outputs, sampleFrames);
 	}
 } // namespace yg331

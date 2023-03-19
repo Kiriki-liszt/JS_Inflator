@@ -10,122 +10,9 @@
 #include <cassert>
 #include <cstdio>
 
-using namespace Steinberg;
-
-namespace yg331 {
-
-	//------------------------------------------------------------------------
-	//  InflatorPackageProcessor
-	//------------------------------------------------------------------------
-	class InflatorPackageProcessor : public Steinberg::Vst::AudioEffect
-	{
-	public:
-		InflatorPackageProcessor();
-		~InflatorPackageProcessor() SMTG_OVERRIDE;
-
-		// Create function
-		static Steinberg::FUnknown* createInstance(void* /*context*/)
-		{
-			return (Steinberg::Vst::IAudioProcessor*)new InflatorPackageProcessor;
-		}
-
-		//--- ---------------------------------------------------------------------
-		// AudioEffect overrides:
-		//--- ---------------------------------------------------------------------
-		/** Called at first after constructor */
-		Steinberg::tresult PLUGIN_API initialize(Steinberg::FUnknown* context) SMTG_OVERRIDE;
-
-		/** Called at the end before destructor */
-		Steinberg::tresult PLUGIN_API terminate() SMTG_OVERRIDE;
-
-		tresult PLUGIN_API setBusArrangements(
-			Vst::SpeakerArrangement* inputs, int32 numIns,
-			Vst::SpeakerArrangement* outputs, int32 numOuts
-		) SMTG_OVERRIDE;
-
-
-		/** Switch the Plug-in on/off */
-		Steinberg::tresult PLUGIN_API setActive(Steinberg::TBool state) SMTG_OVERRIDE;
-
-		/** Will be called before any process call */
-		Steinberg::tresult PLUGIN_API setupProcessing(Steinberg::Vst::ProcessSetup& newSetup) SMTG_OVERRIDE;
-
-		/** Gets the current Latency in samples. */
-		Steinberg::uint32 PLUGIN_API getLatencySamples() SMTG_OVERRIDE;
-
-		/** Asks if a given sample size is supported see SymbolicSampleSizes. */
-		Steinberg::tresult PLUGIN_API canProcessSampleSize(Steinberg::int32 symbolicSampleSize) SMTG_OVERRIDE;
-
-		/** Here we go...the process call */
-		Steinberg::tresult PLUGIN_API process(Steinberg::Vst::ProcessData& data) SMTG_OVERRIDE;
-
-		/** For persistence */
-		Steinberg::tresult PLUGIN_API setState(Steinberg::IBStream* state) SMTG_OVERRIDE;
-		Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream* state) SMTG_OVERRIDE;
-
-		//==============================================================================
-
-		template <typename SampleType>
-		void processAudio(SampleType** inputs, SampleType** outputs, Vst::SampleRate getSampleRate, long long sampleFrames);
-
-		template <typename SampleType>
-		void processVuPPM_In(SampleType** inputs, int32 sampleFrames);
-		template <typename SampleType>
-		void processVuPPM_Out(SampleType** outputs, int32 sampleFrames);
-
-		template <typename SampleType>
-		void overSampling(SampleType** inputs, SampleType** outputs, Vst::Sample64 getSampleRate, int32 sampleFrames);
-
-		template <typename SampleType>
-		void proc_in(SampleType** inputs, Vst::Sample64** outputs, int32 sampleFrames);
-		template <typename SampleType>
-		void proc_out(Vst::Sample64** inputs, SampleType** outputs, int32 sampleFrames);
-
-		//------------------------------------------------------------------------
-	protected:
-
-		float VuPPMconvert(float plainValue);
-
-		Vst::Sample32 fInput;
-		Vst::Sample32 fOutput;
-		Vst::Sample32 fEffect;
-		Vst::Sample32 fCurve;
-
-		Vst::Sample32 fInVuPPML;
-		Vst::Sample32 fInVuPPMR;
-		Vst::Sample32 fOutVuPPML;
-		Vst::Sample32 fOutVuPPMR;
-		Vst::Sample32 fInVuPPMLOld;
-		Vst::Sample32 fInVuPPMROld;
-		Vst::Sample32 fOutVuPPMLOld;
-		Vst::Sample32 fOutVuPPMROld;
-		int32 fParamOS;
-		// int32 currentProcessMode;
-
-		bool bBypass{ false };
-		bool bClip{ false };
-
-		uint32_t fpdL = 1;
-		uint32_t fpdR = 1;		
-
-		Vst::AudioBusBuffers in_0_64;
-		Vst::AudioBusBuffers in_1_64;
-		Vst::AudioBusBuffers in_2_64;
-		Vst::AudioBusBuffers in_3_64;
-		Vst::AudioBusBuffers out_0_64;
-		Vst::AudioBusBuffers out_1_64;
-		Vst::AudioBusBuffers out_2_64;
-		Vst::AudioBusBuffers out_3_64;
-
-		long long maxSample = 16384;
-	};
-} // namespace yg331
-
-
 
 
 namespace hiir {
-
 
 	constexpr int coef_2x_1_num = 10;
 	constexpr int coef_4x_1_num = 4;
@@ -665,30 +552,162 @@ namespace hiir {
 			_filter[i]._mem = DataType(0.f);
 		}
 	}
-	
-	static Upsampler2xTpl <coef_2x_1_num, Vst::Sample64, 1> upSample_2x_1_L_64;
-	static Upsampler2xTpl <coef_2x_1_num, Vst::Sample64, 1> upSample_2x_1_R_64;
-	static Upsampler2xTpl <coef_4x_1_num, Vst::Sample64, 1> upSample_4x_1_L_64;
-	static Upsampler2xTpl <coef_4x_1_num, Vst::Sample64, 1> upSample_4x_1_R_64;
-	static Upsampler2xTpl <coef_4x_2_num, Vst::Sample64, 1> upSample_4x_2_L_64;
-	static Upsampler2xTpl <coef_4x_2_num, Vst::Sample64, 1> upSample_4x_2_R_64;
-	static Upsampler2xTpl <coef_8x_1_num, Vst::Sample64, 1> upSample_8x_1_L_64;
-	static Upsampler2xTpl <coef_8x_1_num, Vst::Sample64, 1> upSample_8x_1_R_64;
-	static Upsampler2xTpl <coef_8x_2_num, Vst::Sample64, 1> upSample_8x_2_L_64;
-	static Upsampler2xTpl <coef_8x_2_num, Vst::Sample64, 1> upSample_8x_2_R_64;
-	static Upsampler2xTpl <coef_8x_3_num, Vst::Sample64, 1> upSample_8x_3_L_64;
-	static Upsampler2xTpl <coef_8x_3_num, Vst::Sample64, 1> upSample_8x_3_R_64;
-	static Downsampler2xTpl <coef_2x_1_num, Vst::Sample64, 1> downSample_2x_1_L_64;
-	static Downsampler2xTpl <coef_2x_1_num, Vst::Sample64, 1> downSample_2x_1_R_64;
-	static Downsampler2xTpl <coef_4x_1_num, Vst::Sample64, 1> downSample_4x_1_L_64;
-	static Downsampler2xTpl <coef_4x_1_num, Vst::Sample64, 1> downSample_4x_1_R_64;
-	static Downsampler2xTpl <coef_4x_2_num, Vst::Sample64, 1> downSample_4x_2_L_64;
-	static Downsampler2xTpl <coef_4x_2_num, Vst::Sample64, 1> downSample_4x_2_R_64;
-	static Downsampler2xTpl <coef_8x_1_num, Vst::Sample64, 1> downSample_8x_1_L_64;
-	static Downsampler2xTpl <coef_8x_1_num, Vst::Sample64, 1> downSample_8x_1_R_64;
-	static Downsampler2xTpl <coef_8x_2_num, Vst::Sample64, 1> downSample_8x_2_L_64;
-	static Downsampler2xTpl <coef_8x_2_num, Vst::Sample64, 1> downSample_8x_2_R_64;
-	static Downsampler2xTpl <coef_8x_3_num, Vst::Sample64, 1> downSample_8x_3_L_64;
-	static Downsampler2xTpl <coef_8x_3_num, Vst::Sample64, 1> downSample_8x_3_R_64;
 
-}  // namespace hiir
+	template <int NC>
+	using Upsampler2xFpu = Upsampler2xTpl <NC, double, 1>;
+
+	template <int NC>
+	using Downsampler2xFpu = Downsampler2xTpl <NC, double, 1>;
+
+	typedef Upsampler2xFpu <coef_2x_1_num>  upSample_2x_1;
+	typedef Upsampler2xFpu <coef_4x_1_num>  upSample_4x_1;
+	typedef Upsampler2xFpu <coef_4x_2_num>  upSample_4x_2;
+	typedef Upsampler2xFpu <coef_8x_1_num>  upSample_8x_1;
+	typedef Upsampler2xFpu <coef_8x_2_num>  upSample_8x_2;
+	typedef Upsampler2xFpu <coef_8x_3_num>  upSample_8x_3;
+	typedef Downsampler2xFpu <coef_2x_1_num>  downSample_2x_1;
+	typedef Downsampler2xFpu <coef_4x_1_num>  downSample_4x_1;
+	typedef Downsampler2xFpu <coef_4x_2_num>  downSample_4x_2;
+	typedef Downsampler2xFpu <coef_8x_1_num>  downSample_8x_1;
+	typedef Downsampler2xFpu <coef_8x_2_num>  downSample_8x_2;
+	typedef Downsampler2xFpu <coef_8x_3_num>  downSample_8x_3;
+} // namespace hiir
+
+using namespace Steinberg;
+
+namespace yg331 {
+
+	//------------------------------------------------------------------------
+	//  InflatorPackageProcessor
+	//------------------------------------------------------------------------
+	class InflatorPackageProcessor : public Steinberg::Vst::AudioEffect
+	{
+	public:
+		InflatorPackageProcessor();
+		~InflatorPackageProcessor() SMTG_OVERRIDE;
+
+		// Create function
+		static Steinberg::FUnknown* createInstance(void* /*context*/)
+		{
+			return (Steinberg::Vst::IAudioProcessor*)new InflatorPackageProcessor;
+		}
+
+		//--- ---------------------------------------------------------------------
+		// AudioEffect overrides:
+		//--- ---------------------------------------------------------------------
+		/** Called at first after constructor */
+		Steinberg::tresult PLUGIN_API initialize(Steinberg::FUnknown* context) SMTG_OVERRIDE;
+
+		/** Called at the end before destructor */
+		Steinberg::tresult PLUGIN_API terminate() SMTG_OVERRIDE;
+
+		tresult PLUGIN_API setBusArrangements(
+			Vst::SpeakerArrangement* inputs, int32 numIns,
+			Vst::SpeakerArrangement* outputs, int32 numOuts
+		) SMTG_OVERRIDE;
+
+
+		/** Switch the Plug-in on/off */
+		Steinberg::tresult PLUGIN_API setActive(Steinberg::TBool state) SMTG_OVERRIDE;
+
+		/** Will be called before any process call */
+		Steinberg::tresult PLUGIN_API setupProcessing(Steinberg::Vst::ProcessSetup& newSetup) SMTG_OVERRIDE;
+
+		/** Gets the current Latency in samples. */
+		Steinberg::uint32 PLUGIN_API getLatencySamples() SMTG_OVERRIDE;
+
+		/** Asks if a given sample size is supported see SymbolicSampleSizes. */
+		Steinberg::tresult PLUGIN_API canProcessSampleSize(Steinberg::int32 symbolicSampleSize) SMTG_OVERRIDE;
+
+		/** Here we go...the process call */
+		Steinberg::tresult PLUGIN_API process(Steinberg::Vst::ProcessData& data) SMTG_OVERRIDE;
+
+		/** For persistence */
+		Steinberg::tresult PLUGIN_API setState(Steinberg::IBStream* state) SMTG_OVERRIDE;
+		Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream* state) SMTG_OVERRIDE;
+
+		//==============================================================================
+
+		template <typename SampleType>
+		void processAudio(SampleType** inputs, SampleType** outputs, Vst::SampleRate getSampleRate, long long sampleFrames);
+
+		template <typename SampleType>
+		void processVuPPM_In(SampleType** inputs, int32 sampleFrames);
+		template <typename SampleType>
+		void processVuPPM_Out(SampleType** outputs, int32 sampleFrames);
+
+		template <typename SampleType>
+		void overSampling(SampleType** inputs, SampleType** outputs, Vst::Sample64 getSampleRate, int32 sampleFrames);
+
+		template <typename SampleType>
+		void proc_in(SampleType** inputs, Vst::Sample64** outputs, int32 sampleFrames);
+		template <typename SampleType>
+		void proc_out(Vst::Sample64** inputs, SampleType** outputs, int32 sampleFrames);
+
+		//------------------------------------------------------------------------
+	protected:
+
+		float VuPPMconvert(float plainValue);
+
+		Vst::Sample32 fInput;
+		Vst::Sample32 fOutput;
+		Vst::Sample32 fEffect;
+		Vst::Sample32 fCurve;
+
+		Vst::Sample32 fInVuPPML;
+		Vst::Sample32 fInVuPPMR;
+		Vst::Sample32 fOutVuPPML;
+		Vst::Sample32 fOutVuPPMR;
+		Vst::Sample32 fInVuPPMLOld;
+		Vst::Sample32 fInVuPPMROld;
+		Vst::Sample32 fOutVuPPMLOld;
+		Vst::Sample32 fOutVuPPMROld;
+		int32 fParamOS;
+		// int32 currentProcessMode;
+
+		bool bBypass{ false };
+		bool bClip{ false };
+
+		uint32_t fpdL = 1;
+		uint32_t fpdR = 1;		
+
+		Vst::AudioBusBuffers in_0_64;
+		Vst::AudioBusBuffers in_1_64;
+		Vst::AudioBusBuffers in_2_64;
+		Vst::AudioBusBuffers in_3_64;
+		Vst::AudioBusBuffers out_0_64;
+		Vst::AudioBusBuffers out_1_64;
+		Vst::AudioBusBuffers out_2_64;
+		Vst::AudioBusBuffers out_3_64;
+
+		long long maxSample = 16384;
+		
+		hiir::upSample_2x_1 upSample_2x_1_L_64;
+		hiir::upSample_2x_1 upSample_2x_1_R_64;
+		hiir::upSample_4x_1 upSample_4x_1_L_64;
+		hiir::upSample_4x_1 upSample_4x_1_R_64;
+		hiir::upSample_4x_2 upSample_4x_2_L_64;
+		hiir::upSample_4x_2 upSample_4x_2_R_64;
+		hiir::upSample_8x_1 upSample_8x_1_L_64;
+		hiir::upSample_8x_1 upSample_8x_1_R_64;
+		hiir::upSample_8x_2 upSample_8x_2_L_64;
+		hiir::upSample_8x_2 upSample_8x_2_R_64;
+		hiir::upSample_8x_3 upSample_8x_3_L_64;
+		hiir::upSample_8x_3 upSample_8x_3_R_64;
+
+		hiir::downSample_2x_1 downSample_2x_1_L_64;
+		hiir::downSample_2x_1 downSample_2x_1_R_64;
+		hiir::downSample_4x_1 downSample_4x_1_L_64;
+		hiir::downSample_4x_1 downSample_4x_1_R_64;
+		hiir::downSample_4x_2 downSample_4x_2_L_64;
+		hiir::downSample_4x_2 downSample_4x_2_R_64;
+		hiir::downSample_8x_1 downSample_8x_1_L_64;
+		hiir::downSample_8x_1 downSample_8x_1_R_64;
+		hiir::downSample_8x_2 downSample_8x_2_L_64;
+		hiir::downSample_8x_2 downSample_8x_2_R_64;
+		hiir::downSample_8x_3 downSample_8x_3_L_64;
+		hiir::downSample_8x_3 downSample_8x_3_R_64;
+
+
+	};	
+} // namespace yg331
