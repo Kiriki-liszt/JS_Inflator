@@ -27,6 +27,9 @@ v1.2.0: VuPPM meter corrected!
 v1.2.1: Channel configuration corrected. probably a bug fix for crashing sometimes.  
 v1.3.0: Curve knob fixed!!! and 32FP dither by airwindows.  
 v1.4.0: Oversampling up to x8 now works! DPC works.  
+v1.5.0: Band Split added.  
+
+Now up to date with latest RC Inflator form ReaTeam/JSFX repository.  
 
 ## What I've learned
 
@@ -83,9 +86,9 @@ Naive implementaiton could use 'sendTextMessage' and 'receiveText' pair.
 
 ## references
 
-1. RC Inflator
+1. RC Inflator  
 <https://forum.cockos.com/showthread.php?t=256286>  
-
+<https://github.com/ReaTeam/JSFX/tree/master/Distortion>  
 
 2. HIIR resampling codes by 'Laurent De Soras'.  
 <http://ldesoras.free.fr/index.html>  

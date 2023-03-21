@@ -25,8 +25,40 @@ enum {
 	kParamOutput,		// Output
 	kParamInVuPPML,		// Input VuPPM
 	kParamInVuPPMR,
-	kParamOutVuPPML,		// Output VuPPM
+	kParamOutVuPPML,	// Output VuPPM
 	kParamOutVuPPMR,
 	kParamBypass,		// ByPass
-	kParamOS
+	kParamOS,
+	kParamSplit
 };
+
+namespace yg331 {
+	//------------------------------------------------------------------------	
+	typedef enum {
+		overSample_1x,
+		overSample_2x,
+		overSample_4x,
+		overSample_8x,
+		overSample_num = 3
+	} overSample;
+
+	static const Steinberg::Vst::ParamValue
+		init_Input = 0.5,
+		init_Effect = 1.0,
+		init_Curve = 0.5,
+		init_Output = 1.0,
+		init_InVuPPML = 0.0,
+		init_InVuPPMR = 0.0,
+		init_OutVuPPML = 0.0,
+		init_OutVuPPMR = 0.0;
+
+	static const bool
+		init_Clip = false,
+		init_Bypass = false,
+		init_Split = false;
+
+	static const overSample
+		init_OS = overSample_1x;
+
+	//------------------------------------------------------------------------
+} // namespace yg331

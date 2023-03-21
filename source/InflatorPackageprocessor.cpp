@@ -3,13 +3,14 @@
 //------------------------------------------------------------------------
 
 #include "InflatorPackageprocessor.h"
-#include "InflatorPackagecids.h"
+// #include "InflatorPackagecids.h"
 
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 
 #include "public.sdk/source/vst/vstaudioprocessoralgo.h"
 #include "public.sdk/source/vst/vsthelpers.h"
+#include <math.h>
 
 using namespace Steinberg;
 
@@ -18,10 +19,24 @@ namespace yg331 {
 	// InflatorPackageProcessor
 	//------------------------------------------------------------------------
 	InflatorPackageProcessor::InflatorPackageProcessor():
-		fInput(0.5), fOutput(1.0), fEffect(1.0), fCurve(0.5),
-		fInVuPPML(0.0), fInVuPPMR(0.0), fOutVuPPML(0.0), fOutVuPPMR(0.0),
-		fInVuPPMLOld(0.0), fInVuPPMROld(0.0), fOutVuPPMLOld(0.0), fOutVuPPMROld(0.0),
-		fParamOS(1)
+		fInput(init_Input), 
+		fOutput(init_Output), 
+		fEffect(init_Effect), 
+		fCurve(init_Curve),
+		bBypass(init_Bypass),
+		bSplit(init_Split), 
+		bClip(init_Clip),
+		fParamOS(init_OS),
+		fParamOSOld(init_OS),
+		fInVuPPML(init_InVuPPML), 
+		fInVuPPMR(init_InVuPPMR), 
+		fOutVuPPML(init_OutVuPPML), 
+		fOutVuPPMR(init_OutVuPPMR),
+		fInVuPPMLOld(init_InVuPPML), 
+		fInVuPPMROld(init_InVuPPMR), 
+		fOutVuPPMLOld(init_OutVuPPML), 
+		fOutVuPPMROld(init_OutVuPPMR),
+		fpdL(1), fpdR(1)
 	{
 		//--- set the wanted controller for our processor
 		setControllerClass(kInflatorPackageControllerUID);
@@ -72,13 +87,13 @@ namespace yg331 {
 		out_2_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
 		out_3_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
 		if ((in_0_64.channelBuffers64 == NULL) || 
-			(in_1_64.channelBuffers64 == NULL) || 
-			(in_2_64.channelBuffers64 == NULL) || 
-			(in_3_64.channelBuffers64 == NULL)  ) return kResultFalse;
+		    (in_1_64.channelBuffers64 == NULL) || 
+		    (in_2_64.channelBuffers64 == NULL) || 
+		    (in_3_64.channelBuffers64 == NULL)  )  return kResultFalse;
 		if ((out_0_64.channelBuffers64 == NULL) || 
-			(out_1_64.channelBuffers64 == NULL) || 
-			(out_2_64.channelBuffers64 == NULL) || 
-			(out_3_64.channelBuffers64 == NULL)  ) return kResultFalse;
+		    (out_1_64.channelBuffers64 == NULL) || 
+		    (out_2_64.channelBuffers64 == NULL) || 
+		    (out_3_64.channelBuffers64 == NULL)  ) return kResultFalse;
 
 		in_0_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
 		in_0_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
@@ -97,21 +112,21 @@ namespace yg331 {
 		out_3_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
 		out_3_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
 		if ((in_0_64.channelBuffers64[0] == NULL) || 
-			(in_1_64.channelBuffers64[0] == NULL) || 
-			(in_2_64.channelBuffers64[0] == NULL) || 
-			(in_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
+		    (in_1_64.channelBuffers64[0] == NULL) || 
+		    (in_2_64.channelBuffers64[0] == NULL) || 
+		    (in_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
 		if ((in_0_64.channelBuffers64[1] == NULL) || 
-			(in_1_64.channelBuffers64[1] == NULL) || 
-			(in_2_64.channelBuffers64[1] == NULL) || 
-			(in_3_64.channelBuffers64[1] == NULL)) return kResultFalse;
+		    (in_1_64.channelBuffers64[1] == NULL) || 
+		    (in_2_64.channelBuffers64[1] == NULL) || 
+		    (in_3_64.channelBuffers64[1] == NULL)) return kResultFalse;
 		if ((out_0_64.channelBuffers64[0] == NULL) || 
-			(out_1_64.channelBuffers64[0] == NULL) || 
-			(out_2_64.channelBuffers64[0] == NULL) || 
-			(out_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
+		    (out_1_64.channelBuffers64[0] == NULL) || 
+		    (out_2_64.channelBuffers64[0] == NULL) || 
+		    (out_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
 		if ((out_0_64.channelBuffers64[1] == NULL) || 
-			(out_1_64.channelBuffers64[1] == NULL) || 
-			(out_2_64.channelBuffers64[1] == NULL) || 
-			(out_3_64.channelBuffers64[1] == NULL)) return kResultFalse;
+		    (out_1_64.channelBuffers64[1] == NULL) || 
+		    (out_2_64.channelBuffers64[1] == NULL) || 
+		    (out_3_64.channelBuffers64[1] == NULL)) return kResultFalse;
 
 		upSample_2x_1_L_64.set_coefs(hiir::coef_2x_1);
 		upSample_2x_1_R_64.set_coefs(hiir::coef_2x_1);
@@ -192,10 +207,10 @@ namespace yg331 {
 		*/
 
 		// reset the VuMeter value
-		fInVuPPMLOld = 0.f;
-		fInVuPPMROld = 0.f;
-		fOutVuPPMLOld = 0.f;
-		fOutVuPPMROld = 0.f;
+		fInVuPPMLOld = init_InVuPPML;
+		fInVuPPMROld = init_InVuPPMR;
+		fOutVuPPMLOld = init_OutVuPPML;
+		fOutVuPPMROld = init_OutVuPPMR;
 
 		//--- called when the Plug-in is enable/disable (On/Off) -----
 		return AudioEffect::setActive(state);
@@ -224,31 +239,30 @@ namespace yg331 {
 					if (paramQueue->getPoint(numPoints - 1, sampleOffset, value) == kResultTrue) {
 						switch (paramQueue->getParameterId()) {
 						case kParamInput:
-							fInput = (float)value;
+							fInput = value;
 							break;
 						case kParamEffect:
-							fEffect = (float)value;
+							fEffect = value;
 							break;
 						case kParamCurve:
-							fCurve = (float)value;
+							fCurve = value;
 							break;
 						case kParamClip:
 							bClip = (value > 0.5f);
 							break;
 						case kParamOutput:
-							fOutput = (float)value;
+							fOutput = value;
 							break;
 						case kParamBypass:
 							bBypass = (value > 0.5f);
 							break;
 						case kParamOS:
-							int32 fParamOSOld = fParamOS;
-							int32 dem = floor(fmin(3.0, 4.0 * value));
-							if (dem == 0) fParamOS = 1;
-							else if (dem == 1) fParamOS = 2;
-							else if (dem == 2) fParamOS = 4;
-							else fParamOS = 8;
+							fParamOSOld = fParamOS;
+							fParamOS = convert_to_OS(value);
 							if (fParamOSOld != fParamOS) sendTextMessage("OS");
+							break;
+						case kParamSplit:
+							bSplit = (value > 0.5f);
 							break;
 						}
 					}
@@ -291,10 +305,10 @@ namespace yg331 {
 
 		data.outputs[0].silenceFlags = data.inputs[0].silenceFlags;
 
-		fInVuPPML = 0.f;
-		fInVuPPMR = 0.f;
-		fOutVuPPML = 0.f;
-		fOutVuPPMR = 0.f;
+		fInVuPPML = init_InVuPPML;
+		fInVuPPMR = init_InVuPPMR;
+		fOutVuPPML = init_OutVuPPML;
+		fOutVuPPMR = init_OutVuPPMR;
 
 
 		//---in bypass mode outputs should be like inputs-----
@@ -357,6 +371,9 @@ namespace yg331 {
 			return kResultFalse;
 		}
 
+		Band_Split_set(&Band_Split_L, 240.0, 2400.0, newSetup.sampleRate);
+		Band_Split_set(&Band_Split_R, 240.0, 2400.0, newSetup.sampleRate);
+
 		upSample_2x_1_L_64.clear_buffers();
 		upSample_2x_1_R_64.clear_buffers();
 		upSample_4x_1_L_64.clear_buffers();
@@ -388,10 +405,10 @@ namespace yg331 {
 
 	uint32 PLUGIN_API InflatorPackageProcessor::getLatencySamples() 
 	{
-		if (fParamOS == 1) return 0;
-		else if (fParamOS == 2) return hiir::os_2x_latency;
-		else if (fParamOS == 4) return hiir::os_4x_latency;
-		else if (fParamOS == 8) return hiir::os_8x_latency;
+		if      (fParamOS == overSample_1x) return hiir::os_1x_latency;
+		else if (fParamOS == overSample_2x) return hiir::os_2x_latency;
+		else if (fParamOS == overSample_4x) return hiir::os_4x_latency;
+		else if (fParamOS == overSample_8x) return hiir::os_8x_latency;
 		else return 0;
 	}
 
@@ -415,41 +432,32 @@ namespace yg331 {
 		// called when we load a preset, the model has to be reloaded
 		IBStreamer streamer(state, kLittleEndian);
 
-		float savedInput = 0.f;
-		if (streamer.readFloat(savedInput) == false)
-			return kResultFalse;
+		Vst::ParamValue savedInput  = 0.0;
+		Vst::ParamValue savedEffect = 0.0;
+		Vst::ParamValue savedCurve  = 0.0;
+		Vst::ParamValue savedOutput = 0.0;
+		Vst::ParamValue savedOS     = 0.0;
+		int32           savedClip   = 0;
+		int32           savedBypass = 0;
+		int32           savedSplit  = 0;
 
-		float savedEffect = 0.f;
-		if (streamer.readFloat(savedEffect) == false)
-			return kResultFalse;
+		if (streamer.readDouble(savedInput)  == false) return kResultFalse;
+		if (streamer.readDouble(savedEffect) == false) return kResultFalse;
+		if (streamer.readDouble(savedCurve)  == false) return kResultFalse;
+		if (streamer.readDouble(savedOutput) == false) return kResultFalse;
+		if (streamer.readDouble(savedOS)     == false) return kResultFalse;
+		if (streamer.readInt32(savedClip)    == false) return kResultFalse;
+		if (streamer.readInt32(savedBypass)  == false) return kResultFalse;
+		if (streamer.readInt32(savedSplit)   == false) return kResultFalse;
 
-		float savedCurve = 0.f;
-		if (streamer.readFloat(savedCurve) == false)
-			return kResultFalse;
-
-		int32 savedClip = 0;
-		if (streamer.readInt32(savedClip) == false)
-			return kResultFalse;
-
-		float savedOutput = 0.f;
-		if (streamer.readFloat(savedOutput) == false)
-			return kResultFalse;
-
-		int32 savedBypass = 0;
-		if (streamer.readInt32(savedBypass) == false)
-			return kResultFalse;
-
-		int32 savedOS = 0;
-		if (streamer.readInt32(savedOS) == false)
-			return kResultFalse;
-
-		fInput = savedInput;
-		fEffect = savedEffect;
-		fCurve = savedCurve;
-		bClip = savedClip > 0;
-		fOutput = savedOutput;
-		bBypass = savedBypass > 0;
-		fParamOS = savedOS;
+		fInput   = savedInput;
+		fEffect  = savedEffect;
+		fCurve   = savedCurve;
+		fOutput  = savedOutput;
+		fParamOS = convert_to_OS(savedOS);
+		bClip    = savedClip > 0;
+		bBypass  = savedBypass > 0;
+		bSplit   = savedSplit > 0;
 
 		if (Vst::Helpers::isProjectState(state) == kResultTrue)
 		{
@@ -483,13 +491,14 @@ namespace yg331 {
 		// here we need to save the model
 		IBStreamer streamer(state, kLittleEndian);
 
-		streamer.writeFloat(fInput);
-		streamer.writeFloat(fEffect);
-		streamer.writeFloat(fCurve);
+		streamer.writeDouble(fInput);
+		streamer.writeDouble(fEffect);
+		streamer.writeDouble(fCurve);
+		streamer.writeDouble(fOutput);
+		streamer.writeDouble(convert_from_OS(fParamOS));
 		streamer.writeInt32(bClip ? 1 : 0);
-		streamer.writeFloat(fOutput);
 		streamer.writeInt32(bBypass ? 1 : 0);
-		streamer.writeInt32(fParamOS);
+		streamer.writeInt32(bSplit ? 1 : 0);
 
 		return kResultOk;
 	}
@@ -666,6 +675,50 @@ namespace yg331 {
 		return;
 	}
 
+
+	Vst::Sample64 InflatorPackageProcessor::process_inflator(Vst::Sample64 inputSample) 
+	{
+		Vst::Sample64 drySample = inputSample;
+		Vst::Sample64 wet = fEffect;
+
+		if (bClip) {
+			if      (inputSample >  1.0) inputSample =  1.0;
+			else if (inputSample < -1.0) inputSample = -1.0;
+		}
+
+		Vst::Sample64 sign;
+
+		if (inputSample > 0.0) sign =  1.0;
+		else                   sign = -1.0;
+
+		Vst::Sample64 s1, s2, s3, s4;
+
+		s1 = fabs(inputSample);
+		s2 = s1 * s1;
+		s3 = s2 * s1;
+		s4 = s2 * s2;
+
+		if     (s1 >= 2.0) inputSample = 0.0;
+		else if (s1 > 1.0) inputSample = (2.0 * s1) - s2;
+		else               inputSample = (curveA * s1) +
+		                                 (curveB * s2) +
+		                                 (curveC * s3) -
+		                                 (curveD * (s2 - (2.0 * s3) + s4));
+
+		inputSample *= sign;
+
+		if (wet != 1.0) {
+			inputSample = (drySample * (1.0 - wet)) + (inputSample * wet);
+		}
+
+		if (bClip) {
+			if      (inputSample >  1.0) inputSample =  1.0;
+			else if (inputSample < -1.0) inputSample = -1.0;
+		}
+
+		return inputSample;
+	}
+
 	template <typename SampleType>
 	void InflatorPackageProcessor::processAudio(
 		SampleType** inputs, 
@@ -680,87 +733,57 @@ namespace yg331 {
 			return;
 		}
 
-		SampleType* In_L = (SampleType*)inputs[0];
-		SampleType* In_R = (SampleType*)inputs[1];
+		SampleType* In_L =  (SampleType*)inputs[0];
+		SampleType* In_R =  (SampleType*)inputs[1];
 		SampleType* Out_L = (SampleType*)outputs[0];
 		SampleType* Out_R = (SampleType*)outputs[1];
 
-		Vst::Sample64 wet = fEffect;
-
-		Vst::Sample64 curvepct = fCurve - 0.5;
-		Vst::Sample64 curveA = 1.5 + curvepct;			// 1 + (curve + 50) / 100
-		Vst::Sample64 curveB = -(curvepct + curvepct);	// - curve / 50
-		Vst::Sample64 curveC = curvepct - 0.5;			// (curve - 50) / 100
-		Vst::Sample64 curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;	
+		curvepct = fCurve - 0.5;
+		curveA = 1.5 + curvepct;			// 1 + (curve + 50) / 100
+		curveB = -(curvepct + curvepct);	// - curve / 50
+		curveC = curvepct - 0.5;			// (curve - 50) / 100
+		curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;	
 		// 1 / 16 - curve / 400 + curve ^ 2 / (4 * 10 ^ 4)
-
-		Vst::Sample64 s1_L, s2_L, s3_L, s4_L;
-		Vst::Sample64 s1_R, s2_R, s3_R, s4_R;
-
-		Vst::Sample64 signL;
-		Vst::Sample64 signR;
 
 		while (--sampleFrames >= 0)
 		{
 			Vst::Sample64 inputSampleL = *In_L;
 			Vst::Sample64 inputSampleR = *In_R;
 
-			Vst::Sample64 drySampleL = inputSampleL;
-			Vst::Sample64 drySampleR = inputSampleR;
+			if (bSplit) {
+				Band_Split_L.LP.R = Band_Split_L.LP.I + Band_Split_L.LP.C * (inputSampleL - Band_Split_L.LP.I);
+				Band_Split_L.LP.I = 2 * Band_Split_L.LP.R - Band_Split_L.LP.I;
 
-			if (bClip) {
-				if      (inputSampleL >  1.0) inputSampleL =  1.0;
-				else if (inputSampleL < -1.0) inputSampleL = -1.0;
+				Band_Split_L.HP.R = (1 - Band_Split_L.HP.C) * Band_Split_L.HP.I + Band_Split_L.HP.C * inputSampleL;
+				Band_Split_L.HP.I = 2 * Band_Split_L.HP.R - Band_Split_L.HP.I;
 
-				if      (inputSampleR >  1.0) inputSampleR =  1.0;
-				else if (inputSampleR < -1.0) inputSampleR = -1.0;
+				Band_Split_R.LP.R = Band_Split_R.LP.I + Band_Split_R.LP.C * (inputSampleR - Band_Split_R.LP.I);
+				Band_Split_R.LP.I = 2 * Band_Split_R.LP.R - Band_Split_R.LP.I;
+
+				Band_Split_R.HP.R = (1 - Band_Split_R.HP.C) * Band_Split_R.HP.I + Band_Split_R.HP.C * inputSampleR;
+				Band_Split_R.HP.I = 2 * Band_Split_R.HP.R - Band_Split_R.HP.I;
+
+				Vst::Sample64 inputSampleL_L = Band_Split_L.LP.R;
+				Vst::Sample64 inputSampleL_H = inputSampleL - Band_Split_L.HP.R;
+				Vst::Sample64 inputSampleL_M = Band_Split_L.HP.R - Band_Split_L.LP.R;
+
+				Vst::Sample64 inputSampleR_L = Band_Split_R.LP.R;
+				Vst::Sample64 inputSampleR_H = inputSampleR - Band_Split_R.HP.R;
+				Vst::Sample64 inputSampleR_M = Band_Split_R.HP.R - Band_Split_R.LP.R;
+
+				inputSampleL = 
+					process_inflator(inputSampleL_L) + 
+					process_inflator(inputSampleL_M * Band_Split_L.G) * Band_Split_L.GR + 
+					process_inflator(inputSampleL_H);
+				inputSampleR =
+					process_inflator(inputSampleR_L) +
+					process_inflator(inputSampleR_M * Band_Split_R.G) * Band_Split_R.GR +
+					process_inflator(inputSampleR_H);
 			}
-
-			if (inputSampleL > 0.0) signL =  1.0;
-			else                    signL = -1.0;
-
-			if (inputSampleR > 0.0) signR =  1.0;
-			else                    signR = -1.0;
-
-			s1_L = fabs(inputSampleL);
-			s2_L = s1_L * s1_L;
-			s3_L = s2_L * s1_L;
-			s4_L = s2_L * s2_L;
-
-			s1_R = fabs(inputSampleR);
-			s2_R = s1_R * s1_R;
-			s3_R = s2_R * s1_R;
-			s4_R = s2_R * s2_R;
-
-			if      (s1_L >= 2.0) inputSampleL = 0.0;
-			else if (s1_L >  1.0) inputSampleL = (2.0 * s1_L) - s2_L;
-			else                  inputSampleL = (curveA * s1_L) + 
-			                                     (curveB * s2_L) + 
-			                                     (curveC * s3_L) - 
-			                                     (curveD * (s2_L - (2.0 * s3_L) + s4_L));
-
-			if      (s1_R >= 2.0) inputSampleR = 0.0;
-			else if (s1_R >  1.0) inputSampleR = (2.0 * s1_R) - s2_R;
-			else                  inputSampleR = (curveA * s1_R) + 
-			                                     (curveB * s2_R) + 
-			                                     (curveC * s3_R) - 
-			                                     (curveD * (s2_R - (2.0 * s3_R) + s4_R));
-
-			inputSampleL *= signL;
-			inputSampleR *= signR;
-
-			if (wet != 1.0) {
-				inputSampleL = (drySampleL * (1.0 - wet)) + (inputSampleL * wet);
-				inputSampleR = (drySampleR * (1.0 - wet)) + (inputSampleR * wet);
-			}
-
-			if (bClip) {
-				if      (inputSampleL >  1.0) inputSampleL =  1.0;
-				else if (inputSampleL < -1.0) inputSampleL = -1.0;
-
-				if      (inputSampleR >  1.0) inputSampleR =  1.0;
-				else if (inputSampleR < -1.0) inputSampleR = -1.0;
-			}
+			else {
+				inputSampleL = process_inflator(inputSampleL);
+				inputSampleR = process_inflator(inputSampleR);
+			}			
 
 			*Out_L = (SampleType)inputSampleL;
 			*Out_R = (SampleType)inputSampleR;
@@ -792,10 +815,10 @@ namespace yg331 {
 		processVuPPM_In<Vst::Sample64>(in_0_64.channelBuffers64, sampleFrames);
 
 
-		if (fParamOS == 1) {
-			processAudio<Vst::Sample64>(in_0_64.channelBuffers64, out_0_64.channelBuffers64, getSampleRate, sampleFrames);
+		if (fParamOS == overSample_1x) {
+			processAudio<Vst::Sample64>(in_0_64.channelBuffers64, out_0_64.channelBuffers64, getSampleRate, len_1);
 		}
-		else if (fParamOS == 2) {
+		else if (fParamOS == overSample_2x) {
 			upSample_2x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
 			upSample_2x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
 
@@ -804,7 +827,7 @@ namespace yg331 {
 			downSample_2x_1_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
 			downSample_2x_1_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
 		}
-		else if (fParamOS == 4) {
+		else if (fParamOS == overSample_4x) {
 
 			upSample_4x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
 			upSample_4x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
@@ -818,7 +841,7 @@ namespace yg331 {
 			downSample_4x_2_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
 			downSample_4x_2_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
 		}
-		else if (fParamOS == 8) {
+		else {
 
 			upSample_8x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
 			upSample_8x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
@@ -836,10 +859,6 @@ namespace yg331 {
 			downSample_8x_3_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
 			downSample_8x_3_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
 		}
-		else {
-			processAudio<Vst::Sample64>(in_0_64.channelBuffers64, out_0_64.channelBuffers64, getSampleRate, sampleFrames);
-		}
-
 
 		proc_out<SampleType>(out_0_64.channelBuffers64, (SampleType**)outputs, sampleFrames);
 

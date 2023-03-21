@@ -21,9 +21,10 @@ namespace hiir {
 	constexpr int coef_8x_2_num = 4;
 	constexpr int coef_8x_3_num = 10;
 
-	const float os_2x_latency = 4.0;
-	const float os_4x_latency = 5.0;
-	const float os_8x_latency = 6.0;
+	const unsigned int os_1x_latency = 0;
+	const unsigned int os_2x_latency = 4;
+	const unsigned int os_4x_latency = 5;
+	const unsigned int os_8x_latency = 6;
 
 	/*
 		2×, 125 dB
@@ -583,6 +584,7 @@ namespace hiir {
 // VST3 plugin Start
 //------------------------------------------------------------------------
 #include "public.sdk/source/vst/vstaudioeffect.h"
+#include "InflatorPackagecids.h"
 
 using namespace Steinberg;
 
@@ -640,7 +642,9 @@ namespace yg331 {
 		//==============================================================================
 
 		template <typename SampleType>
-		void processAudio(SampleType** inputs, SampleType** outputs, Vst::SampleRate getSampleRate, long long sampleFrames);
+		void proc_in(SampleType** inputs, Vst::Sample64** outputs, int32 sampleFrames);
+		template <typename SampleType>
+		void proc_out(Vst::Sample64** inputs, SampleType** outputs, int32 sampleFrames);
 
 		template <typename SampleType>
 		void processVuPPM_In(SampleType** inputs, int32 sampleFrames);
@@ -649,38 +653,93 @@ namespace yg331 {
 
 		template <typename SampleType>
 		void overSampling(SampleType** inputs, SampleType** outputs, Vst::SampleRate getSampleRate, int32 sampleFrames);
-
 		template <typename SampleType>
-		void proc_in(SampleType** inputs, Vst::Sample64** outputs, int32 sampleFrames);
-		template <typename SampleType>
-		void proc_out(Vst::Sample64** inputs, SampleType** outputs, int32 sampleFrames);
+		void processAudio(SampleType** inputs, SampleType** outputs, Vst::SampleRate getSampleRate, long long sampleFrames);
+		Vst::Sample64 InflatorPackageProcessor::process_inflator(Vst::Sample64 inputSample);
 
 		//------------------------------------------------------------------------
 	protected:
+		overSample convert_to_OS(Steinberg::Vst::ParamValue value) { 
+			value *= overSample_num;
+			if      (value < overSample_2x) return overSample_1x;
+			else if (value < overSample_4x) return overSample_2x;
+			else if (value < overSample_8x) return overSample_4x;
+			else                            return overSample_8x;
+		};
+		Steinberg::Vst::ParamValue convert_from_OS(overSample OS) {
+			if      (OS == overSample_1x) return (Steinberg::Vst::ParamValue)overSample_1x / overSample_num;
+			else if (OS == overSample_2x) return (Steinberg::Vst::ParamValue)overSample_2x / overSample_num;
+			else if (OS == overSample_4x) return (Steinberg::Vst::ParamValue)overSample_4x / overSample_num;
+			else                          return (Steinberg::Vst::ParamValue)overSample_8x / overSample_num;
+
+		};
 
 		float VuPPMconvert(float plainValue);
 
-		Vst::Sample32 fInput;
-		Vst::Sample32 fOutput;
-		Vst::Sample32 fEffect;
-		Vst::Sample32 fCurve;
-
-		Vst::Sample32 fInVuPPML;
-		Vst::Sample32 fInVuPPMR;
-		Vst::Sample32 fOutVuPPML;
-		Vst::Sample32 fOutVuPPMR;
-		Vst::Sample32 fInVuPPMLOld;
-		Vst::Sample32 fInVuPPMROld;
-		Vst::Sample32 fOutVuPPMLOld;
-		Vst::Sample32 fOutVuPPMROld;
-		int32 fParamOS;
 		// int32 currentProcessMode;
 
-		bool bBypass{ false };
-		bool bClip{ false };
+		Vst::ParamValue fInput;
+		Vst::ParamValue fOutput;
+		Vst::ParamValue fEffect;
+		Vst::ParamValue fCurve;
 
-		uint32_t fpdL = 1;
-		uint32_t fpdR = 1;		
+		Vst::ParamValue fInVuPPML; 
+		Vst::ParamValue fInVuPPMR;
+		Vst::ParamValue fOutVuPPML;
+		Vst::ParamValue fOutVuPPMR;
+		Vst::ParamValue fInVuPPMLOld;
+		Vst::ParamValue fInVuPPMROld;
+		Vst::ParamValue fOutVuPPMLOld;
+		Vst::ParamValue fOutVuPPMROld;
+
+		overSample fParamOS;
+		overSample fParamOSOld;
+
+		bool bBypass;
+		bool bClip;
+		bool bSplit;
+
+		uint32 fpdL; 
+		uint32 fpdR; 
+
+
+		typedef struct _SVF {
+			Vst::Sample64 C = 0.0;
+			Vst::Sample64 R = 0.0;
+			Vst::Sample64 I = 0.0;
+		} SVF;
+
+		typedef struct _BS {
+			SVF LP;
+			SVF HP;
+			Vst::Sample64 G = 0.0;
+			Vst::Sample64 GR = 0.0;
+		} Band_Split;
+
+		Band_Split Band_Split_L;
+		Band_Split Band_Split_R;
+
+		inline void Band_Split_set(Band_Split* filter, Vst::ParamValue Fc_L, Vst::ParamValue Fc_H, Vst::SampleRate Fs) {
+			double M_PI = 3.14159265358979323846;   // pi
+			(*filter).LP.C = 0.5 * tan(M_PI * ((Fc_L / Fs) - 0.25)) + 0.5;
+			(*filter).LP.R = 0.0;
+			(*filter).LP.I = 0.0;
+			(*filter).HP.C = 0.5 * tan(M_PI * ((Fc_H / Fs) - 0.25)) + 0.5;
+			(*filter).HP.R = 0.0;
+			(*filter).HP.I = 0.0;
+			(*filter).G = (*filter).HP.C * (1 - (*filter).LP.C) / ((*filter).HP.C - (*filter).LP.C);
+			(*filter).GR = 1 / (*filter).G;
+			return;
+		};
+
+		Vst::Sample64 curvepct = fCurve - 0.5;
+		Vst::Sample64 curveA = 1.5 + curvepct;			// 1 + (curve + 50) / 100
+		Vst::Sample64 curveB = -(curvepct + curvepct);	// - curve / 50
+		Vst::Sample64 curveC = curvepct - 0.5;			// (curve - 50) / 100
+		Vst::Sample64 curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;
+		// 1 / 16 - curve / 400 + curve ^ 2 / (4 * 10 ^ 4)
+
+		long long maxSample = 16385;
 
 		Vst::AudioBusBuffers in_0_64;
 		Vst::AudioBusBuffers in_1_64;
@@ -690,8 +749,6 @@ namespace yg331 {
 		Vst::AudioBusBuffers out_1_64;
 		Vst::AudioBusBuffers out_2_64;
 		Vst::AudioBusBuffers out_3_64;
-
-		long long maxSample = 16384;
 		
 		hiir::upSample_2x_1 upSample_2x_1_L_64;
 		hiir::upSample_2x_1 upSample_2x_1_R_64;

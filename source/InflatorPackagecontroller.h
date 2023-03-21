@@ -11,6 +11,30 @@ using namespace Steinberg;
 namespace yg331 {
 
 	//------------------------------------------------------------------------
+	// SliderParameter Declaration
+	// example of custom parameter (overwriting to and fromString)
+	//------------------------------------------------------------------------
+	class SliderParameter : public Vst::RangeParameter
+	{
+	public:
+		SliderParameter(
+			const Vst::TChar* title,
+			int32 tag = -1,
+			const Vst::TChar* units = nullptr,
+			Vst::ParamValue minPlain = -12,
+			Vst::ParamValue maxPlain = +12,
+			Vst::ParamValue defaultValuePlain = 0,
+			int32 stepCount = 0,
+			int32 flags = Vst::ParameterInfo::kCanAutomate,
+			Vst::UnitID unitID = Vst::kRootUnitId
+		);
+
+		void toString(Vst::ParamValue normValue, Vst::String128 string) const SMTG_OVERRIDE;
+		bool fromString(const Vst::TChar* string, Vst::ParamValue& normValue) const SMTG_OVERRIDE;
+	};
+
+
+	//------------------------------------------------------------------------
 	//  InflatorPackageController
 	//------------------------------------------------------------------------
 	class InflatorPackageController : public Steinberg::Vst::EditControllerEx1
@@ -60,35 +84,6 @@ namespace yg331 {
 			END_DEFINE_INTERFACES(EditController)
 			DELEGATE_REFCOUNT(EditController)
 
-			//------------------------------------------------------------------------
-	protected:
-		int32 OSnow = 1;
-		int32 Bnow = 0;
+		//------------------------------------------------------------------------
 	};
-
-	//------------------------------------------------------------------------
-
-	//------------------------------------------------------------------------
-	// SliderParameter Declaration
-	// example of custom parameter (overwriting to and fromString)
-	//------------------------------------------------------------------------
-	class SliderParameter : public Vst::RangeParameter
-	{
-	public:
-		SliderParameter(
-			const Vst::TChar* title,
-			int32 tag = -1,
-			const Vst::TChar* units = nullptr,
-			Vst::ParamValue minPlain = -12,
-			Vst::ParamValue maxPlain = +12,
-			Vst::ParamValue defaultValuePlain = 0,
-			int32 stepCount = 0,
-			int32 flags = Vst::ParameterInfo::kCanAutomate,
-			Vst::UnitID unitID = Vst::kRootUnitId
-		);
-
-		void toString(Vst::ParamValue normValue, Vst::String128 string) const SMTG_OVERRIDE;
-		bool fromString(const Vst::TChar* string, Vst::ParamValue& normValue) const SMTG_OVERRIDE;
-	};
-
 } // namespace yg331

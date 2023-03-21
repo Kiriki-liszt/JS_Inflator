@@ -94,10 +94,12 @@ namespace yg331 {
 		minPlain = -12.0;
 		maxPlain = 12.0;
 		defaultPlain = 0.0;
-
 		tag = kParamInput;
 		auto* gainParamIn = new SliderParameter(USTRING("Input"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, 0, flags);
 		parameters.addParameter(gainParamIn);
+		minPlain = -12.0;
+		maxPlain = 0.0;
+		defaultPlain = 0.0;
 		tag = kParamOutput;
 		auto* gainParamOut = new SliderParameter(USTRING("Output"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, 0, flags);
 		parameters.addParameter(gainParamOut);
@@ -110,57 +112,51 @@ namespace yg331 {
 		auto* InVuPPML = new SliderParameter(USTRING("InVuPPML"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, 0, flags);
 		parameters.addParameter(InVuPPML);
 		tag = kParamInVuPPMR;
-		flags = Vst::ParameterInfo::kIsReadOnly;
-		minPlain = -44.0;
-		maxPlain = 6.0;
-		defaultPlain = -44.0;
 		auto* InVuPPMR = new SliderParameter(USTRING("InVuPPMR"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, 0, flags);
 		parameters.addParameter(InVuPPMR);
 		tag = kParamOutVuPPML;
-		flags = Vst::ParameterInfo::kIsReadOnly;
-		minPlain = -44.0;
-		maxPlain = 6.0;
-		defaultPlain = -44.0;
 		auto* OutVuPPML = new SliderParameter(USTRING("OutVuPPML"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, 0, flags);
 		parameters.addParameter(OutVuPPML);
 		tag = kParamOutVuPPMR;
-		flags = Vst::ParameterInfo::kIsReadOnly;
-		minPlain = -44.0;
-		maxPlain = 6.0;
-		defaultPlain = -44.0;
 		auto* OutVuPPMR = new SliderParameter(USTRING("OutVuPPMR"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, 0, flags);
 		parameters.addParameter(OutVuPPMR);
 
 
 		tag = kParamEffect;
 		stepCount = 0;
-		defaultVal = 1.0;
+		defaultVal = init_Effect;
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Effect"), STR16("%"), stepCount, defaultVal, flags, tag);
 
 		tag = kParamCurve;
 		stepCount = 0;
-		defaultVal = 0.5;
+		defaultVal = init_Curve;
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Curve"), nullptr, stepCount, defaultVal, flags, tag);
 
 		tag = kParamClip;
 		stepCount = 1;
-		defaultVal = 0;
+		defaultVal = init_Clip ? 1 : 0;
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Clip"), nullptr, stepCount, defaultVal, flags, tag);
 
 		tag = kParamBypass;
 		stepCount = 1;
-		defaultVal = 0;
+		defaultVal = init_Bypass ? 1 : 0;
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
 
 		tag = kParamOS;
 		stepCount = 3;
-		defaultVal = 0;
+		defaultVal = 0; // init_OS;
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("OS"), nullptr, stepCount, defaultVal, flags, tag);
+
+		tag = kParamSplit;
+		stepCount = 1;
+		defaultVal = init_Split ? 1 : 0;
+		flags = Vst::ParameterInfo::kCanAutomate;
+		parameters.addParameter(STR16("Split"), nullptr, stepCount, defaultVal, flags, tag);
 
 		return result;
 	}
@@ -183,62 +179,32 @@ namespace yg331 {
 
 		IBStreamer streamer(state, kLittleEndian);
 
-		float savedInput = 0.f;
-		if (streamer.readFloat(savedInput) == false)
-			return kResultFalse;
-		setParamNormalized(kParamInput, savedInput);
+		Vst::ParamValue savedInput  = 0.0;
+		Vst::ParamValue savedEffect = 0.0;
+		Vst::ParamValue savedCurve  = 0.0;
+		Vst::ParamValue savedOutput = 0.0;
+		Vst::ParamValue savedOS     = 0.0;
+		int32           savedClip   = 0;
+		int32           savedBypass = 0;
+		int32           savedSplit  = 0;
 
-		float savedEffect = 0.f;
-		if (streamer.readFloat(savedEffect) == false)
-			return kResultFalse;
+		if (streamer.readDouble(savedInput)  == false) return kResultFalse;
+		if (streamer.readDouble(savedEffect) == false) return kResultFalse;
+		if (streamer.readDouble(savedCurve)  == false) return kResultFalse;
+		if (streamer.readDouble(savedOutput) == false) return kResultFalse;
+		if (streamer.readDouble(savedOS)     == false) return kResultFalse;
+		if (streamer.readInt32(savedClip)    == false) return kResultFalse;
+		if (streamer.readInt32(savedBypass)  == false) return kResultFalse;
+		if (streamer.readInt32(savedSplit)   == false) return kResultFalse;
+
+		setParamNormalized(kParamInput,  savedInput);
 		setParamNormalized(kParamEffect, savedEffect);
-
-		float savedCurve = 0.f;
-		if (streamer.readFloat(savedCurve) == false)
-			return kResultFalse;
-		setParamNormalized(kParamCurve, savedCurve);
-
-		int32 savedClip = 0;
-		if (streamer.readInt32(savedClip) == false)
-			return kResultFalse;
-		setParamNormalized(kParamClip, savedClip ? 1 : 0);
-
-		float savedOutput = 0.f;
-		if (streamer.readFloat(savedOutput) == false)
-			return kResultFalse;
+		setParamNormalized(kParamCurve,  savedCurve);
 		setParamNormalized(kParamOutput, savedOutput);
-
-		int32 bypassState = 0;
-		if (streamer.readInt32(bypassState) == false)
-			return kResultFalse;
-		setParamNormalized(kParamBypass, bypassState ? 1 : 0);
-
-		int32 savedOS = 0;
-		if (streamer.readInt32(savedOS) == false)
-			return kResultFalse;
-		double normalized;
-		if (savedOS == 2) normalized = 1.0 / 4.0;
-		else if (savedOS == 4) normalized = 2.0 / 4.0;
-		else if (savedOS == 8) normalized = 3.0 / 4.0;
-		else normalized = 0.0;
-		setParamNormalized(kParamOS, normalized);
-
-		/*
-		if (OSnow != savedOS) {
-			OSnow = savedOS;
-			getComponentHandler()->restartComponent(Vst::kLatencyChanged);
-		}
-		if (Bnow != bypassState) {
-			Bnow = bypassState;
-			getComponentHandler()->restartComponent(Vst::kLatencyChanged);
-		}
-		*/
-		if (OSnow != savedOS) {
-			OSnow = savedOS;
-			FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
-			handler->restartComponent(Vst::kLatencyChanged);
-		}
-		
+		setParamNormalized(kParamOS,     savedOS);
+		setParamNormalized(kParamClip,   savedClip   ? 1 : 0);
+		setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
+		setParamNormalized(kParamSplit,  savedSplit  ? 1 : 0);
 
 		return kResultOk;
 	}
