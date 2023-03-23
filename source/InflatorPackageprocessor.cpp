@@ -10,7 +10,6 @@
 
 #include "public.sdk/source/vst/vstaudioprocessoralgo.h"
 #include "public.sdk/source/vst/vsthelpers.h"
-#include <math.h>
 
 using namespace Steinberg;
 

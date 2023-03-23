@@ -585,6 +585,7 @@ namespace hiir {
 //------------------------------------------------------------------------
 #include "public.sdk/source/vst/vstaudioeffect.h"
 #include "InflatorPackagecids.h"
+#include <math.h>
 
 using namespace Steinberg;
 
@@ -655,7 +656,8 @@ namespace yg331 {
 		void overSampling(SampleType** inputs, SampleType** outputs, Vst::SampleRate getSampleRate, int32 sampleFrames);
 		template <typename SampleType>
 		void processAudio(SampleType** inputs, SampleType** outputs, Vst::SampleRate getSampleRate, long long sampleFrames);
-		Vst::Sample64 InflatorPackageProcessor::process_inflator(Vst::Sample64 inputSample);
+
+		Vst::Sample64 process_inflator(Vst::Sample64 inputSample);
 
 		//------------------------------------------------------------------------
 	protected:
@@ -667,10 +669,10 @@ namespace yg331 {
 			else                            return overSample_8x;
 		};
 		Steinberg::Vst::ParamValue convert_from_OS(overSample OS) {
-			if      (OS == overSample_1x) return (Steinberg::Vst::ParamValue)overSample_1x / overSample_num;
-			else if (OS == overSample_2x) return (Steinberg::Vst::ParamValue)overSample_2x / overSample_num;
-			else if (OS == overSample_4x) return (Steinberg::Vst::ParamValue)overSample_4x / overSample_num;
-			else                          return (Steinberg::Vst::ParamValue)overSample_8x / overSample_num;
+			if      (  OS == overSample_1x) return (Steinberg::Vst::ParamValue)overSample_1x / overSample_num;
+			else if (  OS == overSample_2x) return (Steinberg::Vst::ParamValue)overSample_2x / overSample_num;
+			else if (  OS == overSample_4x) return (Steinberg::Vst::ParamValue)overSample_4x / overSample_num;
+			else                            return (Steinberg::Vst::ParamValue)overSample_8x / overSample_num;
 
 		};
 

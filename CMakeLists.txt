@@ -1,16 +1,23 @@
 cmake_minimum_required(VERSION 3.14.0)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13 CACHE STRING "")
 
-set(vst3sdk_SOURCE_DIR "C:/VST_make/VST_SDK/vst3sdk")
+
+if(SMTG_MAC)
+    set(vst3sdk_SOURCE_DIR "/Users/yoon/VST_SDK/vst3sdk")
+elseif(SMTG_WIN)
+    set(vst3sdk_SOURCE_DIR "C:/VST_make/VST_SDK/vst3sdk")
+endif(SMTG_MAC)
+
 if(NOT vst3sdk_SOURCE_DIR)
     message(FATAL_ERROR "Path to VST3 SDK is empty!")
 endif()
+
 
 project(InflatorPackage
     # This is your plug-in version number. Change it here only.
     # Version number symbols usable in C++ can be found in
     # source/version.h and ${PROJECT_BINARY_DIR}/projectversion.h.
-    VERSION 1.0.0.0 
+    VERSION 1.5.1.0 
     DESCRIPTION "InflatorPackage VST 3 Plug-in"
 )
 
@@ -43,13 +50,21 @@ if(SMTG_ADD_VSTGUI)
     smtg_target_add_plugin_resources(InflatorPackage
         RESOURCES
             "resource/InflatorPackageeditor.uidesc"
+            "resource/background.png"
+            "resource/button_onoff.png"
+            "resource/handle.png"
+            "resource/knob_green.png"
+            "resource/knob_red.png"
+            "resource/LED_cover.png"
+            "resource/LED_ON.png"
+            "resource/LED_OFF.png"
+            "resource/OS_text.png"
+            "resource/oversample_bg.png"
+            "resource/oversample_handle.png"
     )
 endif(SMTG_ADD_VSTGUI)
 # -------------------
-smtg_target_add_plugin_resources(InflatorPackage
-    RESOURCES
-        resource/InflatorPackageeditor.uidesc
-)
+
 smtg_target_add_plugin_snapshots (InflatorPackage
     RESOURCES
         resource/A6B5CA9F4C4F5B9388F837774504BD37_snapshot.png
@@ -59,9 +74,8 @@ smtg_target_add_plugin_snapshots (InflatorPackage
 target_link_libraries(InflatorPackage
     PRIVATE
         sdk
-        vstgui_support
 )
-
+ 
 smtg_target_configure_version_file(InflatorPackage)
 
 if(SMTG_MAC)
