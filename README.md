@@ -96,5 +96,8 @@ Naive implementaiton could use 'sendTextMessage' and 'receiveText' pair.
 
 ## Todo
 
-* Preset save & import menu bar.  
-* malloc/realloc/free to new/delete change.  
+- [ ] Preset save & import menu bar.  
+- [ ] malloc/realloc/free to new/delete change.  
+- [ ] Oversampling options : Linear phase, Balanced.  
+- [ ] GUI : resizing, and HDDPI.  
+- [ ] GUI : double click to enter value.  
