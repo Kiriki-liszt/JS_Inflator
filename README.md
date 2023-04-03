@@ -4,20 +4,25 @@ JS Inflator, the copy of Sonox Inflator, in vstsdk
 
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot.png"  width="200"/>
 
-
-
 Windows and Mac. Linux not compatible.  
+This is my first attempt with VSTSDK & VSTGUI.  
+Some codes might be inefficent...  
 
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/VST_Compatible_Logo_Steinberg_with_TM.png"  width="100"/>
+## Licensing  
 
+> Q: I would like to share the source code of my VST 3 plug-in/host on GitHub or other such platform.  
+> * You can choose the GPLv3 license and feel free to share your plug-ins/host's source code including or referencing the VST 3 SDK's sources on GitHub.  
+> * **You are allowed to provide a binary form of your plug-ins/host too, provided that you provide its source code as GPLv3 too.** 
+> * Note that you have to follow the Steinberg VST usage guidelines.  
+> 
+> <https://steinbergmedia.github.io/vst3_dev_portal/pages/FAQ/Licensing.html>  
+ 
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/VST_Compatible_Logo_Steinberg_with_TM.png"  width="200"/>
 
 VSTSDK 3.7.7 used  
 VSTGUI 4.12 used  
 
 Built as VST3, but compatible to VST2, too.  
-
-This is my first attempt with VSTSDK & VSTGUI.  
-Some codes might be inefficent...  
 
 ## Version logs
 
