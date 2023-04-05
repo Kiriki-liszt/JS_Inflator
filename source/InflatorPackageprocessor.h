@@ -642,6 +642,35 @@ namespace yg331 {
 
 		//==============================================================================
 
+		overSample convert_to_OS(Steinberg::Vst::ParamValue value) {
+			value *= overSample_num;
+			if      (value < overSample_2x) return overSample_1x;
+			else if (value < overSample_4x) return overSample_2x;
+			else if (value < overSample_8x) return overSample_4x;
+			else                            return overSample_8x;
+		};
+		Steinberg::Vst::ParamValue convert_from_OS(overSample OS) {
+			if      (OS == overSample_1x)   return (Steinberg::Vst::ParamValue)overSample_1x / overSample_num;
+			else if (OS == overSample_2x)   return (Steinberg::Vst::ParamValue)overSample_2x / overSample_num;
+			else if (OS == overSample_4x)   return (Steinberg::Vst::ParamValue)overSample_4x / overSample_num;
+			else                            return (Steinberg::Vst::ParamValue)overSample_8x / overSample_num;
+		};
+
+		inline void Band_Split_set(Band_Split* filter, Vst::ParamValue Fc_L, Vst::ParamValue Fc_H, Vst::SampleRate Fs) {
+			double M_PI = 3.14159265358979323846;   // pi
+			(*filter).LP.C = 0.5 * tan(M_PI * ((Fc_L / Fs) - 0.25)) + 0.5;
+			(*filter).LP.R = 0.0;
+			(*filter).LP.I = 0.0;
+			(*filter).HP.C = 0.5 * tan(M_PI * ((Fc_H / Fs) - 0.25)) + 0.5;
+			(*filter).HP.R = 0.0;
+			(*filter).HP.I = 0.0;
+			(*filter).G = (*filter).HP.C * (1 - (*filter).LP.C) / ((*filter).HP.C - (*filter).LP.C);
+			(*filter).GR = 1 / (*filter).G;
+			return;
+		};
+
+		float VuPPMconvert(float plainValue);
+
 		template <typename SampleType>
 		void proc_in(SampleType** inputs, Vst::Sample64** outputs, int32 sampleFrames);
 		template <typename SampleType>
@@ -661,22 +690,6 @@ namespace yg331 {
 
 		//------------------------------------------------------------------------
 	protected:
-		overSample convert_to_OS(Steinberg::Vst::ParamValue value) { 
-			value *= overSample_num;
-			if      (value < overSample_2x) return overSample_1x;
-			else if (value < overSample_4x) return overSample_2x;
-			else if (value < overSample_8x) return overSample_4x;
-			else                            return overSample_8x;
-		};
-		Steinberg::Vst::ParamValue convert_from_OS(overSample OS) {
-			if      (  OS == overSample_1x) return (Steinberg::Vst::ParamValue)overSample_1x / overSample_num;
-			else if (  OS == overSample_2x) return (Steinberg::Vst::ParamValue)overSample_2x / overSample_num;
-			else if (  OS == overSample_4x) return (Steinberg::Vst::ParamValue)overSample_4x / overSample_num;
-			else                            return (Steinberg::Vst::ParamValue)overSample_8x / overSample_num;
-
-		};
-
-		float VuPPMconvert(float plainValue);
 
 		// int32 currentProcessMode;
 
@@ -685,85 +698,59 @@ namespace yg331 {
 		Vst::ParamValue fEffect;
 		Vst::ParamValue fCurve;
 
-		Vst::ParamValue fInVuPPML; 
+		Vst::ParamValue fInVuPPML;
 		Vst::ParamValue fInVuPPMR;
 		Vst::ParamValue fOutVuPPML;
 		Vst::ParamValue fOutVuPPMR;
+
 		Vst::ParamValue fInVuPPMLOld;
 		Vst::ParamValue fInVuPPMROld;
 		Vst::ParamValue fOutVuPPMLOld;
 		Vst::ParamValue fOutVuPPMROld;
 
-		overSample fParamOS;
-		overSample fParamOSOld;
+		Vst::Sample64   curvepct;
+		Vst::Sample64   curveA;
+		Vst::Sample64   curveB;
+		Vst::Sample64   curveC;
+		Vst::Sample64   curveD;
 
-		bool bBypass;
-		bool bClip;
-		bool bSplit;
+		bool            bBypass;
+		bool            bClip;
+		bool            bSplit;
 
-		uint32 fpdL; 
-		uint32 fpdR; 
+		overSample      fParamOS;
+		overSample      fParamOSOld;
+		Vst::ParamValue fParamZoom;
 
+		Band_Split      Band_Split_L;
+		Band_Split      Band_Split_R;
 
-		typedef struct _SVF {
-			Vst::Sample64 C = 0.0;
-			Vst::Sample64 R = 0.0;
-			Vst::Sample64 I = 0.0;
-		} SVF;
-
-		typedef struct _BS {
-			SVF LP;
-			SVF HP;
-			Vst::Sample64 G = 0.0;
-			Vst::Sample64 GR = 0.0;
-		} Band_Split;
-
-		Band_Split Band_Split_L;
-		Band_Split Band_Split_R;
-
-		inline void Band_Split_set(Band_Split* filter, Vst::ParamValue Fc_L, Vst::ParamValue Fc_H, Vst::SampleRate Fs) {
-			double M_PI = 3.14159265358979323846;   // pi
-			(*filter).LP.C = 0.5 * tan(M_PI * ((Fc_L / Fs) - 0.25)) + 0.5;
-			(*filter).LP.R = 0.0;
-			(*filter).LP.I = 0.0;
-			(*filter).HP.C = 0.5 * tan(M_PI * ((Fc_H / Fs) - 0.25)) + 0.5;
-			(*filter).HP.R = 0.0;
-			(*filter).HP.I = 0.0;
-			(*filter).G = (*filter).HP.C * (1 - (*filter).LP.C) / ((*filter).HP.C - (*filter).LP.C);
-			(*filter).GR = 1 / (*filter).G;
-			return;
-		};
-
-		Vst::Sample64 curvepct = fCurve - 0.5;
-		Vst::Sample64 curveA = 1.5 + curvepct;			// 1 + (curve + 50) / 100
-		Vst::Sample64 curveB = -(curvepct + curvepct);	// - curve / 50
-		Vst::Sample64 curveC = curvepct - 0.5;			// (curve - 50) / 100
-		Vst::Sample64 curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;
-		// 1 / 16 - curve / 400 + curve ^ 2 / (4 * 10 ^ 4)
+		uint32          fpdL;
+		uint32          fpdR;
 
 		long long maxSample = 16385;
 
-		Vst::AudioBusBuffers in_0_64;
-		Vst::AudioBusBuffers in_1_64;
-		Vst::AudioBusBuffers in_2_64;
-		Vst::AudioBusBuffers in_3_64;
-		Vst::AudioBusBuffers out_0_64;
-		Vst::AudioBusBuffers out_1_64;
-		Vst::AudioBusBuffers out_2_64;
-		Vst::AudioBusBuffers out_3_64;
-		
-		hiir::upSample_2x_1 upSample_2x_1_L_64;
-		hiir::upSample_2x_1 upSample_2x_1_R_64;
-		hiir::upSample_4x_1 upSample_4x_1_L_64;
-		hiir::upSample_4x_1 upSample_4x_1_R_64;
-		hiir::upSample_4x_2 upSample_4x_2_L_64;
-		hiir::upSample_4x_2 upSample_4x_2_R_64;
-		hiir::upSample_8x_1 upSample_8x_1_L_64;
-		hiir::upSample_8x_1 upSample_8x_1_R_64;
-		hiir::upSample_8x_2 upSample_8x_2_L_64;
-		hiir::upSample_8x_2 upSample_8x_2_R_64;
-		hiir::upSample_8x_3 upSample_8x_3_L_64;
-		hiir::upSample_8x_3 upSample_8x_3_R_64;
+		Vst::AudioBusBuffers  in_0_64;
+		Vst::AudioBusBuffers  in_1_64;
+		Vst::AudioBusBuffers  in_2_64;
+		Vst::AudioBusBuffers  in_3_64;
+		Vst::AudioBusBuffers  out_0_64;
+		Vst::AudioBusBuffers  out_1_64;
+		Vst::AudioBusBuffers  out_2_64;
+		Vst::AudioBusBuffers  out_3_64;
+
+		hiir::upSample_2x_1   upSample_2x_1_L_64;
+		hiir::upSample_2x_1   upSample_2x_1_R_64;
+		hiir::upSample_4x_1   upSample_4x_1_L_64;
+		hiir::upSample_4x_1   upSample_4x_1_R_64;
+		hiir::upSample_4x_2   upSample_4x_2_L_64;
+		hiir::upSample_4x_2   upSample_4x_2_R_64;
+		hiir::upSample_8x_1   upSample_8x_1_L_64;
+		hiir::upSample_8x_1   upSample_8x_1_R_64;
+		hiir::upSample_8x_2   upSample_8x_2_L_64;
+		hiir::upSample_8x_2   upSample_8x_2_R_64;
+		hiir::upSample_8x_3   upSample_8x_3_L_64;
+		hiir::upSample_8x_3   upSample_8x_3_R_64;
 
 		hiir::downSample_2x_1 downSample_2x_1_L_64;
 		hiir::downSample_2x_1 downSample_2x_1_R_64;
@@ -777,9 +764,7 @@ namespace yg331 {
 		hiir::downSample_8x_2 downSample_8x_2_R_64;
 		hiir::downSample_8x_3 downSample_8x_3_L_64;
 		hiir::downSample_8x_3 downSample_8x_3_R_64;
-
-
-	};	
+	};
 } // namespace yg331
 //------------------------------------------------------------------------
 // VST3 plugin End

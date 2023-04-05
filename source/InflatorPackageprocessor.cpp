@@ -2,8 +2,8 @@
 // Copyright(c) 2023 yg331.
 //------------------------------------------------------------------------
 
-#include "InflatorPackageprocessor.h"
 // #include "InflatorPackagecids.h"
+#include "InflatorPackageprocessor.h"
 
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
@@ -17,24 +17,30 @@ namespace yg331 {
 	//------------------------------------------------------------------------
 	// InflatorPackageProcessor
 	//------------------------------------------------------------------------
-	InflatorPackageProcessor::InflatorPackageProcessor():
-		fInput(init_Input), 
-		fOutput(init_Output), 
-		fEffect(init_Effect), 
+	InflatorPackageProcessor::InflatorPackageProcessor() :
+		fInput(init_Input),
+		fOutput(init_Output),
+		fEffect(init_Effect),
 		fCurve(init_Curve),
+		curvepct(init_curvepct),
+		curveA(init_curveA),
+		curveB(init_curveB),
+		curveC(init_curveC),
+		curveD(init_curveD),
 		bBypass(init_Bypass),
-		bSplit(init_Split), 
+		bSplit(init_Split),
 		bClip(init_Clip),
 		fParamOS(init_OS),
 		fParamOSOld(init_OS),
-		fInVuPPML(init_InVuPPML), 
-		fInVuPPMR(init_InVuPPMR), 
-		fOutVuPPML(init_OutVuPPML), 
-		fOutVuPPMR(init_OutVuPPMR),
-		fInVuPPMLOld(init_InVuPPML), 
-		fInVuPPMROld(init_InVuPPMR), 
-		fOutVuPPMLOld(init_OutVuPPML), 
-		fOutVuPPMROld(init_OutVuPPMR),
+		fInVuPPML(init_VU),
+		fInVuPPMR(init_VU),
+		fOutVuPPML(init_VU),
+		fOutVuPPMR(init_VU),
+		fInVuPPMLOld(init_VU),
+		fInVuPPMROld(init_VU),
+		fOutVuPPMLOld(init_VU),
+		fOutVuPPMROld(init_VU),
+		fParamZoom(init_Zoom),
 		fpdL(1), fpdR(1)
 	{
 		//--- set the wanted controller for our processor
@@ -206,10 +212,10 @@ namespace yg331 {
 		*/
 
 		// reset the VuMeter value
-		fInVuPPMLOld = init_InVuPPML;
-		fInVuPPMROld = init_InVuPPMR;
-		fOutVuPPMLOld = init_OutVuPPML;
-		fOutVuPPMROld = init_OutVuPPMR;
+		fInVuPPMLOld = init_VU;
+		fInVuPPMROld = init_VU;
+		fOutVuPPMLOld = init_VU;
+		fOutVuPPMROld = init_VU;
 
 		//--- called when the Plug-in is enable/disable (On/Off) -----
 		return AudioEffect::setActive(state);
@@ -260,6 +266,9 @@ namespace yg331 {
 							fParamOS = convert_to_OS(value);
 							if (fParamOSOld != fParamOS) sendTextMessage("OS");
 							break;
+						case kParamZoom:
+							fParamZoom = value;
+							break;
 						case kParamSplit:
 							bSplit = (value > 0.5f);
 							break;
@@ -304,10 +313,10 @@ namespace yg331 {
 
 		data.outputs[0].silenceFlags = data.inputs[0].silenceFlags;
 
-		fInVuPPML = init_InVuPPML;
-		fInVuPPMR = init_InVuPPMR;
-		fOutVuPPML = init_OutVuPPML;
-		fOutVuPPMR = init_OutVuPPMR;
+		fInVuPPML = init_VU;
+		fInVuPPMR = init_VU;
+		fOutVuPPML = init_VU;
+		fOutVuPPMR = init_VU;
 
 
 		//---in bypass mode outputs should be like inputs-----
@@ -439,6 +448,7 @@ namespace yg331 {
 		int32           savedClip   = 0;
 		int32           savedBypass = 0;
 		int32           savedSplit  = 0;
+		Vst::ParamValue savedZoom = 0.0;
 
 		if (streamer.readDouble(savedInput)  == false) return kResultFalse;
 		if (streamer.readDouble(savedEffect) == false) return kResultFalse;
@@ -448,15 +458,17 @@ namespace yg331 {
 		if (streamer.readInt32(savedClip)    == false) return kResultFalse;
 		if (streamer.readInt32(savedBypass)  == false) return kResultFalse;
 		if (streamer.readInt32(savedSplit)   == false) return kResultFalse;
+		if (streamer.readDouble(savedZoom)   == false) return kResultFalse;
 
-		fInput   = savedInput;
-		fEffect  = savedEffect;
-		fCurve   = savedCurve;
-		fOutput  = savedOutput;
-		fParamOS = convert_to_OS(savedOS);
-		bClip    = savedClip > 0;
-		bBypass  = savedBypass > 0;
-		bSplit   = savedSplit > 0;
+		fInput     = savedInput;
+		fEffect    = savedEffect;
+		fCurve     = savedCurve;
+		fOutput    = savedOutput;
+		fParamOS   = convert_to_OS(savedOS);
+		bClip      = savedClip   > 0;
+		bBypass    = savedBypass > 0;
+		bSplit     = savedSplit  > 0;
+		fParamZoom = savedZoom;
 
 		if (Vst::Helpers::isProjectState(state) == kResultTrue)
 		{
@@ -498,6 +510,7 @@ namespace yg331 {
 		streamer.writeInt32(bClip ? 1 : 0);
 		streamer.writeInt32(bBypass ? 1 : 0);
 		streamer.writeInt32(bSplit ? 1 : 0);
+		streamer.writeDouble(fParamZoom);
 
 		return kResultOk;
 	}
@@ -690,19 +703,17 @@ namespace yg331 {
 		if (inputSample > 0.0) sign =  1.0;
 		else                   sign = -1.0;
 
-		Vst::Sample64 s1, s2, s3, s4;
+		Vst::Sample64 s1 = fabs(inputSample);
+		Vst::Sample64 s2 = s1 * s1;
+		Vst::Sample64 s3 = s2 * s1;
+		Vst::Sample64 s4 = s2 * s2;
 
-		s1 = fabs(inputSample);
-		s2 = s1 * s1;
-		s3 = s2 * s1;
-		s4 = s2 * s2;
-
-		if     (s1 >= 2.0) inputSample = 0.0;
-		else if (s1 > 1.0) inputSample = (2.0 * s1) - s2;
-		else               inputSample = (curveA * s1) +
-		                                 (curveB * s2) +
-		                                 (curveC * s3) -
-		                                 (curveD * (s2 - (2.0 * s3) + s4));
+		if      (s1 >= 2.0) inputSample = 0.0;
+		else if (s1 >  1.0) inputSample = (2.0 * s1) - s2;
+		else                inputSample = (curveA * s1) +
+		                                  (curveB * s2) +
+		                                  (curveC * s3) -
+		                                  (curveD * (s2 - (2.0 * s3) + s4));
 
 		inputSample *= sign;
 

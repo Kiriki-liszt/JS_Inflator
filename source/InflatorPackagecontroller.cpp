@@ -2,14 +2,13 @@
 // Copyright(c) 2023 yg331.
 //------------------------------------------------------------------------
 
-#include "InflatorPackagecontroller.h"
 #include "InflatorPackagecids.h"
+#include "InflatorPackagecontroller.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
-
 #include "pluginterfaces/base/ustring.h"
 #include "base/source/fstreamer.h"
-
 #include "pluginterfaces/vst/ivsteditcontroller.h"
+#include "vstgui/plugin-bindings/vst3groupcontroller.h"
 
 using namespace Steinberg;
 
@@ -67,6 +66,7 @@ namespace yg331 {
 
 	}
 	//------------------------------------------------------------------------
+
 
 	//------------------------------------------------------------------------
 	// InflatorPackageController Implementation
@@ -146,17 +146,48 @@ namespace yg331 {
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
 
+		/*
 		tag = kParamOS;
 		stepCount = 3;
 		defaultVal = 0; // init_OS;
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("OS"), nullptr, stepCount, defaultVal, flags, tag);
+		*/
+		Vst::StringListParameter* OS = new Vst::StringListParameter(STR("OS"), kParamOS);
+		OS->appendString(STR("x1"));
+		OS->appendString(STR("x2"));
+		OS->appendString(STR("x4"));
+		OS->appendString(STR("x8")); // stepCount is automzed!
+		OS->setNormalized(OS->toNormalized(0));
+		OS->addDependent(this);
+		parameters.addParameter(OS);
+
 
 		tag = kParamSplit;
 		stepCount = 1;
 		defaultVal = init_Split ? 1 : 0;
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Split"), nullptr, stepCount, defaultVal, flags, tag);
+
+		if (zoomFactors.empty())
+		{
+			zoomFactors.push_back(ZoomFactor(STR("50%"),  0.5));  // 0/6
+			zoomFactors.push_back(ZoomFactor(STR("75%"),  0.75)); // 1/6
+			zoomFactors.push_back(ZoomFactor(STR("100%"), 1.0));  // 2/6
+			zoomFactors.push_back(ZoomFactor(STR("125%"), 1.25)); // 3/6
+			zoomFactors.push_back(ZoomFactor(STR("150%"), 1.5));  // 4/6
+			zoomFactors.push_back(ZoomFactor(STR("175%"), 1.75)); // 5/6
+			zoomFactors.push_back(ZoomFactor(STR("200%"), 2.0));  // 6/6
+		}
+
+		Vst::StringListParameter* zoomParameter = new Vst::StringListParameter(STR("Zoom"), kParamZoom);
+		for (ZoomFactorVector::const_iterator it = zoomFactors.begin(), end = zoomFactors.end(); it != end; ++it)
+		{
+			zoomParameter->appendString(it->title);
+		}
+		zoomParameter->setNormalized(zoomParameter->toNormalized(2)); // toNorm(2) == 100%
+		zoomParameter->addDependent(this);
+		parameters.addParameter(zoomParameter);
 
 		return result;
 	}
@@ -187,15 +218,17 @@ namespace yg331 {
 		int32           savedClip   = 0;
 		int32           savedBypass = 0;
 		int32           savedSplit  = 0;
+		Vst::ParamValue savedZoom = 0.0;
 
 		if (streamer.readDouble(savedInput)  == false) return kResultFalse;
 		if (streamer.readDouble(savedEffect) == false) return kResultFalse;
 		if (streamer.readDouble(savedCurve)  == false) return kResultFalse;
 		if (streamer.readDouble(savedOutput) == false) return kResultFalse;
 		if (streamer.readDouble(savedOS)     == false) return kResultFalse;
-		if (streamer.readInt32(savedClip)    == false) return kResultFalse;
-		if (streamer.readInt32(savedBypass)  == false) return kResultFalse;
-		if (streamer.readInt32(savedSplit)   == false) return kResultFalse;
+		if (streamer.readInt32 (savedClip)   == false) return kResultFalse;
+		if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
+		if (streamer.readInt32 (savedSplit)  == false) return kResultFalse;
+		if (streamer.readDouble(savedZoom)   == false) return kResultFalse;
 
 		setParamNormalized(kParamInput,  savedInput);
 		setParamNormalized(kParamEffect, savedEffect);
@@ -205,6 +238,7 @@ namespace yg331 {
 		setParamNormalized(kParamClip,   savedClip   ? 1 : 0);
 		setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
 		setParamNormalized(kParamSplit,  savedSplit  ? 1 : 0);
+		setParamNormalized(kParamZoom,   savedZoom);
 
 		return kResultOk;
 	}
@@ -248,16 +282,50 @@ namespace yg331 {
 		// received from Component
 		if (text)
 		{	
-			/*
-			fprintf(stderr, "[AGainController] received: ");
-			fprintf(stderr, "%s", text);
-			fprintf(stderr, "\n");
-			*/
+			// Latency report
+			if (strcmp("OS\n", text)) {
 				FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
 				handler->restartComponent(Vst::kLatencyChanged);
-		}
-		
+			}
+		}		
 		return kResultOk;
+	}
+	
+	//------------------------------------------------------------------------
+	void PLUGIN_API InflatorPackageController::update(FUnknown* changedUnknown, int32 message)
+	{
+		EditControllerEx1::update(changedUnknown, message);
+
+		// GUI Resizing
+		// check 'zoomtest' code at
+		// https://github.com/steinbergmedia/vstgui/tree/vstgui4_10/vstgui/tests/uidescription%20vst3/source
+		// 
+		Vst::Parameter* param = FCast<Vst::Parameter>(changedUnknown);
+		if (param && param->getInfo().id == kParamZoom)
+		{
+			size_t index = static_cast<size_t> (param->toPlain(param->getNormalized()));
+
+			if (index >= zoomFactors.size())
+				return;
+
+			for (EditorVector::const_iterator it = editors.begin(), end = editors.end(); it != end; ++it)
+			{
+				VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(*it);
+				if (editor)
+					editor->setZoomFactor(zoomFactors[index].factor);
+			}
+		}
+	}
+	//------------------------------------------------------------------------
+	void InflatorPackageController::editorAttached(Steinberg::Vst::EditorView* editor)
+	{
+		editors.push_back(editor);
+	}
+
+	//------------------------------------------------------------------------
+	void InflatorPackageController::editorRemoved(Steinberg::Vst::EditorView* editor)
+	{
+		editors.erase(std::find(editors.begin(), editors.end(), editor));
 	}
 
 
@@ -287,10 +355,4 @@ namespace yg331 {
 	}
 
 	//------------------------------------------------------------------------
-
-
-
-	
-
-
 } // namespace yg331
