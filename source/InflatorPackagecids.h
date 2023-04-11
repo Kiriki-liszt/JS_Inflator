@@ -31,6 +31,7 @@ enum {
 	kParamOS,
 	kParamSplit,
 	kParamZoom,
+	kParamMeter
 };
 
 #include <vector>

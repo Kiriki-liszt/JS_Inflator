@@ -70,6 +70,7 @@
 			"InVuPPML": "5",
 			"InVuPPMR": "6",
 			"Input": "0",
+			"Meter": "13",
 			"OS": "10",
 			"OutVuPPML": "7",
 			"OutVuPPMR": "8",
@@ -96,7 +97,7 @@
 				"SplitViewSize_1_1": "0.5139860139860139565115559889818541705608",
 				"SplitViewSize_2_0": "0.5927475592747559751671815320150926709175",
 				"SplitViewSize_2_1": "0.4002789400278939924149312901135999709368",
-				"TabSwitchValue": "0",
+				"TabSwitchValue": "1",
 				"Version": "1",
 				"WriteRCFile": "false"
 			},
@@ -105,7 +106,7 @@
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
-				"SelectedRow": "9"
+				"SelectedRow": "16"
 			},
 			"UIGradientsDataSource": {
 				"SelectedRow": "1"
@@ -555,6 +556,43 @@
 							"text-shadow-offset": "1, 1",
 							"title": "Size :",
 							"transparent": "true",
+							"value-precision": "2",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CParamDisplay": {
+						"attributes": {
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "CParamDisplay",
+							"control-tag": "Meter",
+							"default-value": "0",
+							"font": "~ NormalFont",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "false",
+							"opacity": "1",
+							"origin": "54, 182",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "100, 20",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"transparent": "false",
 							"value-precision": "2",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"

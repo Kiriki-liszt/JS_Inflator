@@ -189,6 +189,12 @@ namespace yg331 {
 		zoomParameter->addDependent(this);
 		parameters.addParameter(zoomParameter);
 
+		tag = kParamMeter;
+		stepCount = 0;
+		defaultVal = 0;
+		flags = Vst::ParameterInfo::kCanAutomate;
+		parameters.addParameter(STR16("Meter"), nullptr, stepCount, defaultVal, flags, tag);
+
 		return result;
 	}
 
@@ -284,8 +290,8 @@ namespace yg331 {
 		{	
 			// Latency report
 			if (strcmp("OS\n", text)) {
-				FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
-				handler->restartComponent(Vst::kLatencyChanged);
+			 	FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
+			 	handler->restartComponent(Vst::kLatencyChanged);
 			}
 		}		
 		return kResultOk;
@@ -299,9 +305,12 @@ namespace yg331 {
 		// GUI Resizing
 		// check 'zoomtest' code at
 		// https://github.com/steinbergmedia/vstgui/tree/vstgui4_10/vstgui/tests/uidescription%20vst3/source
-		// 
+		
 		Vst::Parameter* param = FCast<Vst::Parameter>(changedUnknown);
-		if (param && param->getInfo().id == kParamZoom)
+		if (!param)
+			return;
+
+		if (param->getInfo().id == kParamZoom)
 		{
 			size_t index = static_cast<size_t> (param->toPlain(param->getNormalized()));
 

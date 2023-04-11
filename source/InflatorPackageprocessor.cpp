@@ -41,6 +41,8 @@ namespace yg331 {
 		fOutVuPPMLOld(init_VU),
 		fOutVuPPMROld(init_VU),
 		fParamZoom(init_Zoom),
+		fMeter(init_VU),
+		fMeterOld(init_VU),
 		fpdL(1), fpdR(1)
 	{
 		//--- set the wanted controller for our processor
@@ -217,6 +219,9 @@ namespace yg331 {
 		fOutVuPPMLOld = init_VU;
 		fOutVuPPMROld = init_VU;
 
+		fMeter = init_VU;
+		fMeterOld = init_VU;
+
 		//--- called when the Plug-in is enable/disable (On/Off) -----
 		return AudioEffect::setActive(state);
 	}
@@ -318,6 +323,9 @@ namespace yg331 {
 		fOutVuPPML = init_VU;
 		fOutVuPPMR = init_VU;
 
+		fMeter = init_VU;
+		fMeterOld = init_VU;
+		Meter = init_VU;
 
 		//---in bypass mode outputs should be like inputs-----
 		if (data.symbolicSampleSize == Vst::kSample32) {
@@ -326,7 +334,8 @@ namespace yg331 {
 		else {
 			overSampling<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples);
 		}
-
+		if (Meter*0.01 > fMeterOld) fMeter = Meter * 0.01;
+		else fMeter = (Meter * 0.01)*0.5 + fMeterOld * 0.5;
 		//---3) Write outputs parameter changes-----------
 		Vst::IParameterChanges* outParamChanges = data.outputParameterChanges;
 		// a new value of VuMeter will be send to the host
@@ -362,11 +371,21 @@ namespace yg331 {
 				paramQueue->addPoint(0, fOutVuPPMR, index2);
 			}
 
+			index = 0;
+			paramQueue = outParamChanges->addParameterData(kParamMeter, index);
+			if (paramQueue)
+			{
+				int32 index2 = 0;
+				paramQueue->addPoint(0, fMeter, index2);
+			}
+
 		}
 		fInVuPPMLOld = fInVuPPML;
 		fInVuPPMROld = fInVuPPMR;
 		fOutVuPPMLOld = fOutVuPPMR;
 		fOutVuPPMLOld = fOutVuPPMR;
+
+		fMeterOld = fMeter;
 
 		return kResultOk;
 	}
@@ -697,7 +716,7 @@ namespace yg331 {
 			if      (inputSample >  1.0) inputSample =  1.0;
 			else if (inputSample < -1.0) inputSample = -1.0;
 		}
-
+		Vst::Sample64 dry = inputSample;
 		Vst::Sample64 sign;
 
 		if (inputSample > 0.0) sign =  1.0;
@@ -720,7 +739,7 @@ namespace yg331 {
 		if (wet != 1.0) {
 			inputSample = (drySample * (1.0 - wet)) + (inputSample * wet);
 		}
-
+		Meter += inputSample/dry;
 		if (bClip) {
 			if      (inputSample >  1.0) inputSample =  1.0;
 			else if (inputSample < -1.0) inputSample = -1.0;

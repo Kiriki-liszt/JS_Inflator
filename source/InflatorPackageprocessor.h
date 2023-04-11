@@ -708,6 +708,10 @@ namespace yg331 {
 		Vst::ParamValue fOutVuPPMLOld;
 		Vst::ParamValue fOutVuPPMROld;
 
+		Vst::ParamValue fMeter;
+		Vst::ParamValue fMeterOld;
+		Vst::ParamValue Meter = 0.0;
+
 		Vst::Sample64   curvepct;
 		Vst::Sample64   curveA;
 		Vst::Sample64   curveB;
