@@ -165,7 +165,7 @@ namespace yg331 {
 		flags = Vst::ParameterInfo::kCanAutomate;
 		minPlain = 0;
 		maxPlain = 100;
-		defaultPlain = 100;
+		defaultPlain = 0;
 		stepCount = 0;
 		auto* ParamEffect = new Vst::RangeParameter(STR16("Effect"), tag, STR16("%"), minPlain, maxPlain, defaultPlain, stepCount, flags);
 		ParamEffect->setPrecision(2);
@@ -180,14 +180,6 @@ namespace yg331 {
 		auto* ParamCurve = new Vst::RangeParameter(STR16("Curve"), tag, STR16("%"), minPlain, maxPlain, defaultPlain, stepCount, flags);
 		ParamCurve->setPrecision(2);
 		parameters.addParameter(ParamCurve);
-
-		/*
-		tag = kParamCurve;
-		stepCount = 0;
-		defaultVal = init_Curve;
-		flags = Vst::ParameterInfo::kCanAutomate; 
-		parameters.addParameter(STR16("Curve"), nullptr, stepCount, defaultVal, flags, tag);
-		*/
 
 		tag = kParamClip;
 		stepCount = 1;
@@ -217,15 +209,24 @@ namespace yg331 {
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Split"), nullptr, stepCount, defaultVal, flags, tag);
 
+		Vst::ParamValue zoom_coef = 0.5;
+
+#ifdef _ORIG
+		zoom_coef = 1.0;
+#elif _TWARCH
+		zoom_coef = 0.5;
+#endif // _ORIG
+
+
 		if (zoomFactors.empty())
 		{
-			zoomFactors.push_back(ZoomFactor(STR("50%"),  0.5 * 0.5));  // 0/6
-			zoomFactors.push_back(ZoomFactor(STR("75%"),  0.5 * 0.75)); // 1/6
-			zoomFactors.push_back(ZoomFactor(STR("100%"), 0.5 * 1.0));  // 2/6
-			zoomFactors.push_back(ZoomFactor(STR("125%"), 0.5 * 1.25)); // 3/6
-			zoomFactors.push_back(ZoomFactor(STR("150%"), 0.5 * 1.5));  // 4/6
-			zoomFactors.push_back(ZoomFactor(STR("175%"), 0.5 * 1.75)); // 5/6
-			zoomFactors.push_back(ZoomFactor(STR("200%"), 0.5 * 2.0));  // 6/6
+			zoomFactors.push_back(ZoomFactor(STR("50%"), zoom_coef * 0.5));  // 0/6
+			zoomFactors.push_back(ZoomFactor(STR("75%"), zoom_coef * 0.75)); // 1/6
+			zoomFactors.push_back(ZoomFactor(STR("100%"), zoom_coef * 1.0));  // 2/6
+			zoomFactors.push_back(ZoomFactor(STR("125%"), zoom_coef * 1.25)); // 3/6
+			zoomFactors.push_back(ZoomFactor(STR("150%"), zoom_coef * 1.5));  // 4/6
+			zoomFactors.push_back(ZoomFactor(STR("175%"), zoom_coef * 1.75)); // 5/6
+			zoomFactors.push_back(ZoomFactor(STR("200%"), zoom_coef * 2.0));  // 6/6
 		}
 
 		Vst::StringListParameter* zoomParameter = new Vst::StringListParameter(STR("Zoom"), kParamZoom);
@@ -323,6 +324,7 @@ namespace yg331 {
 			// create your editor here and return a IPlugView ptr of it
 			auto* view = new VSTGUI::VST3Editor(this, "view", "InflatorPackageeditor.uidesc");
 			return view;
+
 		}
 		return nullptr;
 	}
