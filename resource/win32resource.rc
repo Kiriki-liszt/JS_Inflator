@@ -5,17 +5,32 @@
 
 InflatorPackageeditor.uidesc DATA "InflatorPackageeditor.uidesc"
 
-background.png		PNG "background.png"
-handle.png			PNG "handle.png"
-knob_red.png		PNG "knob_red.png"
-knob_green.png		PNG "knob_green.png"
-button_onoff.png	PNG "button_onoff.png"
-LED_OFF.png			PNG "LED_OFF.png"
-LED_ON.png			PNG "LED_ON.png"
-LED_cover.png		PNG "LED_cover.png"
-OS_text.png			PNG	"OS_text.png"
+/*
+background.png			PNG "background.png"
+handle.png				PNG "handle.png"
+knob_red.png			PNG "knob_red.png"
+knob_green.png			PNG "knob_green.png"
+button_onoff.png		PNG "button_onoff.png"
+LED_OFF.png				PNG "LED_OFF.png"
+LED_ON.png				PNG "LED_ON.png"
+LED_cover.png			PNG "LED_cover.png"
+OS_text.png				PNG	"OS_text.png"
 oversample_bg.png		PNG "oversample_bg.png"
-oversample_handle.png PNG "oversample_handle.png"
+oversample_handle.png	PNG "oversample_handle.png"
+*/
+
+background.png			PNG "background.png"
+handle.png				PNG "handle.png"
+btn_IN.png				PNG "btn_IN.png"
+btn_CLIP.png			PNG "btn_CLIP.png"
+btn_SPLIT.png			PNG "btn_SPLIT.png"
+meter_on.png			PNG "meter_on.png"
+meter_off.png			PNG "meter_off.png"
+meter_fx_on.png			PNG "meter_fx_on.png"
+yellow_knob.png			PNG "yellow_knob_.png"
+red_knob.png			PNG "red_knob_.png"
+rotary_knob_needle_0.png PNG "rotary_knob_needle_0.png"
+
 
 /////////////////////////////////////////////////////////////////////////////
 // Version

@@ -46,7 +46,7 @@ namespace yg331 {
 	typedef std::vector<ZoomFactor> ZoomFactorVector;
 
 	typedef enum {
-		overSample_1x,
+		overSample_1x, 
 		overSample_2x,
 		overSample_4x,
 		overSample_8x,

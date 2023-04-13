@@ -334,8 +334,18 @@ namespace yg331 {
 		else {
 			overSampling<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples);
 		}
-		if (Meter*0.01 > fMeterOld) fMeter = Meter * 0.01;
-		else fMeter = (Meter * 0.01)*0.5 + fMeterOld * 0.5;
+
+		Meter /= data.numSamples;
+		Meter *= fInVuPPML;
+		Meter *= 0.2;
+		fMeter = 0.7 * log10(20.0 * Meter);
+
+		fInVuPPML = VuPPMconvert(fInVuPPML);
+		fInVuPPMR = VuPPMconvert(fInVuPPMR);
+		fOutVuPPML = VuPPMconvert(fOutVuPPML);
+		fOutVuPPMR = VuPPMconvert(fOutVuPPMR);
+
+		
 		//---3) Write outputs parameter changes-----------
 		Vst::IParameterChanges* outParamChanges = data.outputParameterChanges;
 		// a new value of VuMeter will be send to the host
@@ -591,8 +601,8 @@ namespace yg331 {
 			In_R++;
 		}
 
-		fInVuPPML = VuPPMconvert(tmpL);
-		fInVuPPMR = VuPPMconvert(tmpR);
+		fInVuPPML = tmpL;
+		fInVuPPMR = tmpR;
 		return;
 	}
 
@@ -615,8 +625,8 @@ namespace yg331 {
 			Out_L++;
 			Out_R++;
 		}
-		fOutVuPPML = VuPPMconvert(tmpL);
-		fOutVuPPMR = VuPPMconvert(tmpR);
+		fOutVuPPML = tmpL;
+		fOutVuPPMR = tmpR;
 		return;
 	}
 
@@ -739,12 +749,14 @@ namespace yg331 {
 		if (wet != 1.0) {
 			inputSample = (drySample * (1.0 - wet)) + (inputSample * wet);
 		}
-		Meter += inputSample/dry;
+
 		if (bClip) {
 			if      (inputSample >  1.0) inputSample =  1.0;
 			else if (inputSample < -1.0) inputSample = -1.0;
 		}
 
+		// Meter += 20.0 * (log10(inputSample) - log10(dry));
+		Meter += 20.0 * log10(inputSample / dry);
 		return inputSample;
 	}
 
