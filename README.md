@@ -2,9 +2,13 @@
 
 JS Inflator, the copy of Sonox Inflator, in vstsdk
 
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/new_GUI/screenshot.png"  width="400"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/478b505b6dacf0eacc5e71adc3a60bd1212e7428/screenshot_orig.png"  width="200"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/478b505b6dacf0eacc5e71adc3a60bd1212e7428/screenshot_twarch.png"  width="400"/>
 
-Windows and Mac. Linux not compatible.  
+Now comes in two GUIs.
+The new GUI is made by Twarch.
+
+Windows and Mac(Intel only). Linux not compatible.  
 This is my first attempt with VSTSDK & VSTGUI.  
 Some codes might be inefficent...  
 
@@ -33,7 +37,8 @@ v1.2.1: Channel configuration corrected. probably a bug fix for crashing sometim
 v1.3.0: Curve knob fixed!!! and 32FP dither by airwindows.  
 v1.4.0: Oversampling up to x8 now works! DPC works.  
 v1.5.0: Band Split added.  
-v1.5.1: macOS build added. Intel x86 tested, Apple silicon not tested.  
+v1.5.1: macOS build added. Intel x86 tested, Apple silicon not tested(I dont have one).  
+v1.6.0rc: FX meter(Effect Meter) is added. Original GUI is now on high definition.
 
 Now up to date with latest RC Inflator form ReaTeam/JSFX repository.  
 
