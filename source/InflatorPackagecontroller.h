@@ -30,6 +30,7 @@ namespace yg331 {
 		);
 
 		void toString  (Vst::ParamValue normValue, Vst::String128 string)      const SMTG_OVERRIDE;
+		Vst::ParamValue toPlain(Vst::ParamValue _valueNormalized) const SMTG_OVERRIDE;
 		bool fromString(const Vst::TChar* string,  Vst::ParamValue& normValue) const SMTG_OVERRIDE;
 	};
 
@@ -98,3 +99,4 @@ namespace yg331 {
 	};
 	
 } // namespace yg331
+ 

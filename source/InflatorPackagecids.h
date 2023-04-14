@@ -46,7 +46,7 @@ namespace yg331 {
 	typedef std::vector<ZoomFactor> ZoomFactorVector;
 
 	typedef enum {
-		overSample_1x,
+		overSample_1x, 
 		overSample_2x,
 		overSample_4x,
 		overSample_8x,
@@ -68,7 +68,7 @@ namespace yg331 {
 
 	static const Steinberg::Vst::ParamValue
 		init_Input     = 0.5,
-		init_Effect    = 1.0,
+		init_Effect    = 0.0,
 		init_Curve     = 0.5,
 		init_Output    = 1.0,
 		init_VU        = 0.0,
