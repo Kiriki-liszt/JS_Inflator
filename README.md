@@ -2,9 +2,13 @@
 
 JS Inflator, the copy of Sonox Inflator, in vstsdk
 
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/new_GUI/screenshot.png"  width="400"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/478b505b6dacf0eacc5e71adc3a60bd1212e7428/screenshot_orig.png"  width="200"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/478b505b6dacf0eacc5e71adc3a60bd1212e7428/screenshot_twarch.png"  width="400"/>
 
-Windows and Mac. Linux not compatible.  
+Now comes in two GUIs.
+The new GUI is made by Twarch.
+
+Windows and Mac(Intel only). Linux not compatible.  
 This is my first attempt with VSTSDK & VSTGUI.  
 Some codes might be inefficent...  
 
