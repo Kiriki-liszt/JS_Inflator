@@ -651,6 +651,12 @@ namespace yg331 {
 			if (!bBypass) {
 				inputSampleL *= In_db;
 				inputSampleR *= In_db;
+				if (bClip) {
+					if      (inputSampleL >  1.0) inputSampleL =  1.0;
+					else if (inputSampleL < -1.0) inputSampleL = -1.0;
+					if      (inputSampleR >  1.0) inputSampleR =  1.0;
+					else if (inputSampleR < -1.0) inputSampleR = -1.0;
+				}
 			}
 
 			*Out_L = inputSampleL;
@@ -721,12 +727,6 @@ namespace yg331 {
 	{
 		Vst::Sample64 drySample = inputSample;
 		Vst::Sample64 wet = fEffect;
-
-		if (bClip) {
-			if      (inputSample >  1.0) inputSample =  1.0;
-			else if (inputSample < -1.0) inputSample = -1.0;
-		}
-		Vst::Sample64 dry = inputSample;
 		Vst::Sample64 sign;
 
 		if (inputSample > 0.0) sign =  1.0;
@@ -756,7 +756,7 @@ namespace yg331 {
 		}
 
 		// Meter += 20.0 * (log10(inputSample) - log10(dry));
-		Meter += 20.0 * log10(inputSample / dry);
+		Meter += 20.0 * log10(inputSample / drySample);
 		return inputSample;
 	}
 
