@@ -211,12 +211,13 @@ namespace yg331 {
 
 		Vst::ParamValue zoom_coef = 0.5;
 
+		/*
 #ifdef _ORIG
 		zoom_coef = 1.0;
 #elif _TWARCH
 		zoom_coef = 0.5;
-#endif // _ORIG
-
+#endif // _ORIG 
+*/
 
 		if (zoomFactors.empty())
 		{
