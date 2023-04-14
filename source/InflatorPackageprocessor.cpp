@@ -103,21 +103,21 @@ namespace yg331 {
 		    (out_3_64.channelBuffers64 == NULL)  ) return kResultFalse;
 
 		in_0_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		in_0_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		in_1_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		in_1_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		in_2_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
-		in_2_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
-		in_3_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
-		in_3_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+		in_0_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample); 
+		in_1_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
+		in_1_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
+		in_2_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+		in_2_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+		in_3_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 8);
+		in_3_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 8);
 		out_0_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
 		out_0_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		out_1_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		out_1_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		out_2_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
-		out_2_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
-		out_3_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
-		out_3_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+		out_1_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
+		out_1_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
+		out_2_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+		out_2_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+		out_3_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 8);
+		out_3_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 8);
 		if ((in_0_64.channelBuffers64[0] == NULL) || 
 		    (in_1_64.channelBuffers64[0] == NULL) || 
 		    (in_2_64.channelBuffers64[0] == NULL) || 

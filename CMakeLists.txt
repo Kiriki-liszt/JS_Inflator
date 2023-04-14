@@ -37,8 +37,8 @@ smtg_add_vst3plugin(InflatorPackage
     ${vst3sdk_SOURCE_DIR}/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
 )
 
-set(ORIGINAL_GUI 1)
-# set(TWARCH 1)
+# set(ORIGINAL_GUI 1)
+set(TWARCH 1)
 
 
 if(ORIGINAL_GUI)
