@@ -2,7 +2,7 @@
 
 JS Inflator, the copy of Sonox Inflator, in vstsdk
 
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/b72b5ecc9f67e9f530e4382cfb5349273ca13e45/screenshot_orig.png"  width="200"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/b72b5ecc9f67e9f530e4382cfb5349273ca13e45/screenshot_orig.png"  width="200"/>  
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/b72b5ecc9f67e9f530e4382cfb5349273ca13e45/screenshot_twarch.png"  width="400"/>
 
 Now comes in two GUIs.
@@ -80,17 +80,47 @@ Filter choice is most critical, I think.
 HIIR code used Polyphase Filter, which is minimun phase filter.  
 Has some letency, has some phase issue, but both very low.  
 
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_freq.png"  width="400"/>
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_phase_RC.png"  width="400"/>
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_phase_JS.png"  width="400"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_freq.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_phase_RC.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_phase_JS.png"  width="400"/>  
 
 Compared to 31-tap filter, polyphase has more flat frequency and phase response.  
 
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_H_RC.png"  width="400"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_H_RC.png"  width="400"/>  
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_H_JS.png"  width="400"/>  
 
 Meaning, HIIR is better at anti-alising.  
 
+* Linear Phase  
+HIIR resampling is Min-phase resampler, meaning phase distortion at high freqs.  
+For more natural high frequency hearing I Implemented r8brain-free-src designed by Aleksey Vaneev of Voxengo.  
+Had some time with it trying understand how FIR works. I still don't know yet but it works.  
+About weird coices for x4 and x8 - these resamplers have asynchronous latencies so downsampling starts little before upsampling starts.  
+To fix it, I just changed Transition band for x4 and 24-bit for x8.  
+Now it is free of Phase issuses. 
+
+* Comparisons  
+1x  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_1x.png"  width="400"/>  
+
+2x Min-phase  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_2x_Min.png"  width="400"/>  
+
+2x Lin-phase  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_2x_Lin.png"  width="400"/>  
+
+4x Min-phase  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_4x_Min.png"  width="400"/>  
+
+4x Lin-phase  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_4x_Lin.png"  width="400"/>  
+
+8x Min-phase  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_8x_Min.png"  width="400"/>  
+
+8x Lin-phase  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_8x_Lin.png"  width="400"/>  
+  
 * Latency Reporting  
 
 Naive implementaiton could use 'sendTextMessage' and 'receiveText' pair.  
@@ -103,6 +133,10 @@ Naive implementaiton could use 'sendTextMessage' and 'receiveText' pair.
 
 2. HIIR resampling codes by 'Laurent De Soras'.  
 <http://ldesoras.free.fr/index.html>  
+
+3. r8brain-free-src - Sample rate converter designed by Aleksey Vaneev of Voxengo  
+<https://github.com/avaneev/r8brain-free-src>  
+Modified for my need: Fractional resampling, Interpolation parts are deleted.  
 
 ## Todo
 
