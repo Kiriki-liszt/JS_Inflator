@@ -31,7 +31,8 @@ enum {
 	kParamOS,
 	kParamSplit,
 	kParamZoom,
-	kParamMeter
+	kParamMeter,
+	kParamLin
 };
 
 #include <vector>
@@ -84,7 +85,8 @@ namespace yg331 {
 	static const bool
 		init_Clip      = false,
 		init_Bypass    = false,
-		init_Split     = false;
+		init_Split     = false,
+		init_Lin       = false;
 
 	static const overSample
 		init_OS        = overSample_1x;

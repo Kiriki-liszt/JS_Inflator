@@ -245,6 +245,13 @@ namespace yg331 {
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Meter"), nullptr, stepCount, defaultVal, flags, tag);
 
+		Vst::StringListParameter* Phase = new Vst::StringListParameter(STR("Phase"), kParamLin);
+		Phase->appendString(STR("Min"));
+		Phase->appendString(STR("Lin")); // stepCount is automzed!
+		Phase->setNormalized(Phase->toNormalized(0));
+		Phase->addDependent(this);
+		parameters.addParameter(Phase);
+
 		return result;
 	}
 
@@ -274,7 +281,8 @@ namespace yg331 {
 		int32           savedClip   = 0;
 		int32           savedBypass = 0;
 		int32           savedSplit  = 0;
-		Vst::ParamValue savedZoom = 0.0;
+		Vst::ParamValue savedZoom   = 0.0;
+		Vst::ParamValue savedLin    = 0.0;
 
 		if (streamer.readDouble(savedInput)  == false) return kResultFalse;
 		if (streamer.readDouble(savedEffect) == false) return kResultFalse;
@@ -285,6 +293,7 @@ namespace yg331 {
 		if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
 		if (streamer.readInt32 (savedSplit)  == false) return kResultFalse;
 		if (streamer.readDouble(savedZoom)   == false) return kResultFalse;
+		if (streamer.readDouble(savedLin)    == false) return kResultFalse;
 
 		setParamNormalized(kParamInput,  savedInput);
 		setParamNormalized(kParamEffect, savedEffect);
@@ -295,6 +304,7 @@ namespace yg331 {
 		setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
 		setParamNormalized(kParamSplit,  savedSplit  ? 1 : 0);
 		setParamNormalized(kParamZoom,   savedZoom);
+		setParamNormalized(kParamLin,    savedLin);
 
 		return kResultOk;
 	}

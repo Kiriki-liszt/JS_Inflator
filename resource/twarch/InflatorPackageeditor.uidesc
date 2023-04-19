@@ -47,25 +47,27 @@
 			"OS_back": "#c1c3c4ff",
 			"db_dark": "#404f59ff",
 			"mid_back": "#293237ff",
+			"mid_font_color": "#2d2d2dff",
 			"mid_gray": "#8b8b8bff",
 			"transparent": "#ffffff00"
 		},
 		"gradients": {},
 		"control-tags": {
-			"Input": "0",
-			"Effect": "1",
-			"Curve": "2",
+			"Bypass": "9",
 			"Clip": "3",
-			"Output": "4",
+			"Curve": "2",
+			"Effect": "1",
 			"InVuPPML": "5",
 			"InVuPPMR": "6",
+			"Input": "0",
+			"Phase": "14",
+			"Meter": "13",
+			"OS": "10",
 			"OutVuPPML": "7",
 			"OutVuPPMR": "8",
-			"Bypass": "9",
-			"OS": "10",
+			"Output": "4",
 			"Split": "11",
-			"Zoom": "12",
-			"Meter": "13"
+			"Zoom": "12"
 		},
 		"custom": {
 			"FocusDrawing": {},
@@ -74,7 +76,7 @@
 			},
 			"UIGridController": {
 				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
-				"Size": "1, 1"
+				"Size": "5, 5"
 			},
 			"UIEditController": {
 				"EditViewScale": "0.5",
@@ -85,7 +87,7 @@
 				"SplitViewSize_1_1": "0.5113484646194926819262605022231582552195",
 				"SplitViewSize_2_0": "0.7705627705627705603674826306814793497324",
 				"SplitViewSize_2_1": "0.2240259740259740173229374704533256590366",
-				"TabSwitchValue": "6",
+				"TabSwitchValue": "2",
 				"Version": "1"
 			},
 			"UITemplateController": {
@@ -93,7 +95,7 @@
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
-				"SelectedRow": "15"
+				"SelectedRow": "14"
 			},
 			"UIBitmapsDataSource": {
 				"SelectedRow": "9"
@@ -102,7 +104,7 @@
 				"SelectedRow": "-1"
 			},
 			"UIColorsDataSource": {
-				"SelectedRow": "2"
+				"SelectedRow": "3"
 			},
 			"UIGradientsDataSource": {
 				"SelectedRow": "-1"
@@ -259,7 +261,7 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "740, 775",
+							"origin": "745, 775",
 							"size": "116, 116",
 							"transparent": "false",
 							"wants-focus": "false",
@@ -273,7 +275,7 @@
 							"bitmap": "knob_red_.png",
 							"class": "CAnimKnob",
 							"control-tag": "Effect",
-							"default-value": "1",
+							"default-value": "0",
 							"height-of-one-image": "148",
 							"inverse-bitmap": "false",
 							"max-value": "1",
@@ -320,10 +322,10 @@
 							"background-offset": "0, 0",
 							"class": "CTextEdit",
 							"control-tag": "Effect",
-							"default-value": "1",
+							"default-value": "0",
 							"font": "Arial_28",
 							"font-antialias": "true",
-							"font-color": "~ BlackCColor",
+							"font-color": "mid_font_color",
 							"frame-color": "mid_gray",
 							"frame-width": "1",
 							"immediate-text-change": "false",
@@ -348,7 +350,7 @@
 							"text-inset": "0, 0",
 							"text-rotation": "0",
 							"text-shadow-offset": "1, 1",
-							"title": "100.00",
+							"title": "0.00",
 							"transparent": "true",
 							"value-precision": "1",
 							"wants-focus": "true",
@@ -364,7 +366,7 @@
 							"default-value": "0.5",
 							"font": "Arial_28",
 							"font-antialias": "true",
-							"font-color": "~ BlackCColor",
+							"font-color": "mid_font_color",
 							"frame-color": "mid_gray",
 							"frame-width": "1",
 							"immediate-text-change": "false",
@@ -469,7 +471,7 @@
 							"default-value": "0.5",
 							"font": "Arial_28",
 							"font-antialias": "true",
-							"font-color": "~ WhiteCColor",
+							"font-color": "OS_back",
 							"frame-color": "~ BlackCColor",
 							"frame-width": "1",
 							"immediate-text-change": "false",
@@ -510,7 +512,7 @@
 							"default-value": "1",
 							"font": "Arial_28",
 							"font-antialias": "true",
-							"font-color": "~ WhiteCColor",
+							"font-color": "OS_back",
 							"frame-color": "~ BlackCColor",
 							"frame-width": "1",
 							"immediate-text-change": "false",
@@ -602,6 +604,45 @@
 							"size": "40, 392",
 							"transparent": "false",
 							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"COptionMenu": {
+						"attributes": {
+							"back-color": "OS_back",
+							"background-offset": "0, 0",
+							"class": "COptionMenu",
+							"control-tag": "Phase",
+							"default-value": "0",
+							"font": "Arial_26",
+							"font-antialias": "true",
+							"font-color": "mid_back",
+							"frame-color": "OS_back",
+							"frame-width": "0",
+							"max-value": "1",
+							"menu-check-style": "false",
+							"menu-popup-style": "false",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "555, 180",
+							"round-rect-radius": "5",
+							"shadow-color": "~ RedCColor",
+							"size": "60, 27",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "true",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "true",
 							"wheel-inc-value": "0.1"
 						}
 					}
