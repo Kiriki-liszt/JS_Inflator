@@ -8,7 +8,9 @@ JS Inflator, the copy of Sonox Inflator, in vstsdk
 Now comes in two GUIs.
 The new GUI is made by Twarch.
 
-Windows and Mac(Intel only). Linux not compatible.  
+Windows and Mac(Intel tested, Apple silicons not tested). 
+At least Xcode says - Standard Architectures (Apple Silicon, Intel) - $(ARCHS_STANDARD).  
+Linux not compatible.  
 This is my first attempt with VSTSDK & VSTGUI.  
 Some codes might be inefficent...  
 
