@@ -2,8 +2,8 @@
 // Copyright(c) 2023 yg331.
 //------------------------------------------------------------------------
 
-#include "InflatorPackageprocessor.h"
 // #include "InflatorPackagecids.h"
+#include "InflatorPackageprocessor.h"
 
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
@@ -11,30 +11,50 @@
 #include "public.sdk/source/vst/vstaudioprocessoralgo.h"
 #include "public.sdk/source/vst/vsthelpers.h"
 
+#include <stdio.h>
+
+namespace r8b {
+	CSyncObject CDSPRealFFTKeeper::StateSync;
+	CDSPRealFFT::CObjKeeper CDSPRealFFTKeeper::FFTObjects[31];
+
+	CSyncObject CDSPFIRFilterCache::StateSync;
+	CPtrKeeper< CDSPFIRFilter* > CDSPFIRFilterCache::Objects;
+	int CDSPFIRFilterCache::ObjCount = 0;
+} // namespace r8b
+
+
 using namespace Steinberg;
 
 namespace yg331 {
 	//------------------------------------------------------------------------
 	// InflatorPackageProcessor
 	//------------------------------------------------------------------------
-	InflatorPackageProcessor::InflatorPackageProcessor():
-		fInput(init_Input), 
-		fOutput(init_Output), 
-		fEffect(init_Effect), 
+	InflatorPackageProcessor::InflatorPackageProcessor() :
+		fInput(init_Input),
+		fOutput(init_Output),
+		fEffect(init_Effect),
 		fCurve(init_Curve),
+		curvepct(init_curvepct),
+		curveA(init_curveA),
+		curveB(init_curveB),
+		curveC(init_curveC),
+		curveD(init_curveD),
 		bBypass(init_Bypass),
-		bSplit(init_Split), 
+		bSplit(init_Split),
 		bClip(init_Clip),
 		fParamOS(init_OS),
 		fParamOSOld(init_OS),
-		fInVuPPML(init_InVuPPML), 
-		fInVuPPMR(init_InVuPPMR), 
-		fOutVuPPML(init_OutVuPPML), 
-		fOutVuPPMR(init_OutVuPPMR),
-		fInVuPPMLOld(init_InVuPPML), 
-		fInVuPPMROld(init_InVuPPMR), 
-		fOutVuPPMLOld(init_OutVuPPML), 
-		fOutVuPPMROld(init_OutVuPPMR),
+		fInVuPPML(init_VU),
+		fInVuPPMR(init_VU),
+		fOutVuPPML(init_VU),
+		fOutVuPPMR(init_VU),
+		fInVuPPMLOld(init_VU),
+		fInVuPPMROld(init_VU),
+		fOutVuPPMLOld(init_VU),
+		fOutVuPPMROld(init_VU),
+		fParamZoom(init_Zoom),
+		fMeter(init_VU),
+		fMeterOld(init_VU),
 		fpdL(1), fpdR(1)
 	{
 		//--- set the wanted controller for our processor
@@ -68,90 +88,91 @@ namespace yg331 {
 		fpdL = 1.0; while (fpdL < 16386) fpdL = rand() * UINT32_MAX;
 		fpdR = 1.0; while (fpdR < 16386) fpdR = rand() * UINT32_MAX;
 
-		in_0_64.numChannels = 2;
-		in_1_64.numChannels = 2;
-		in_2_64.numChannels = 2;
-		in_3_64.numChannels = 2;
-		out_0_64.numChannels = 2;
-		out_1_64.numChannels = 2;
-		out_2_64.numChannels = 2;
-		out_3_64.numChannels = 2;
+		in_0  = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		in_1  = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		in_2  = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		in_3  = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		out_0 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		out_1 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		out_2 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		out_3 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
+		if ((in_0  == NULL) || (in_1  == NULL) || (in_2  == NULL) || (in_3  == NULL)) return kResultFalse;
+		if ((out_0 == NULL) || (out_1 == NULL) || (out_2 == NULL) || (out_3 == NULL)) return kResultFalse;
 
-		in_0_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
-		in_1_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
-		in_2_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
-		in_3_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
-		out_0_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
-		out_1_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
-		out_2_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
-		out_3_64.channelBuffers64 = (Vst::Sample64**)malloc(sizeof(Vst::Sample64*) * 2);
-		if ((in_0_64.channelBuffers64 == NULL) || 
-		    (in_1_64.channelBuffers64 == NULL) || 
-		    (in_2_64.channelBuffers64 == NULL) || 
-		    (in_3_64.channelBuffers64 == NULL)  )  return kResultFalse;
-		if ((out_0_64.channelBuffers64 == NULL) || 
-		    (out_1_64.channelBuffers64 == NULL) || 
-		    (out_2_64.channelBuffers64 == NULL) || 
-		    (out_3_64.channelBuffers64 == NULL)  ) return kResultFalse;
+		tmp = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 8);
+		
+		for (int c = 0; c < 2; c++) {
+			in_0[c] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
+			in_1[c] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
+			in_2[c] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+			in_3[c] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 8);
+			out_0[c] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
+			out_1[c] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
+			out_2[c] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
+			out_3[c] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 8);
+			if ((in_0[c] == NULL) || (in_1[c] == NULL) ||
+				(in_2[c] == NULL) || (in_3[c] == NULL)) return kResultFalse;
+			if ((out_0[c] == NULL) || (out_1[c] == NULL) ||
+				(out_2[c] == NULL) || (out_3[c] == NULL)) return kResultFalse;
 
-		in_0_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		in_0_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		in_1_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		in_1_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		in_2_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
-		in_2_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
-		in_3_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
-		in_3_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
-		out_0_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		out_0_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		out_1_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		out_1_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample);
-		out_2_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
-		out_2_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 2);
-		out_3_64.channelBuffers64[0] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
-		out_3_64.channelBuffers64[1] = (Vst::Sample64*)malloc(sizeof(Vst::Sample64) * maxSample * 4);
-		if ((in_0_64.channelBuffers64[0] == NULL) || 
-		    (in_1_64.channelBuffers64[0] == NULL) || 
-		    (in_2_64.channelBuffers64[0] == NULL) || 
-		    (in_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
-		if ((in_0_64.channelBuffers64[1] == NULL) || 
-		    (in_1_64.channelBuffers64[1] == NULL) || 
-		    (in_2_64.channelBuffers64[1] == NULL) || 
-		    (in_3_64.channelBuffers64[1] == NULL)) return kResultFalse;
-		if ((out_0_64.channelBuffers64[0] == NULL) || 
-		    (out_1_64.channelBuffers64[0] == NULL) || 
-		    (out_2_64.channelBuffers64[0] == NULL) || 
-		    (out_3_64.channelBuffers64[0] == NULL)) return kResultFalse;
-		if ((out_0_64.channelBuffers64[1] == NULL) || 
-		    (out_1_64.channelBuffers64[1] == NULL) || 
-		    (out_2_64.channelBuffers64[1] == NULL) || 
-		    (out_3_64.channelBuffers64[1] == NULL)) return kResultFalse;
+			upSample_2x_1[c].set_coefs(hiir::coef_2x_1);
+			upSample_4x_1[c].set_coefs(hiir::coef_4x_1);
+			upSample_4x_2[c].set_coefs(hiir::coef_4x_2);
+			upSample_8x_1[c].set_coefs(hiir::coef_8x_1);
+			upSample_8x_2[c].set_coefs(hiir::coef_8x_2);
+			upSample_8x_3[c].set_coefs(hiir::coef_8x_3);
+			dnSample_2x_1[c].set_coefs(hiir::coef_2x_1);
+			dnSample_4x_2[c].set_coefs(hiir::coef_4x_1);
+			dnSample_4x_2[c].set_coefs(hiir::coef_4x_2);
+			dnSample_8x_1[c].set_coefs(hiir::coef_8x_1);
+			dnSample_8x_2[c].set_coefs(hiir::coef_8x_2);
+			dnSample_8x_3[c].set_coefs(hiir::coef_8x_3);
 
-		upSample_2x_1_L_64.set_coefs(hiir::coef_2x_1);
-		upSample_2x_1_R_64.set_coefs(hiir::coef_2x_1);
-		upSample_4x_1_L_64.set_coefs(hiir::coef_4x_1);
-		upSample_4x_1_R_64.set_coefs(hiir::coef_4x_1);
-		upSample_4x_2_L_64.set_coefs(hiir::coef_4x_2);
-		upSample_4x_2_R_64.set_coefs(hiir::coef_4x_2);
-		upSample_8x_1_L_64.set_coefs(hiir::coef_8x_1);
-		upSample_8x_1_R_64.set_coefs(hiir::coef_8x_1);
-		upSample_8x_2_L_64.set_coefs(hiir::coef_8x_2);
-		upSample_8x_2_R_64.set_coefs(hiir::coef_8x_2);
-		upSample_8x_3_L_64.set_coefs(hiir::coef_8x_3);
-		upSample_8x_3_R_64.set_coefs(hiir::coef_8x_3);
-		downSample_2x_1_L_64.set_coefs(hiir::coef_2x_1);
-		downSample_2x_1_R_64.set_coefs(hiir::coef_2x_1);
-		downSample_4x_2_L_64.set_coefs(hiir::coef_4x_1);
-		downSample_4x_2_R_64.set_coefs(hiir::coef_4x_1);
-		downSample_4x_2_L_64.set_coefs(hiir::coef_4x_2);
-		downSample_4x_2_R_64.set_coefs(hiir::coef_4x_2);
-		downSample_8x_1_L_64.set_coefs(hiir::coef_8x_1);
-		downSample_8x_1_R_64.set_coefs(hiir::coef_8x_1);
-		downSample_8x_2_L_64.set_coefs(hiir::coef_8x_2);
-		downSample_8x_2_R_64.set_coefs(hiir::coef_8x_2);
-		downSample_8x_3_L_64.set_coefs(hiir::coef_8x_3);
-		downSample_8x_3_R_64.set_coefs(hiir::coef_8x_3);
+			if (OS_Lin[c + 0]) { OS_Lin[c + 0].reset(); OutputDebugString(L"\nDEBUG : deleted\n"); }
+			if (OS_Lin[c + 2]) { OS_Lin[c + 2].reset(); OutputDebugString(L"\nDEBUG : deleted\n"); }
+					
+			/*
+			upSample_2x_Lin[c] = new r8b::CDSPResampler(1.0, 2.0, maxSample * 32);
+			upSample_4x_Lin[c] = new r8b::CDSPResampler(1.0, 4.0, maxSample * 32, 2.1);
+			upSample_8x_Lin[c] = new r8b::CDSPResampler(1.0, 8.0, maxSample * 32, 2.1);
+			dnSample_2x_Lin[c] = new r8b::CDSPResampler(2.0, 1.0, maxSample * 32);
+			dnSample_4x_Lin[c] = new r8b::CDSPResampler(4.0, 1.0, maxSample * 32, 2.1);
+			dnSample_8x_Lin[c] = new r8b::CDSPResampler(8.0, 1.0, maxSample * 32, 2.1);
+			
+			OS_Lin[c + 0] = new r8b::CDSPResampler(1.0, 2.0, maxSample * 2);
+			OS_Lin[c + 6] = new r8b::CDSPResampler(2.0, 1.0, maxSample * 32);
 
+			OS_Lin[c + 2] = new r8b::CDSPResampler(1.0, 4.0, maxSample * 4, 2.0);
+			OS_Lin[c + 8] = new r8b::CDSPResampler(4.0, 1.0, maxSample * 32, 2.0);
+
+			OS_Lin[c + 4] = new r8b::CDSPResampler(1.0, 8.0, maxSample * 8, 2.0);
+			OS_Lin[c + 10] = new r8b::CDSPResampler(8.0, 1.0, maxSample * 32, 2.0);
+
+			dly_2x_up = OS_Lin[c + 0]->getInLenBeforeOutPos(0);
+			dly_4x_up = OS_Lin[c + 2]->getInLenBeforeOutPos(0);
+			dly_8x_up = OS_Lin[c + 4]->getInLenBeforeOutPos(0);
+			dly_2x_dn = OS_Lin[c + 6]->getInLenBeforeOutPos(0);
+			dly_4x_dn = OS_Lin[c + 8]->getInLenBeforeOutPos(0);
+			dly_8x_dn = OS_Lin[c + 10]->getInLenBeforeOutPos(0);
+			lat_2x = dly_2x_dn/2;
+			lat_4x = dly_4x_dn/2;
+			lat_8x = dly_8x_dn/2;
+
+			char buff2[100];
+			sprintf(buff2, "INIT | 2x up : %d, 2x dn : %d\n", dly_2x_up, dly_2x_dn);
+			OutputDebugStringA(buff2);
+
+			char buff4[100];
+			sprintf(buff4, "INIT | 4x up : %d, 4x dn : %d\n", dly_4x_up, dly_4x_dn);
+			OutputDebugStringA(buff4);
+
+			char buff8[100];
+			sprintf(buff8, "INIT | 8x up : %d, 8x dn : %d\n", dly_8x_up, dly_8x_dn);
+			OutputDebugStringA(buff8);
+			*/
+		}
+		//OutputDebugString(L"\n\nDEBUG : \n\n");
+		
 		return kResultOk;
 	}
 
@@ -175,22 +196,30 @@ namespace yg331 {
 	tresult PLUGIN_API InflatorPackageProcessor::terminate()
 	{
 		// Here the Plug-in will be de-instantiated, last possibility to remove some memory!
-		free( in_0_64.channelBuffers64[0]); free( in_0_64.channelBuffers64[1]);
-		free( in_1_64.channelBuffers64[0]); free( in_1_64.channelBuffers64[1]);
-		free( in_2_64.channelBuffers64[0]); free( in_2_64.channelBuffers64[1]);
-		free( in_3_64.channelBuffers64[0]); free( in_3_64.channelBuffers64[1]);
-		free(out_0_64.channelBuffers64[0]); free(out_0_64.channelBuffers64[1]);
-		free(out_1_64.channelBuffers64[0]); free(out_1_64.channelBuffers64[1]);
-		free(out_2_64.channelBuffers64[0]); free(out_2_64.channelBuffers64[1]);
-		free(out_3_64.channelBuffers64[0]); free(out_3_64.channelBuffers64[1]);
-		free( in_0_64.channelBuffers64);
-		free( in_1_64.channelBuffers64);
-		free( in_2_64.channelBuffers64);
-		free( in_3_64.channelBuffers64);
-		free(out_0_64.channelBuffers64);
-		free(out_1_64.channelBuffers64);
-		free(out_2_64.channelBuffers64);
-		free(out_3_64.channelBuffers64);
+
+		for (int c = 0; c < 2; c++) {
+			free(in_0[c]);
+			free(in_1[c]);
+			free(in_2[c]);
+			free(in_3[c]);
+			free(out_0[c]);
+			free(out_1[c]);
+			free(out_2[c]);
+			free(out_3[c]);
+			if (OS_Lin[c + 0]) { OS_Lin[c + 0].reset(); OutputDebugString(L"\nDEBUG : deleted\n"); }
+			if (OS_Lin[c + 2]) { OS_Lin[c + 2].reset(); OutputDebugString(L"\nDEBUG : deleted\n"); }
+		}
+		free( in_0);
+		free( in_1);
+		free( in_2);
+		free( in_3);
+		free(out_0);
+		free(out_1);
+		free(out_2);
+		free(out_3);
+
+		free(tmp);
+
 		//---do not forget to call parent ------
 		return AudioEffect::terminate();
 	}
@@ -204,12 +233,16 @@ namespace yg331 {
 		else
 			sendTextMessage("InflatorPackageProcessor::setActive (false)");
 		*/
+		
 
 		// reset the VuMeter value
-		fInVuPPMLOld = init_InVuPPML;
-		fInVuPPMROld = init_InVuPPMR;
-		fOutVuPPMLOld = init_OutVuPPML;
-		fOutVuPPMROld = init_OutVuPPMR;
+		fInVuPPMLOld = init_VU;
+		fInVuPPMROld = init_VU;
+		fOutVuPPMLOld = init_VU;
+		fOutVuPPMROld = init_VU;
+
+		fMeter = init_VU;
+		fMeterOld = init_VU;
 
 		//--- called when the Plug-in is enable/disable (On/Off) -----
 		return AudioEffect::setActive(state);
@@ -258,10 +291,45 @@ namespace yg331 {
 						case kParamOS:
 							fParamOSOld = fParamOS;
 							fParamOS = convert_to_OS(value);
+							if (fParamOS != overSample_1x) {
+								for (int c = 0; c < 2; c++) {
+									if (OS_Lin[c + 0]) { OS_Lin[c + 0].reset(); OutputDebugString(L"\nDEBUG : deleted\n"); }
+									if (OS_Lin[c + 2]) { OS_Lin[c + 2].reset(); OutputDebugString(L"\nDEBUG : deleted\n"); }
+
+									if (fParamOS == overSample_2x) {
+										OS_Lin[c + 0] = new r8b::CDSPResampler(1.0, 2.0, maxSample * 2);
+										OS_Lin[c + 2] = new r8b::CDSPResampler(2.0, 1.0, maxSample * 32);
+										OutputDebugString(L"\nDEBUG : 2x new\n");
+									}
+									else if (fParamOS == overSample_4x) {
+										OS_Lin[c + 0] = new r8b::CDSPResampler(1.0, 4.0, maxSample * 4, 2.1);
+										OS_Lin[c + 2] = new r8b::CDSPResampler(4.0, 1.0, maxSample * 32, 2.1);
+										OutputDebugString(L"\nDEBUG : 4x new\n");
+									}
+									else {
+										OS_Lin[c + 0] = new r8b::CDSPResampler24(1.0, 8.0, maxSample * 8, 2.0);
+										OS_Lin[c + 2] = new r8b::CDSPResampler24(8.0, 1.0, maxSample * 32, 2.0);
+										OutputDebugString(L"\nDEBUG : 8x new\n");
+									}
+									dly_up = OS_Lin[c + 0]->getInLenBeforeOutPos(0);
+									dly_dn = OS_Lin[c + 2]->getInLenBeforeOutPos(0);
+									char buff2[100];
+									sprintf(buff2, "INIT | dly_up : %d, dly_dn : %d\n", dly_up, dly_dn);
+									OutputDebugStringA(buff2);
+								}
+								
+							}
 							if (fParamOSOld != fParamOS) sendTextMessage("OS");
+							break;
+						case kParamZoom:
+							fParamZoom = value;
 							break;
 						case kParamSplit:
 							bSplit = (value > 0.5f);
+							break;
+						case kParamLin:
+							LinPhase = (value > 0.5f);
+							sendTextMessage("OS");
 							break;
 						}
 					}
@@ -304,11 +372,14 @@ namespace yg331 {
 
 		data.outputs[0].silenceFlags = data.inputs[0].silenceFlags;
 
-		fInVuPPML = init_InVuPPML;
-		fInVuPPMR = init_InVuPPMR;
-		fOutVuPPML = init_OutVuPPML;
-		fOutVuPPMR = init_OutVuPPMR;
+		fInVuPPML = init_VU;
+		fInVuPPMR = init_VU;
+		fOutVuPPML = init_VU;
+		fOutVuPPMR = init_VU;
 
+		fMeter = init_VU;
+		fMeterOld = init_VU;
+		Meter = init_VU;
 
 		//---in bypass mode outputs should be like inputs-----
 		if (data.symbolicSampleSize == Vst::kSample32) {
@@ -318,6 +389,17 @@ namespace yg331 {
 			overSampling<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples);
 		}
 
+		Meter /= data.numSamples;
+		Meter *= fInVuPPML;
+		Meter *= 0.2;
+		fMeter = 0.7 * log10(20.0 * Meter);
+
+		fInVuPPML = VuPPMconvert(fInVuPPML);
+		fInVuPPMR = VuPPMconvert(fInVuPPMR);
+		fOutVuPPML = VuPPMconvert(fOutVuPPML);
+		fOutVuPPMR = VuPPMconvert(fOutVuPPMR);
+
+		
 		//---3) Write outputs parameter changes-----------
 		Vst::IParameterChanges* outParamChanges = data.outputParameterChanges;
 		// a new value of VuMeter will be send to the host
@@ -353,11 +435,21 @@ namespace yg331 {
 				paramQueue->addPoint(0, fOutVuPPMR, index2);
 			}
 
+			index = 0;
+			paramQueue = outParamChanges->addParameterData(kParamMeter, index);
+			if (paramQueue)
+			{
+				int32 index2 = 0;
+				paramQueue->addPoint(0, fMeter, index2);
+			}
+
 		}
 		fInVuPPMLOld = fInVuPPML;
 		fInVuPPMROld = fInVuPPMR;
 		fOutVuPPMLOld = fOutVuPPMR;
 		fOutVuPPMLOld = fOutVuPPMR;
+
+		fMeterOld = fMeter;
 
 		return kResultOk;
 	}
@@ -366,49 +458,70 @@ namespace yg331 {
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API InflatorPackageProcessor::setupProcessing(Vst::ProcessSetup& newSetup)
 	{
-		if (newSetup.maxSamplesPerBlock > 16384) {
-			return kResultFalse;
-		}
-
 		Band_Split_set(&Band_Split_L, 240.0, 2400.0, newSetup.sampleRate);
 		Band_Split_set(&Band_Split_R, 240.0, 2400.0, newSetup.sampleRate);
 
-		upSample_2x_1_L_64.clear_buffers();
-		upSample_2x_1_R_64.clear_buffers();
-		upSample_4x_1_L_64.clear_buffers();
-		upSample_4x_1_R_64.clear_buffers();
-		upSample_4x_2_L_64.clear_buffers();
-		upSample_4x_2_R_64.clear_buffers();
-		upSample_8x_1_L_64.clear_buffers();
-		upSample_8x_1_R_64.clear_buffers();
-		upSample_8x_2_L_64.clear_buffers();
-		upSample_8x_2_R_64.clear_buffers();
-		upSample_8x_3_L_64.clear_buffers();
-		upSample_8x_3_R_64.clear_buffers();
-		downSample_2x_1_L_64.clear_buffers();
-		downSample_2x_1_R_64.clear_buffers();
-		downSample_4x_1_L_64.clear_buffers();
-		downSample_4x_1_R_64.clear_buffers();
-		downSample_4x_2_L_64.clear_buffers();
-		downSample_4x_2_R_64.clear_buffers();
-		downSample_8x_1_L_64.clear_buffers();
-		downSample_8x_1_R_64.clear_buffers();
-		downSample_8x_2_L_64.clear_buffers();
-		downSample_8x_2_R_64.clear_buffers();
-		downSample_8x_3_L_64.clear_buffers();
-		downSample_8x_3_R_64.clear_buffers();
+
+		for (int c = 0; c < 2; c++) {
+			in_0[c] = (Vst::Sample64*)realloc(in_0[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock);
+			in_1[c] = (Vst::Sample64*)realloc(in_1[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 2);
+			in_2[c] = (Vst::Sample64*)realloc(in_2[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 4);
+			in_3[c] = (Vst::Sample64*)realloc(in_3[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 8);
+			out_0[c] = (Vst::Sample64*)realloc(out_0[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock);
+			out_1[c] = (Vst::Sample64*)realloc(out_1[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 2);
+			out_2[c] = (Vst::Sample64*)realloc(out_2[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 4);
+			out_3[c] = (Vst::Sample64*)realloc(out_3[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 8);
+			if ((in_0[c] == NULL) || (in_1[c] == NULL) ||
+				(in_2[c] == NULL) || (in_3[c] == NULL)) return kResultFalse;
+			if ((out_0[c] == NULL) || (out_1[c] == NULL) ||
+				(out_2[c] == NULL) || (out_3[c] == NULL)) return kResultFalse;
+
+			tmp = (Vst::Sample64*)realloc(tmp, sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 8);
+
+			upSample_2x_1[c].clear_buffers();
+			upSample_4x_1[c].clear_buffers();
+			upSample_4x_2[c].clear_buffers();
+			upSample_8x_1[c].clear_buffers();
+			upSample_8x_2[c].clear_buffers();
+			upSample_8x_3[c].clear_buffers();
+			dnSample_2x_1[c].clear_buffers();
+			dnSample_4x_1[c].clear_buffers();
+			dnSample_4x_2[c].clear_buffers();
+			dnSample_8x_1[c].clear_buffers();
+			dnSample_8x_2[c].clear_buffers();
+			dnSample_8x_3[c].clear_buffers();
+
+			/*
+			upSample_2x_Lin[c]->clear();
+			upSample_4x_Lin[c]->clear();
+			upSample_8x_Lin[c]->clear();
+			dnSample_2x_Lin[c]->clear();
+			dnSample_4x_Lin[c]->clear();
+			dnSample_8x_Lin[c]->clear();
+			lat_2x = dnSample_2x_Lin[c]->getInLenBeforeOutStart();
+			lat_4x = dnSample_4x_Lin[c]->getInLenBeforeOutStart();
+			lat_8x = dnSample_8x_Lin[c]->getInLenBeforeOutStart();
+			*/
+
+		}
 
 		//--- called before any processing ----
 		return AudioEffect::setupProcessing(newSetup);
-	}
+	} 
 
 	uint32 PLUGIN_API InflatorPackageProcessor::getLatencySamples() 
 	{
-		if      (fParamOS == overSample_1x) return hiir::os_1x_latency;
+		if (LinPhase) {
+			if      (fParamOS == overSample_1x) return 0;
+			else if (fParamOS == overSample_2x) return 3286;
+			else if (fParamOS == overSample_4x) return 3337;
+			else                                return 3401;
+		}
+
+		if      (fParamOS == overSample_1x) return 0;
 		else if (fParamOS == overSample_2x) return hiir::os_2x_latency;
 		else if (fParamOS == overSample_4x) return hiir::os_4x_latency;
-		else if (fParamOS == overSample_8x) return hiir::os_8x_latency;
-		else return 0;
+		else                                return hiir::os_8x_latency;
 	}
 
 	//------------------------------------------------------------------------
@@ -439,6 +552,8 @@ namespace yg331 {
 		int32           savedClip   = 0;
 		int32           savedBypass = 0;
 		int32           savedSplit  = 0;
+		Vst::ParamValue savedZoom   = 0.0;
+		Vst::ParamValue savedLin    = 0;
 
 		if (streamer.readDouble(savedInput)  == false) return kResultFalse;
 		if (streamer.readDouble(savedEffect) == false) return kResultFalse;
@@ -448,15 +563,19 @@ namespace yg331 {
 		if (streamer.readInt32(savedClip)    == false) return kResultFalse;
 		if (streamer.readInt32(savedBypass)  == false) return kResultFalse;
 		if (streamer.readInt32(savedSplit)   == false) return kResultFalse;
+		if (streamer.readDouble(savedZoom)   == false) return kResultFalse;
+		if (streamer.readDouble(savedLin)    == false) return kResultFalse;
 
-		fInput   = savedInput;
-		fEffect  = savedEffect;
-		fCurve   = savedCurve;
-		fOutput  = savedOutput;
-		fParamOS = convert_to_OS(savedOS);
-		bClip    = savedClip > 0;
-		bBypass  = savedBypass > 0;
-		bSplit   = savedSplit > 0;
+		fInput     = savedInput;
+		fEffect    = savedEffect;
+		fCurve     = savedCurve;
+		fOutput    = savedOutput;
+		fParamOS   = convert_to_OS(savedOS);
+		bClip      = savedClip   > 0;
+		bBypass    = savedBypass > 0;
+		bSplit     = savedSplit  > 0;
+		fParamZoom = savedZoom;
+		LinPhase   = savedLin;
 
 		if (Vst::Helpers::isProjectState(state) == kResultTrue)
 		{
@@ -498,6 +617,8 @@ namespace yg331 {
 		streamer.writeInt32(bClip ? 1 : 0);
 		streamer.writeInt32(bBypass ? 1 : 0);
 		streamer.writeInt32(bSplit ? 1 : 0);
+		streamer.writeDouble(fParamZoom);
+		streamer.writeDouble(LinPhase);
 
 		return kResultOk;
 	}
@@ -559,8 +680,8 @@ namespace yg331 {
 			In_R++;
 		}
 
-		fInVuPPML = VuPPMconvert(tmpL);
-		fInVuPPMR = VuPPMconvert(tmpR);
+		fInVuPPML = tmpL;
+		fInVuPPMR = tmpR;
 		return;
 	}
 
@@ -583,8 +704,8 @@ namespace yg331 {
 			Out_L++;
 			Out_R++;
 		}
-		fOutVuPPML = VuPPMconvert(tmpL);
-		fOutVuPPMR = VuPPMconvert(tmpR);
+		fOutVuPPML = tmpL;
+		fOutVuPPMR = tmpR;
 		return;
 	}
 
@@ -609,6 +730,12 @@ namespace yg331 {
 			if (!bBypass) {
 				inputSampleL *= In_db;
 				inputSampleR *= In_db;
+				if (bClip) {
+					if      (inputSampleL >  1.0) inputSampleL =  1.0;
+					else if (inputSampleL < -1.0) inputSampleL = -1.0;
+					if      (inputSampleR >  1.0) inputSampleR =  1.0;
+					else if (inputSampleR < -1.0) inputSampleR = -1.0;
+				}
 			}
 
 			*Out_L = inputSampleL;
@@ -679,30 +806,22 @@ namespace yg331 {
 	{
 		Vst::Sample64 drySample = inputSample;
 		Vst::Sample64 wet = fEffect;
-
-		if (bClip) {
-			if      (inputSample >  1.0) inputSample =  1.0;
-			else if (inputSample < -1.0) inputSample = -1.0;
-		}
-
 		Vst::Sample64 sign;
 
 		if (inputSample > 0.0) sign =  1.0;
 		else                   sign = -1.0;
 
-		Vst::Sample64 s1, s2, s3, s4;
+		Vst::Sample64 s1 = fabs(inputSample);
+		Vst::Sample64 s2 = s1 * s1;
+		Vst::Sample64 s3 = s2 * s1;
+		Vst::Sample64 s4 = s2 * s2;
 
-		s1 = fabs(inputSample);
-		s2 = s1 * s1;
-		s3 = s2 * s1;
-		s4 = s2 * s2;
-
-		if     (s1 >= 2.0) inputSample = 0.0;
-		else if (s1 > 1.0) inputSample = (2.0 * s1) - s2;
-		else               inputSample = (curveA * s1) +
-		                                 (curveB * s2) +
-		                                 (curveC * s3) -
-		                                 (curveD * (s2 - (2.0 * s3) + s4));
+		if      (s1 >= 2.0) inputSample = 0.0;
+		else if (s1 >  1.0) inputSample = (2.0 * s1) - s2;
+		else                inputSample = (curveA * s1) +
+		                                  (curveB * s2) +
+		                                  (curveC * s3) -
+		                                  (curveD * (s2 - (2.0 * s3) + s4));
 
 		inputSample *= sign;
 
@@ -715,6 +834,8 @@ namespace yg331 {
 			else if (inputSample < -1.0) inputSample = -1.0;
 		}
 
+		// Meter += 20.0 * (log10(inputSample) - log10(dry));
+		Meter += 20.0 * log10(inputSample / drySample);
 		return inputSample;
 	}
 
@@ -738,11 +859,10 @@ namespace yg331 {
 		SampleType* Out_R = (SampleType*)outputs[1];
 
 		curvepct = fCurve - 0.5;
-		curveA = 1.5 + curvepct;			// 1 + (curve + 50) / 100
-		curveB = -(curvepct + curvepct);	// - curve / 50
-		curveC = curvepct - 0.5;			// (curve - 50) / 100
+		curveA = 1.5 + curvepct; 
+		curveB = -(curvepct + curvepct); 
+		curveC = curvepct - 0.5; 
 		curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;	
-		// 1 / 16 - curve / 400 + curve ^ 2 / (4 * 10 ^ 4)
 
 		while (--sampleFrames >= 0)
 		{
@@ -803,66 +923,316 @@ namespace yg331 {
 		int32 sampleFrames
 	)
 	{
-		const long long    len_1 = sampleFrames;
-		const long long    len_2 = len_1 * 2;
-		const long long    len_4 = len_2 * 2;
-		const long long    len_8 = len_4 * 2;
+		if (true) {
+			long len_1 = sampleFrames;
+			long len_2 = len_1 * 2;
+			long len_4 = len_1 * 4;
+			long len_8 = len_1 * 8;
+			Vst::SampleRate SR_1 = getSampleRate;
+			Vst::SampleRate SR_2 = getSampleRate * 2.0;
+			Vst::SampleRate SR_4 = getSampleRate * 4.0;
+			Vst::SampleRate SR_8 = getSampleRate * 8.0;
 
-		
-		proc_in<SampleType>((SampleType**)inputs, in_0_64.channelBuffers64, sampleFrames);
+			for (int c = 0; c < 2; c++) {
+				memset(in_0[c], 0, sampleFrames);
+				memset(in_1[c], 0, sampleFrames * 2);
+				memset(in_2[c], 0, sampleFrames * 4);
+				memset(in_3[c], 0, sampleFrames * 8);
+				memset(out_0[c], 0, sampleFrames);
+				memset(out_1[c], 0, sampleFrames * 2);
+				memset(out_2[c], 0, sampleFrames * 4);
+				memset(out_3[c], 0, sampleFrames * 8);
+			}
 
-		processVuPPM_In<Vst::Sample64>(in_0_64.channelBuffers64, sampleFrames);
+			proc_in<SampleType>((SampleType**)inputs, in_0, len_1); // 32 -> 64bit & dither?
+			processVuPPM_In<Vst::Sample64>(in_0, len_1);
+			OS_stages(true, len_1); // 1x -> nx
 
+			/*
+			for (int c = 0; c < 2; c++) {
+				std::copy(in_0[c], in_0[c] + len_1, out_0[c]);
+				std::copy(in_1[c], in_1[c] + len_2, out_1[c]);
+				std::copy(in_2[c], in_2[c] + len_4, out_2[c]);
+				std::copy(in_3[c], in_3[c] + len_8, out_3[c]);
+			*/
+			if      (fParamOS == overSample_1x) processAudio<Vst::Sample64>(in_0, out_0, SR_1, len_1);
+			else if (fParamOS == overSample_2x) processAudio<Vst::Sample64>(in_1, out_1, SR_2, len_2);
+			else if (fParamOS == overSample_4x) processAudio<Vst::Sample64>(in_2, out_2, SR_4, len_4);
+			else                                processAudio<Vst::Sample64>(in_3, out_3, SR_8, len_8);
 
-		if (fParamOS == overSample_1x) {
-			processAudio<Vst::Sample64>(in_0_64.channelBuffers64, out_0_64.channelBuffers64, getSampleRate, len_1);
+			OS_stages(false, len_1);
+			proc_out<SampleType>(out_0, (SampleType**)outputs, len_1);
+			processVuPPM_Out<SampleType>((SampleType**)outputs, len_1);
+			return;
 		}
-		else if (fParamOS == overSample_2x) {
-			upSample_2x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
-			upSample_2x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
-
-			processAudio<Vst::Sample64>((Vst::Sample64**)in_1_64.channelBuffers64, (Vst::Sample64**)out_1_64.channelBuffers64, getSampleRate, len_2);
-
-			downSample_2x_1_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
-			downSample_2x_1_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
-		}
-		else if (fParamOS == overSample_4x) {
-
-			upSample_4x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
-			upSample_4x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
-			upSample_4x_2_L_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[0], (Vst::Sample64*)in_1_64.channelBuffers64[0], len_2);
-			upSample_4x_2_R_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[1], (Vst::Sample64*)in_1_64.channelBuffers64[1], len_2);
-
-			processAudio<Vst::Sample64>((Vst::Sample64**)in_2_64.channelBuffers64, (Vst::Sample64**)out_2_64.channelBuffers64, getSampleRate, len_4);
-
-			downSample_4x_1_L_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[0], (Vst::Sample64*)out_2_64.channelBuffers64[0], len_2);
-			downSample_4x_1_R_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[1], (Vst::Sample64*)out_2_64.channelBuffers64[1], len_2);
-			downSample_4x_2_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
-			downSample_4x_2_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
-		}
-		else {
-
-			upSample_8x_1_L_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[0], (Vst::Sample64*)in_0_64.channelBuffers64[0], len_1);
-			upSample_8x_1_R_64.process_block((Vst::Sample64*)in_1_64.channelBuffers64[1], (Vst::Sample64*)in_0_64.channelBuffers64[1], len_1);
-			upSample_8x_2_L_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[0], (Vst::Sample64*)in_1_64.channelBuffers64[0], len_2);
-			upSample_8x_2_R_64.process_block((Vst::Sample64*)in_2_64.channelBuffers64[1], (Vst::Sample64*)in_1_64.channelBuffers64[1], len_2);
-			upSample_8x_3_L_64.process_block((Vst::Sample64*)in_3_64.channelBuffers64[0], (Vst::Sample64*)in_2_64.channelBuffers64[0], len_4);
-			upSample_8x_3_R_64.process_block((Vst::Sample64*)in_3_64.channelBuffers64[1], (Vst::Sample64*)in_2_64.channelBuffers64[1], len_4);
-
-			processAudio<Vst::Sample64>((Vst::Sample64**)in_3_64.channelBuffers64, (Vst::Sample64**)out_3_64.channelBuffers64, getSampleRate, len_8);
-
-			downSample_8x_1_L_64.process_block((Vst::Sample64*)out_2_64.channelBuffers64[0], (Vst::Sample64*)out_3_64.channelBuffers64[0], len_4);
-			downSample_8x_1_R_64.process_block((Vst::Sample64*)out_2_64.channelBuffers64[1], (Vst::Sample64*)out_3_64.channelBuffers64[1], len_4);
-			downSample_8x_2_L_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[0], (Vst::Sample64*)out_2_64.channelBuffers64[0], len_2);
-			downSample_8x_2_R_64.process_block((Vst::Sample64*)out_1_64.channelBuffers64[1], (Vst::Sample64*)out_2_64.channelBuffers64[1], len_2);
-			downSample_8x_3_L_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[0], (Vst::Sample64*)out_1_64.channelBuffers64[0], len_1);
-			downSample_8x_3_R_64.process_block((Vst::Sample64*)out_0_64.channelBuffers64[1], (Vst::Sample64*)out_1_64.channelBuffers64[1], len_1);
-		}
-
-		proc_out<SampleType>(out_0_64.channelBuffers64, (SampleType**)outputs, sampleFrames);
-
-		processVuPPM_Out<SampleType>((SampleType**)outputs, sampleFrames);
-
-		return;
 	}
+	
+
+
+
+	void InflatorPackageProcessor::OS_stages(bool isUp, long remaining) {
+		long len_1 = remaining;
+		long len_2 = len_1 * 2;
+		long len_4 = len_1 * 4;
+		long len_8 = len_1 * 8;
+
+		if (fParamOS == overSample_1x) return;
+
+		for (uint32_t c = 0; c < 2; ++c) {
+			if (!LinPhase && isUp) {
+				if (fParamOS == overSample_2x) {
+					upSample_2x_1[c].process_block((Vst::Sample64*)in_1[c], (Vst::Sample64*)in_0[c], len_1);
+				}
+				else if (fParamOS == overSample_4x) {
+					upSample_4x_1[c].process_block((Vst::Sample64*)in_1[c], (Vst::Sample64*)in_0[c], len_1);
+					upSample_4x_2[c].process_block((Vst::Sample64*)in_2[c], (Vst::Sample64*)in_1[c], len_2);
+				}
+				else {
+					upSample_8x_1[c].process_block((Vst::Sample64*)in_1[c], (Vst::Sample64*)in_0[c], len_1);
+					upSample_8x_2[c].process_block((Vst::Sample64*)in_2[c], (Vst::Sample64*)in_1[c], len_2);
+					upSample_8x_3[c].process_block((Vst::Sample64*)in_3[c], (Vst::Sample64*)in_2[c], len_4);
+				}
+			}
+			else if (!LinPhase && !isUp) {
+				if (fParamOS == overSample_2x) {
+					dnSample_2x_1[c].process_block((Vst::Sample64*)out_0[c], (Vst::Sample64*)out_1[c], len_1);
+				}
+				else if (fParamOS == overSample_4x) {
+					dnSample_4x_1[c].process_block((Vst::Sample64*)out_1[c], (Vst::Sample64*)out_2[c], len_2);
+					dnSample_4x_2[c].process_block((Vst::Sample64*)out_0[c], (Vst::Sample64*)out_1[c], len_1);
+				}
+				else {
+					dnSample_8x_1[c].process_block((Vst::Sample64*)out_2[c], (Vst::Sample64*)out_3[c], len_4);
+					dnSample_8x_2[c].process_block((Vst::Sample64*)out_1[c], (Vst::Sample64*)out_2[c], len_2);
+					dnSample_8x_3[c].process_block((Vst::Sample64*)out_0[c], (Vst::Sample64*)out_1[c], len_1);
+				}
+			}
+			else if (LinPhase && isUp) {
+				double* outPtr;
+
+				int numInputSamples = (int)len_1;
+
+				int inputCounter = 0;
+				int outputCounter = 0;
+
+				while (numInputSamples > 0) {
+
+					int samplesToProcess = min(numInputSamples, (int)maxSample);
+					int numUpSampledSamples = 0;
+					OutputDebugString(L"\nDEBUG : upSample\n");
+
+					if (fParamOS == overSample_2x) {
+						numUpSampledSamples = OS_Lin[c]->process(&in_0[c][inputCounter], (int)samplesToProcess, outPtr);
+						OutputDebugString(L"DEBUG : upSample_2x proc\n");
+						char buff[100];
+						sprintf(buff, "upSample_2x | samplesToProcess = %d, numUpSampledSamples == %d\n", samplesToProcess, numUpSampledSamples);
+						OutputDebugStringA(buff);
+						inputCounter += samplesToProcess;
+						numInputSamples -= samplesToProcess;
+						if (numUpSampledSamples > 0) {
+							std::copy(outPtr, outPtr + numUpSampledSamples, &in_1[c][outputCounter]);
+							OutputDebugString(L"DEBUG : upSample_2x copy\n");
+							outputCounter += numUpSampledSamples;
+						}
+					}
+					else if (fParamOS == overSample_4x) {						
+						numUpSampledSamples = OS_Lin[c]->process(&in_0[c][inputCounter], (int)samplesToProcess, outPtr);
+						OutputDebugString(L"DEBUG : upSample_4x proc\n");
+						char buff[100];
+						sprintf(buff, "upSample_4x | samplesToProcess = %d, numUpSampledSamples == %d\n", samplesToProcess, numUpSampledSamples);
+						OutputDebugStringA(buff);
+						inputCounter += samplesToProcess;
+						numInputSamples -= samplesToProcess;
+						if (numUpSampledSamples > 0) {
+							if (outputCounter + numUpSampledSamples > len_4) numUpSampledSamples = len_4 - outputCounter;
+							std::copy(outPtr, outPtr + numUpSampledSamples, &in_2[c][outputCounter]);
+							OutputDebugString(L"DEBUG : upSample_4x copy\n");
+							outputCounter += numUpSampledSamples;
+						}
+					}
+					else {
+						numUpSampledSamples = OS_Lin[c]->process(&in_0[c][inputCounter], (int)samplesToProcess, outPtr);
+						OutputDebugString(L"DEBUG : upSample_8x proc\n");
+						char buff[100];
+						sprintf(buff, "upSample_8x | samplesToProcess = %d, numUpSampledSamples == %d\n", samplesToProcess, numUpSampledSamples);
+						OutputDebugStringA(buff);
+						inputCounter += samplesToProcess;
+						numInputSamples -= samplesToProcess;
+						if (numUpSampledSamples > 0) {
+							if (outputCounter + numUpSampledSamples > len_8) numUpSampledSamples = len_8 - outputCounter;
+							std::copy(outPtr, outPtr + numUpSampledSamples, &in_3[c][outputCounter]);
+							OutputDebugString(L"DEBUG : upSample_8x copy\n");
+							outputCounter += numUpSampledSamples;
+						}
+
+						// 출력이 다 찰 때 까지 입력에 0을 밀어넣고
+						// 출력 남은거는 버리고 버퍼 클리어?
+
+						// 0 is end, 4095 is start
+						// 
+						// 1. memset(tmp, 0, len_4);
+						// 2. outPtr, outPtr+numUpSampledSamples -> tmp[0]
+						// 
+						// 3. x8_3spl[0:2] -> in_3[4093:4095]
+						// 4. tmp[3:4095] -> in_3[0:4092]
+						// 5. tmp[0:2] -> x8_3spl[0:2]
+					}
+				}
+
+
+				/*
+				int push_in = dly_up;
+
+				memset(tmp, 0, sizeof(double) * push_in);
+
+				while (push_in > 0) {
+					int samplesToProcess = min(push_in, (int)maxSample);
+					int numUpSampledSamples = 0;
+					numUpSampledSamples = OS_Lin[c]->process(tmp, (int)samplesToProcess, outPtr);
+					
+					push_in -= samplesToProcess;
+
+					if (numUpSampledSamples > 0) {
+						if (fParamOS == overSample_2x) 
+							std::copy(outPtr, outPtr + numUpSampledSamples, &in_1[c][outputCounter]);
+						if (fParamOS == overSample_4x) 
+							std::copy(outPtr, outPtr + numUpSampledSamples, &in_2[c][outputCounter]);
+						else 
+							std::copy(outPtr, outPtr + numUpSampledSamples, &in_3[c][outputCounter]);
+						
+						outputCounter += numUpSampledSamples;
+					}
+				}
+
+				char buff[100];
+				sprintf(buff, "TOTAL | outputCounter = %d\n\n", outputCounter);
+				OutputDebugStringA(buff);
+
+				OS_Lin[c]->clear();
+				*/
+
+			}
+			else if (LinPhase && !isUp) { // LinPhase && !isUp
+				double* outPtr;
+				int numInputSamples = 0;
+				if      (fParamOS == overSample_2x) { numInputSamples = (int)len_2; OutputDebugString(L"\nDEBUG : dnSample_2x\n"); }
+				else if (fParamOS == overSample_4x) { numInputSamples = (int)len_4; OutputDebugString(L"\nDEBUG : dnSample_4x\n"); }
+				else                                { numInputSamples = (int)len_8; OutputDebugString(L"\nDEBUG : dnSample_8x\n"); }
+				int inputCounter = 0;
+				int outputCounter = 0;
+				while (numInputSamples > 0) {
+					if (fParamOS == overSample_2x) {
+						int samplesToProcess = min(numInputSamples, (int)maxSample * 2);
+						int numUpSampledSamples = 0;
+						numUpSampledSamples = OS_Lin[c+2]->process(&out_1[c][inputCounter], (int)samplesToProcess, outPtr);
+						OutputDebugString(L"DEBUG : dnSample_2x proc\n");
+						char buff[100];
+						sprintf(buff, "dnSample_2x | samplesToProcess = %d, numUpSampledSamples == %d\n", samplesToProcess, numUpSampledSamples);
+						OutputDebugStringA(buff);
+
+						inputCounter += samplesToProcess;
+						numInputSamples -= samplesToProcess;
+						if (numUpSampledSamples > 0) {
+							std::copy(outPtr, outPtr + numUpSampledSamples, &out_0[c][outputCounter]);
+							OutputDebugString(L"DEBUG : dnSample_2x copy\n\n");
+							outputCounter += numUpSampledSamples;
+						}
+					}
+					else if (fParamOS == overSample_4x) {
+						int samplesToProcess = min(numInputSamples, (int)maxSample * 4);
+						int numUpSampledSamples = 0;
+						numUpSampledSamples = OS_Lin[c+2]->process(&out_2[c][inputCounter], (int)samplesToProcess, outPtr);
+						OutputDebugString(L"DEBUG : dnSample_4x proc\n");
+						char buff[100];
+						sprintf(buff, "dnSample_4x | samplesToProcess = %d, numUpSampledSamples == %d\n", samplesToProcess, numUpSampledSamples);
+						OutputDebugStringA(buff);
+
+						inputCounter += samplesToProcess;
+						numInputSamples -= samplesToProcess;
+						if (numUpSampledSamples > 0) {
+							if (outputCounter + numUpSampledSamples > len_1) numUpSampledSamples = len_1 - outputCounter;
+							std::copy(outPtr, outPtr + numUpSampledSamples, &out_0[c][outputCounter]);
+							OutputDebugString(L"DEBUG : dnSample_4x copy\n\n");
+							outputCounter += numUpSampledSamples;
+						}
+					}
+					else {
+						int samplesToProcess = min(numInputSamples, (int)maxSample * 8);
+						int numUpSampledSamples = 0;
+						numUpSampledSamples = OS_Lin[c+2]->process(&out_3[c][inputCounter], (int)samplesToProcess, outPtr);
+						OutputDebugString(L"DEBUG : dnSample_8x proc\n");
+						char buff[100];
+						sprintf(buff, "dnSample_8x | samplesToProcess = %d, numUpSampledSamples == %d\n", samplesToProcess, numUpSampledSamples);
+						OutputDebugStringA(buff);
+
+						inputCounter += samplesToProcess;
+						numInputSamples -= samplesToProcess;
+						if (numUpSampledSamples > 0) {
+							if (outputCounter + numUpSampledSamples > len_1) {
+								numUpSampledSamples = len_1 - outputCounter;
+								OutputDebugString(L"DEBUG : dnSample_8x OVERFLOW\n");
+							}
+							std::copy(outPtr, outPtr + numUpSampledSamples, &out_0[c][outputCounter]);
+							OutputDebugString(L"DEBUG : dnSample_8x copy\n\n");
+							outputCounter += numUpSampledSamples;
+						}
+					}
+				}
+				char buff[100];
+				sprintf(buff, "TOTAL | outputCounter = %d\n\n", outputCounter);
+				OutputDebugStringA(buff);
+
+				/*
+				int push_in = dly_dn;
+
+				memset(tmp, 0, sizeof(double)* push_in);
+
+				while (push_in > 0) {
+
+					if (fParamOS == overSample_2x) {
+						int samplesToProcess = min(push_in, (int)maxSample * 2);
+						int numUpSampledSamples = 0;
+						numUpSampledSamples = OS_Lin[c + 2]->process(&out_1[c][inputCounter], (int)samplesToProcess, outPtr);
+						push_in -= samplesToProcess;
+
+						if (numUpSampledSamples > 0) {
+							std::copy(outPtr, outPtr + numUpSampledSamples, &out_0[c][outputCounter]);
+							outputCounter += numUpSampledSamples;
+						}
+					}
+					else if (fParamOS == overSample_4x) {
+						int samplesToProcess = min(push_in, (int)maxSample * 4);
+						int numUpSampledSamples = 0;
+						numUpSampledSamples = OS_Lin[c + 2]->process(&out_2[c][inputCounter], (int)samplesToProcess, outPtr);
+						push_in -= samplesToProcess;
+
+						if (numUpSampledSamples > 0) {
+							std::copy(outPtr, outPtr + numUpSampledSamples, &out_0[c][outputCounter]);
+							outputCounter += numUpSampledSamples;
+						}
+					}
+					else {
+						int samplesToProcess = min(push_in, (int)maxSample * 8);
+						int numUpSampledSamples = 0;
+						numUpSampledSamples = OS_Lin[c + 2]->process(&out_3[c][inputCounter], (int)samplesToProcess, outPtr);
+						push_in -= samplesToProcess;
+
+						if (numUpSampledSamples > 0) {
+							std::copy(outPtr, outPtr + numUpSampledSamples, &out_0[c][outputCounter]);
+							outputCounter += numUpSampledSamples;
+						}
+					}
+				}
+				OS_Lin[c + 2]->clear();
+				*/
+			}
+			else {
+				OutputDebugString(L"DEBUG : SHOULD NOT HAPPEN\n\n");
+			}
+		}
+	}
+
+
 } // namespace yg331
+
+

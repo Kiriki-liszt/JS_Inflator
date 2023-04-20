@@ -1,6 +1,5 @@
 build/*.*
 build/.vs
-build/Airwindows_VariMu.dir
 build/bin
 build/CMakeFiles
 build/lib

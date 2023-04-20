@@ -9,10 +9,10 @@
 				"path": "handle.png"
 			},
 			"knob_red": {
-				"path": "knob_red.png"
+				"path": "knob_red_.png"
 			},
 			"knob_green": {
-				"path": "knob_green.png"
+				"path": "knob_green_.png"
 			},
 			"button_onoff": {
 				"path": "button_onoff.png"
@@ -23,30 +23,52 @@
 			"LED_OFF": {
 				"path": "LED_OFF.png"
 			},
+			"LED_FX_ON": {
+				"path": "LED_FX_ON.png"
+			},
+			"LED_FX_OFF": {
+				"path": "LED_FX_OFF.png"
+			},
 			"LED_cover": {
 				"path": "LED_cover.png"
-			},
-			"OS_text.png": {
-				"path": "OS_text.png"
-			},
-			"oversample_bg": {
-				"path": "oversample_bg.png"
-			},
-			"oversample_handle": {
-				"path": "oversample_handle.png"
 			}
 		},
 		"fonts": {
-			"Monoplex KR 10": {
-				"font-name": "Monoplex KR",
-				"italic": "true",
-				"size": "10"
+			"Arial_18": {
+				"font-name": "Arial",
+				"size": "18"
+			},
+			"Arial_24": {
+				"font-name": "Arial",
+				"size": "24"
 			}
 		},
 		"colors": {
+			"New": "#b6b6b6ff",
 			"transparent": "#ffffff00"
 		},
-		"gradients": {},
+		"gradients": {
+			"Blue": [
+				{
+					"rgba": "#4c55ffff",
+					"start": "1"
+				},
+				{
+					"rgba": "#000000ff",
+					"start": "1"
+				}
+			],
+			"Yellow": [
+				{
+					"rgba": "#ffff00ff",
+					"start": "1"
+				},
+				{
+					"rgba": "#000000ff",
+					"start": "1"
+				}
+			]
+		},
 		"control-tags": {
 			"Bypass": "9",
 			"Clip": "3",
@@ -55,23 +77,26 @@
 			"InVuPPML": "5",
 			"InVuPPMR": "6",
 			"Input": "0",
+			"Meter": "13",
 			"OS": "10",
 			"OutVuPPML": "7",
 			"OutVuPPMR": "8",
 			"Output": "4",
-			"Split": "11"
+			"Phase": "14",
+			"Split": "11",
+			"Zoom": "12"
 		},
 		"custom": {
 			"FocusDrawing": {},
 			"VST3Editor": {
-				"Path": "InflatorPackageeditor.uidesc"
+				"Path": "C:\\VST_make\\Kiriki_yg_Liszt\\generator\\InflatorPackage\\resource\\InflatorPackageeditor.uidesc"
 			},
 			"UIGridController": {
 				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
-				"Size": "1, 1"
+				"Size": "5, 5"
 			},
 			"UIEditController": {
-				"EditViewScale": "1",
+				"EditViewScale": "0.5",
 				"EditorSize": "0, 0, 717, 598",
 				"EncodeBitmaps": "false",
 				"SplitViewSize_0_0": "0.7727272727272727070868540977244265377522",
@@ -80,7 +105,7 @@
 				"SplitViewSize_1_1": "0.5139860139860139565115559889818541705608",
 				"SplitViewSize_2_0": "0.5927475592747559751671815320150926709175",
 				"SplitViewSize_2_1": "0.4002789400278939924149312901135999709368",
-				"TabSwitchValue": "1",
+				"TabSwitchValue": "4",
 				"Version": "1",
 				"WriteRCFile": "false"
 			},
@@ -89,19 +114,19 @@
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
-				"SelectedRow": "21"
+				"SelectedRow": "9"
 			},
 			"UIGradientsDataSource": {
-				"SelectedRow": "-1"
+				"SelectedRow": "1"
 			},
 			"UIBitmapsDataSource": {
-				"SelectedRow": "8"
+				"SelectedRow": "9"
 			},
 			"UIFontsDataSource": {
 				"SelectedRow": "0"
 			},
 			"UITagsDataSource": {
-				"SelectedRow": "5"
+				"SelectedRow": "11"
 			},
 			"UIColorsDataSource": {
 				"SelectedRow": "0"
@@ -116,7 +141,7 @@
 					"mouse-enabled": "true",
 					"opacity": "1",
 					"origin": "0, 0",
-					"size": "236, 400",
+					"size": "472, 800",
 					"transparent": "false",
 					"wants-focus": "false"
 				},
@@ -128,7 +153,7 @@
 							"mouse-enabled": "true",
 							"opacity": "1",
 							"origin": "0, 0",
-							"size": "236, 400",
+							"size": "472, 800",
 							"transparent": "false",
 							"wants-focus": "false"
 						}
@@ -143,8 +168,8 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "11, 63",
-							"size": "43, 59",
+							"origin": "27, 132",
+							"size": "86, 118",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
@@ -160,8 +185,8 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "11, 105",
-							"size": "43, 59",
+							"origin": "28, 214",
+							"size": "86, 118",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
@@ -177,8 +202,8 @@
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "11, 148",
-							"size": "43, 59",
+							"origin": "28, 298",
+							"size": "86, 118",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
@@ -207,9 +232,9 @@
 							"mouse-enabled": "true",
 							"opacity": "1",
 							"orientation": "vertical",
-							"origin": "135, 172",
+							"origin": "270, 343",
 							"reverse-orientation": "false",
-							"size": "32, 232",
+							"size": "64, 464",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1",
@@ -239,9 +264,9 @@
 							"mouse-enabled": "true",
 							"opacity": "1",
 							"orientation": "vertical",
-							"origin": "189, 172",
+							"origin": "376, 343",
 							"reverse-orientation": "false",
-							"size": "32, 232",
+							"size": "64, 464",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1",
@@ -255,16 +280,16 @@
 							"bitmap": "knob_red",
 							"class": "CAnimKnob",
 							"control-tag": "Effect",
-							"default-value": "1",
-							"height-of-one-image": "64",
+							"default-value": "0",
+							"height-of-one-image": "128",
 							"inverse-bitmap": "false",
 							"max-value": "1",
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "30, 232",
-							"size": "64, 64",
-							"sub-pixmaps": "127",
+							"origin": "58, 459",
+							"size": "128, 128",
+							"sub-pixmaps": "63",
 							"transparent": "false",
 							"value-inset": "0",
 							"wants-focus": "false",
@@ -280,15 +305,15 @@
 							"class": "CAnimKnob",
 							"control-tag": "Curve",
 							"default-value": "0.5",
-							"height-of-one-image": "64",
+							"height-of-one-image": "128",
 							"inverse-bitmap": "false",
 							"max-value": "1",
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "30, 331",
-							"size": "64, 64",
-							"sub-pixmaps": "127",
+							"origin": "59, 657",
+							"size": "128, 128",
+							"sub-pixmaps": "63",
 							"transparent": "false",
 							"value-inset": "0",
 							"wants-focus": "false",
@@ -310,8 +335,8 @@
 							"off-bitmap": "LED_OFF",
 							"opacity": "1",
 							"orientation": "vertical",
-							"origin": "138, 30",
-							"size": "10, 125",
+							"origin": "275, 62",
+							"size": "20, 250",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
@@ -331,8 +356,8 @@
 							"off-bitmap": "LED_OFF",
 							"opacity": "1",
 							"orientation": "vertical",
-							"origin": "154, 30",
-							"size": "10, 125",
+							"origin": "303, 62",
+							"size": "20, 250",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
@@ -352,8 +377,8 @@
 							"off-bitmap": "LED_OFF",
 							"opacity": "1",
 							"orientation": "vertical",
-							"origin": "191, 30",
-							"size": "10, 125",
+							"origin": "382, 62",
+							"size": "20, 250",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
@@ -373,8 +398,29 @@
 							"off-bitmap": "LED_OFF",
 							"opacity": "1",
 							"orientation": "vertical",
-							"origin": "207, 30",
-							"size": "10, 125",
+							"origin": "410, 62",
+							"size": "20, 250",
+							"transparent": "false",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CVuMeter": {
+						"attributes": {
+							"bitmap": "LED_FX_ON",
+							"class": "CVuMeter",
+							"control-tag": "Meter",
+							"decrease-step-value": "0.1",
+							"default-value": "0",
+							"max-value": "1",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"num-led": "25",
+							"off-bitmap": "LED_FX_OFF",
+							"opacity": "1",
+							"orientation": "vertical",
+							"origin": "342, 62",
+							"size": "20, 150",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
@@ -386,82 +432,127 @@
 							"class": "CView",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "117, 22",
-							"size": "117, 155",
+							"origin": "234, 45",
+							"size": "235, 310",
 							"transparent": "false",
 							"wants-focus": "false"
 						}
 					},
-					"CSlider": {
+					"COptionMenu": {
 						"attributes": {
-							"bitmap": "oversample_bg",
-							"bitmap-offset": "0, 0",
-							"class": "CSlider",
-							"control-tag": "OS",
+							"back-color": "~ BlackCColor",
+							"background-offset": "0, 0",
+							"class": "COptionMenu",
+							"control-tag": "Zoom",
 							"default-value": "0",
-							"draw-back": "false",
-							"draw-back-color": "~ BlackCColor",
-							"draw-frame": "false",
-							"draw-frame-color": "~ GreyCColor",
-							"draw-value": "false",
-							"draw-value-color": "~ WhiteCColor",
-							"draw-value-from-center": "false",
-							"draw-value-inverted": "false",
+							"font": "Arial_24",
+							"font-antialias": "true",
+							"font-color": "~ WhiteCColor",
+							"frame-color": "~ BlackCColor",
 							"frame-width": "1",
-							"handle-bitmap": "oversample_handle",
-							"handle-offset": "0, 0",
-							"max-value": "1",
-							"min-value": "0",
-							"mode": "relative touch",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"orientation": "horizontal",
-							"origin": "105, 2",
-							"reverse-orientation": "false",
-							"size": "130, 20",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.333",
-							"zoom-factor": "1.5"
-						}
-					},
-					"CSegmentButton": {
-						"attributes": {
-							"class": "CSegmentButton",
-							"control-tag": "OS",
-							"default-value": "0",
-							"font": "~ NormalFontSmall",
-							"frame-color": "transparent",
-							"frame-width": "0",
-							"icon-text-margin": "3",
-							"max-value": "1",
+							"max-value": "6",
+							"menu-check-style": "true",
+							"menu-popup-style": "false",
 							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "105, 2",
-							"round-radius": "0",
-							"segment-names": "0.0000,0.3333,0.6667,1.0000",
-							"selection-mode": "Single",
-							"size": "130, 20",
-							"style": "horizontal",
+							"origin": "9, 6",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "67, 37",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "false",
+							"style-no-text": "false",
+							"style-round-rect": "false",
+							"style-shadow-text": "false",
 							"text-alignment": "center",
-							"text-color": "transparent",
-							"text-color-highlighted": "transparent",
-							"transparent": "false",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"transparent": "true",
+							"value-precision": "2",
 							"wants-focus": "true",
 							"wheel-inc-value": "0.1"
 						}
 					},
-					"CView": {
+					"COptionMenu": {
 						"attributes": {
-							"bitmap": "OS_text.png",
-							"class": "CView",
+							"back-color": "New",
+							"background-offset": "0, 0",
+							"class": "COptionMenu",
+							"control-tag": "OS",
+							"default-value": "0",
+							"font": "Arial_18",
+							"font-antialias": "true",
+							"font-color": "~ BlackCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "1",
+							"max-value": "3",
+							"menu-check-style": "true",
+							"menu-popup-style": "false",
+							"min-value": "0",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "68, 2",
-							"size": "34, 20",
+							"origin": "330, 230",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "45, 30",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "true",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
 							"transparent": "false",
-							"wants-focus": "false"
+							"value-precision": "1",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"COptionMenu": {
+						"attributes": {
+							"back-color": "New",
+							"background-offset": "0, 0",
+							"class": "COptionMenu",
+							"control-tag": "Phase",
+							"default-value": "0",
+							"font": "Arial_18",
+							"font-antialias": "true",
+							"font-color": "~ BlackCColor",
+							"frame-color": "~ BlackCColor",
+							"frame-width": "0",
+							"max-value": "1",
+							"menu-check-style": "true",
+							"menu-popup-style": "false",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "330, 280",
+							"round-rect-radius": "6",
+							"shadow-color": "~ RedCColor",
+							"size": "45, 30",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "true",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"transparent": "false",
+							"value-precision": "1",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
 						}
 					}
 				}
