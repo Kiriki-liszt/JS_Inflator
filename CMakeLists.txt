@@ -37,8 +37,8 @@ smtg_add_vst3plugin(InflatorPackage
     ${vst3sdk_SOURCE_DIR}/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
 )
 
-set(ORIGINAL_GUI 1)
-# set(TWARCH 1)
+# set(ORIGINAL_GUI 1)
+set(TWARCH 1)
 
 
 if(ORIGINAL_GUI)
@@ -60,11 +60,13 @@ if(SMTG_ADD_VSTGUI)
             "resource/background.png"
             "resource/button_onoff.png"
             "resource/handle.png"
-            "resource/knob_green.png"
-            "resource/knob_red.png"
+            "resource/knob_green_.png"
+            "resource/knob_red_.png"
             "resource/LED_cover.png"
             "resource/LED_ON.png"
             "resource/LED_OFF.png"
+            "resource/LED_FX_ON.png"
+            "resource/LED_FX_OFF.png"
             "resource/OS_text.png"
             "resource/oversample_bg.png"
             "resource/oversample_handle.png"
@@ -82,8 +84,8 @@ if(SMTG_ADD_VSTGUI)
             "resource/twarch/btn_IN.png"
             "resource/twarch/btn_SPLIT.png"
             "resource/twarch/handle.png"
-            "resource/twarch/knob_red.png"
-            "resource/twarch/knob_yellow.png"
+            "resource/twarch/knob_red_.png"
+            "resource/twarch/knob_yellow_.png"
             "resource/twarch/meter_off.png"
             "resource/twarch/meter_on.png"
             "resource/twarch/meter_fx_on.png"

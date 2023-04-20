@@ -9,10 +9,10 @@
 				"path": "handle.png"
 			},
 			"knob_red": {
-				"path": "knob_red.png"
+				"path": "knob_red_.png"
 			},
 			"knob_green": {
-				"path": "knob_green.png"
+				"path": "knob_green_.png"
 			},
 			"button_onoff": {
 				"path": "button_onoff.png"
