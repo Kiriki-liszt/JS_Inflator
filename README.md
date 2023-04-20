@@ -101,25 +101,25 @@ Now it is free of Phase issuses.
 
 * Comparisons  
 1x  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_1x.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_1x.png"  width="400"/>  
 
 2x Min-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_2x_Min.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_2x_Min.png"  width="400"/>  
 
 2x Lin-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_2x_Lin.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_2x_Lin.png"  width="400"/>  
 
 4x Min-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_4x_Min.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_4x_Min.png"  width="400"/>  
 
 4x Lin-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_4x_Lin.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_4x_Lin.png"  width="400"/>  
 
 8x Min-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_8x_Min.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_8x_Min.png"  width="400"/>  
 
 8x Lin-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_8x_Lin.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_8x_Lin.png"  width="400"/>  
   
 * Latency Reporting  
 
@@ -141,7 +141,7 @@ Modified for my need: Fractional resampling, Interpolation parts are deleted.
 ## Todo
 
 - [ ] Preset save & import menu bar.  
-- [ ] malloc/realloc/free to new/delete change.  
-- [ ] Oversampling options : Linear phase, Balanced.  
+- [x] malloc/realloc/free to new/delete change. -> stick with it. 
+- [x] Oversampling options : Linear phase, Balanced.  
 - [ ] GUI : resizing, and HDDPI.  
 - [ ] GUI : double click to enter value.  
