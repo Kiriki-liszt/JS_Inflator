@@ -277,8 +277,6 @@ namespace yg331 {
 										OS_Lin[c + 0] = new r8b::CDSPResampler24(1.0, 8.0, maxSample * 8, 2.0);
 										OS_Lin[c + 2] = new r8b::CDSPResampler24(8.0, 1.0, maxSample * 32, 2.0);
 									}
-									dly_up = OS_Lin[c + 0]->getInLenBeforeOutPos(0);
-									dly_dn = OS_Lin[c + 2]->getInLenBeforeOutPos(0);
 								}
 							}
 							if (fParamOSOld != fParamOS) sendTextMessage("OS");
@@ -372,7 +370,14 @@ namespace yg331 {
 				overSampling<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, getSampleRate, data.numSamples);
 			}
 
-			Meter /= data.numSamples;
+			long div = data.numSamples;
+			if (fParamOS == overSample_1x) div = data.numSamples;
+			else if (fParamOS == overSample_2x) div = 2 * data.numSamples;
+			else if (fParamOS == overSample_4x) div = 4 * data.numSamples;
+			else div = 8 * data.numSamples;
+
+			Meter /= (double)div;
+			
 			Meter *= fInVuPPML;
 			Meter *= 0.2;
 			fMeter = 0.7 * log10(20.0 * Meter);

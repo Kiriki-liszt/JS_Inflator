@@ -2769,9 +2769,6 @@ namespace yg331 {
 		#define maxSample 32768
 
 		r8b::CPtrKeeper< r8b::CDSPResampler* > OS_Lin[4];
-
-		int dly_up = 0;
-		int dly_dn = 0;
 	};
 } // namespace yg331
 //------------------------------------------------------------------------
