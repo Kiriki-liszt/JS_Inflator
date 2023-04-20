@@ -38,7 +38,8 @@ v1.3.0: Curve knob fixed!!! and 32FP dither by airwindows.
 v1.4.0: Oversampling up to x8 now works! DPC works.  
 v1.5.0: Band Split added.  
 v1.5.1: macOS build added. Intel x86 tested, Apple silicon not tested(I dont have one).  
-v1.6.0rc: FX meter(Effect Meter) is added. Original GUI is now on high definition.
+v1.6.0rc: FX meter(Effect Meter) is added. Original GUI is now on high definition.  
+v1.6.0rc1: Linear phase Oversampling is now added.  
 
 Now up to date with latest RC Inflator form ReaTeam/JSFX repository.  
 
