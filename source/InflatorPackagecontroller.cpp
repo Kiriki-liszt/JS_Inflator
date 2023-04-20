@@ -2,14 +2,13 @@
 // Copyright(c) 2023 yg331.
 //------------------------------------------------------------------------
 
-#include "InflatorPackagecontroller.h"
 #include "InflatorPackagecids.h"
+#include "InflatorPackagecontroller.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
-
 #include "pluginterfaces/base/ustring.h"
 #include "base/source/fstreamer.h"
-
 #include "pluginterfaces/vst/ivsteditcontroller.h"
+#include "vstgui/plugin-bindings/vst3groupcontroller.h"
 
 using namespace Steinberg;
 
@@ -43,6 +42,36 @@ namespace yg331 {
 		info.defaultNormalizedValue = valueNormalized = toNormalized(defaultValuePlain);
 		info.unitId = Vst::kRootUnitId;
 	}
+	Vst::ParamValue SliderParameter::toPlain(Vst::ParamValue _valueNormalized) const {
+
+		if (_valueNormalized == 1.00) return 6.0;
+		if (_valueNormalized >= 0.96) return 6.0;
+		if (_valueNormalized >= 0.92) return 5.0;
+		if (_valueNormalized >= 0.88) return 4.0;
+		if (_valueNormalized >= 0.84) return 3.0;
+		if (_valueNormalized >= 0.80) return 2.0;
+		if (_valueNormalized >= 0.76) return 1.0;
+		if (_valueNormalized >= 0.72) return 0.0;
+		if (_valueNormalized >= 0.68) return -1.0;
+		if (_valueNormalized >= 0.64) return -2.0;
+		if (_valueNormalized >= 0.60) return -3.0;
+		if (_valueNormalized >= 0.56) return -4.0;
+		if (_valueNormalized >= 0.52) return -5.0;
+		if (_valueNormalized >= 0.48) return -6.0;
+		if (_valueNormalized >= 0.44) return -8.0;
+		if (_valueNormalized >= 0.40) return -10.0;
+		if (_valueNormalized >= 0.36) return -12.0;
+		if (_valueNormalized >= 0.32) return -14.0;
+		if (_valueNormalized >= 0.28) return -16.0;
+		if (_valueNormalized >= 0.24) return -18.0;
+		if (_valueNormalized >= 0.20) return -22.0;
+		if (_valueNormalized >= 0.16) return -26.0;
+		if (_valueNormalized >= 0.12) return -30.0;
+		if (_valueNormalized >= 0.08) return -34.0;
+		if (_valueNormalized >= 0.04) return -38.0;
+		return -42.0;
+
+	}
 	//------------------------------------------------------------------------
 	void SliderParameter::toString(Vst::ParamValue normValue, Vst::String128 string) const
 	{
@@ -68,6 +97,7 @@ namespace yg331 {
 	}
 	//------------------------------------------------------------------------
 
+
 	//------------------------------------------------------------------------
 	// InflatorPackageController Implementation
 	//------------------------------------------------------------------------
@@ -90,19 +120,28 @@ namespace yg331 {
 		Vst::ParamValue maxPlain;
 		Vst::ParamValue defaultPlain;
 
+		tag = kParamInput;
 		flags = Vst::ParameterInfo::kCanAutomate;
 		minPlain = -12.0;
 		maxPlain = 12.0;
 		defaultPlain = 0.0;
-		tag = kParamInput;
-		auto* gainParamIn = new SliderParameter(USTRING("Input"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, 0, flags);
-		parameters.addParameter(gainParamIn);
+		stepCount = 0;
+		auto* ParamIn = new Vst::RangeParameter(STR16("Input"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, stepCount, flags);
+		ParamIn->setPrecision(2);
+		parameters.addParameter(ParamIn);
+
+		tag = kParamOutput;
+		flags = Vst::ParameterInfo::kCanAutomate;
 		minPlain = -12.0;
 		maxPlain = 0.0;
 		defaultPlain = 0.0;
-		tag = kParamOutput;
-		auto* gainParamOut = new SliderParameter(USTRING("Output"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, 0, flags);
-		parameters.addParameter(gainParamOut);
+		stepCount = 0;
+		auto* ParamOut = new Vst::RangeParameter(STR16("Output"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, stepCount, flags);
+		ParamOut->setPrecision(2);
+		parameters.addParameter(ParamOut);
+
+
+
 
 		tag = kParamInVuPPML;
 		flags = Vst::ParameterInfo::kIsReadOnly;
@@ -123,16 +162,24 @@ namespace yg331 {
 
 
 		tag = kParamEffect;
-		stepCount = 0;
-		defaultVal = init_Effect;
 		flags = Vst::ParameterInfo::kCanAutomate;
-		parameters.addParameter(STR16("Effect"), STR16("%"), stepCount, defaultVal, flags, tag);
+		minPlain = 0;
+		maxPlain = 100;
+		defaultPlain = 0;
+		stepCount = 0;
+		auto* ParamEffect = new Vst::RangeParameter(STR16("Effect"), tag, STR16("%"), minPlain, maxPlain, defaultPlain, stepCount, flags);
+		ParamEffect->setPrecision(2);
+		parameters.addParameter(ParamEffect);
 
 		tag = kParamCurve;
-		stepCount = 0;
-		defaultVal = init_Curve;
 		flags = Vst::ParameterInfo::kCanAutomate;
-		parameters.addParameter(STR16("Curve"), nullptr, stepCount, defaultVal, flags, tag);
+		minPlain = -50;
+		maxPlain = 50;
+		defaultPlain = 0;
+		stepCount = 0;
+		auto* ParamCurve = new Vst::RangeParameter(STR16("Curve"), tag, STR16("%"), minPlain, maxPlain, defaultPlain, stepCount, flags);
+		ParamCurve->setPrecision(2);
+		parameters.addParameter(ParamCurve);
 
 		tag = kParamClip;
 		stepCount = 1;
@@ -146,17 +193,64 @@ namespace yg331 {
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
 
-		tag = kParamOS;
-		stepCount = 3;
-		defaultVal = 0; // init_OS;
-		flags = Vst::ParameterInfo::kCanAutomate;
-		parameters.addParameter(STR16("OS"), nullptr, stepCount, defaultVal, flags, tag);
+		Vst::StringListParameter* OS = new Vst::StringListParameter(STR("OS"), kParamOS);
+		OS->appendString(STR("x1"));
+		OS->appendString(STR("x2"));
+		OS->appendString(STR("x4"));
+		OS->appendString(STR("x8")); // stepCount is automzed!
+		OS->setNormalized(OS->toNormalized(0));
+		OS->addDependent(this);
+		parameters.addParameter(OS);
+
 
 		tag = kParamSplit;
 		stepCount = 1;
 		defaultVal = init_Split ? 1 : 0;
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Split"), nullptr, stepCount, defaultVal, flags, tag);
+
+		Vst::ParamValue zoom_coef = 0.5;
+
+		/*
+#ifdef _ORIG
+		zoom_coef = 1.0;
+#elif _TWARCH
+		zoom_coef = 0.5;
+#endif // _ORIG 
+*/
+
+		if (zoomFactors.empty())
+		{
+			zoomFactors.push_back(ZoomFactor(STR("50%"), zoom_coef * 0.5));  // 0/6
+			zoomFactors.push_back(ZoomFactor(STR("75%"), zoom_coef * 0.75)); // 1/6
+			zoomFactors.push_back(ZoomFactor(STR("100%"), zoom_coef * 1.0));  // 2/6
+			zoomFactors.push_back(ZoomFactor(STR("125%"), zoom_coef * 1.25)); // 3/6
+			zoomFactors.push_back(ZoomFactor(STR("150%"), zoom_coef * 1.5));  // 4/6
+			zoomFactors.push_back(ZoomFactor(STR("175%"), zoom_coef * 1.75)); // 5/6
+			zoomFactors.push_back(ZoomFactor(STR("200%"), zoom_coef * 2.0));  // 6/6
+		}
+
+		Vst::StringListParameter* zoomParameter = new Vst::StringListParameter(STR("Zoom"), kParamZoom);
+		for (ZoomFactorVector::const_iterator it = zoomFactors.begin(), end = zoomFactors.end(); it != end; ++it)
+		{
+			zoomParameter->appendString(it->title);
+		}
+		zoomParameter->setNormalized(zoomParameter->toNormalized(2)); // toNorm(2) == 100%
+		zoomParameter->addDependent(this);
+		parameters.addParameter(zoomParameter);
+
+		tag = kParamMeter;
+		stepCount = 0;
+		defaultVal = 0;
+		flags = Vst::ParameterInfo::kCanAutomate;
+		parameters.addParameter(STR16("Meter"), nullptr, stepCount, defaultVal, flags, tag);
+
+		Vst::StringListParameter* Phase = new Vst::StringListParameter(STR("Phase"), kParamLin);
+		Phase->appendString(STR("Min"));
+		Phase->appendString(STR("Lin")); // stepCount is automzed!
+		Phase->setNormalized(Phase->toNormalized(0));
+		Phase->addDependent(this);
+		parameters.addParameter(Phase);
 
 		return result;
 	}
@@ -187,15 +281,19 @@ namespace yg331 {
 		int32           savedClip   = 0;
 		int32           savedBypass = 0;
 		int32           savedSplit  = 0;
+		Vst::ParamValue savedZoom   = 0.0;
+		Vst::ParamValue savedLin    = 0.0;
 
 		if (streamer.readDouble(savedInput)  == false) return kResultFalse;
 		if (streamer.readDouble(savedEffect) == false) return kResultFalse;
 		if (streamer.readDouble(savedCurve)  == false) return kResultFalse;
 		if (streamer.readDouble(savedOutput) == false) return kResultFalse;
 		if (streamer.readDouble(savedOS)     == false) return kResultFalse;
-		if (streamer.readInt32(savedClip)    == false) return kResultFalse;
-		if (streamer.readInt32(savedBypass)  == false) return kResultFalse;
-		if (streamer.readInt32(savedSplit)   == false) return kResultFalse;
+		if (streamer.readInt32 (savedClip)   == false) return kResultFalse;
+		if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
+		if (streamer.readInt32 (savedSplit)  == false) return kResultFalse;
+		if (streamer.readDouble(savedZoom)   == false) return kResultFalse;
+		if (streamer.readDouble(savedLin)    == false) return kResultFalse;
 
 		setParamNormalized(kParamInput,  savedInput);
 		setParamNormalized(kParamEffect, savedEffect);
@@ -205,6 +303,8 @@ namespace yg331 {
 		setParamNormalized(kParamClip,   savedClip   ? 1 : 0);
 		setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
 		setParamNormalized(kParamSplit,  savedSplit  ? 1 : 0);
+		setParamNormalized(kParamZoom,   savedZoom);
+		setParamNormalized(kParamLin,    savedLin);
 
 		return kResultOk;
 	}
@@ -235,6 +335,7 @@ namespace yg331 {
 			// create your editor here and return a IPlugView ptr of it
 			auto* view = new VSTGUI::VST3Editor(this, "view", "InflatorPackageeditor.uidesc");
 			return view;
+
 		}
 		return nullptr;
 	}
@@ -248,16 +349,53 @@ namespace yg331 {
 		// received from Component
 		if (text)
 		{	
-			/*
-			fprintf(stderr, "[AGainController] received: ");
-			fprintf(stderr, "%s", text);
-			fprintf(stderr, "\n");
-			*/
-				FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
-				handler->restartComponent(Vst::kLatencyChanged);
-		}
-		
+			// Latency report
+			if (strcmp("OS\n", text)) {
+			 	FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
+			 	handler->restartComponent(Vst::kLatencyChanged);
+			}
+		}		
 		return kResultOk;
+	}
+	
+	//------------------------------------------------------------------------
+	void PLUGIN_API InflatorPackageController::update(FUnknown* changedUnknown, int32 message)
+	{
+		EditControllerEx1::update(changedUnknown, message);
+
+		// GUI Resizing
+		// check 'zoomtest' code at
+		// https://github.com/steinbergmedia/vstgui/tree/vstgui4_10/vstgui/tests/uidescription%20vst3/source
+		
+		Vst::Parameter* param = FCast<Vst::Parameter>(changedUnknown);
+		if (!param)
+			return;
+
+		if (param->getInfo().id == kParamZoom)
+		{
+			size_t index = static_cast<size_t> (param->toPlain(param->getNormalized()));
+
+			if (index >= zoomFactors.size())
+				return;
+
+			for (EditorVector::const_iterator it = editors.begin(), end = editors.end(); it != end; ++it)
+			{
+				VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(*it);
+				if (editor)
+					editor->setZoomFactor(zoomFactors[index].factor);
+			}
+		}
+	}
+	//------------------------------------------------------------------------
+	void InflatorPackageController::editorAttached(Steinberg::Vst::EditorView* editor)
+	{
+		editors.push_back(editor);
+	}
+
+	//------------------------------------------------------------------------
+	void InflatorPackageController::editorRemoved(Steinberg::Vst::EditorView* editor)
+	{
+		editors.erase(std::find(editors.begin(), editors.end(), editor));
 	}
 
 
@@ -287,10 +425,4 @@ namespace yg331 {
 	}
 
 	//------------------------------------------------------------------------
-
-
-
-	
-
-
 } // namespace yg331
