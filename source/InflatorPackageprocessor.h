@@ -502,13 +502,15 @@ namespace r8b {
 
 			while (l > 0)
 			{
-				const int b = min(l, min(BufLen - WritePos, flb - BufLeft));
+				
+
+				const int b = (((l) < ((((BufLen - WritePos) < (flb - BufLeft)) ? (BufLen - WritePos) : (flb - BufLeft)))) ? (l) : ((((BufLen - WritePos) < (flb - BufLeft)) ? (BufLen - WritePos) : (flb - BufLeft))));
 
 				double* const wp1 = Buf + WritePos;
 				memcpy(wp1, ip, b * sizeof(wp1[0]));
 				const int ec = flo - WritePos;
 
-				if (ec > 0) { memcpy(wp1 + BufLen, ip, min(b, ec) * sizeof(wp1[0])); }
+				if (ec > 0) { memcpy(wp1 + BufLen, ip, (((b) < (ec)) ? (b) : (ec)) * sizeof(wp1[0])); }
 
 				ip += b;
 				WritePos = (WritePos + b) & BufLenMask;
@@ -710,8 +712,9 @@ namespace r8b {
 					if (WritePos2 < flo) { wp2[BufLen] = *ip; }
 					ip++; WritePos2 = WritePos1; l--; BufLeft++;
 				}
-
-				const int b1 = min((l + 1) >> 1, min(BufLen - WritePos1, flb - BufLeft));
+				
+					
+				const int b1 = ((((l + 1) >> 1) < ((((BufLen - WritePos1) < (flb - BufLeft)) ? (BufLen - WritePos1) : (flb - BufLeft)))) ? ((l + 1) >> 1) : ((((BufLen - WritePos1) < (flb - BufLeft)) ? (BufLen - WritePos1) : (flb - BufLeft))));
 
 				const int b2 = b1 - (b1 * 2 > l);
 
@@ -727,9 +730,9 @@ namespace r8b {
 				if (ec > 0)
 				{
 					wp1 = Buf1 + WritePos1;
-					memcpy(wp1 + BufLen, wp1, min(b1, ec) * sizeof(wp1[0]));
+					memcpy(wp1 + BufLen, wp1, (((b1) < (ec)) ? (b1) : (ec)) * sizeof(wp1[0]));
 					wp2 = Buf2 + WritePos1;
-					memcpy(wp2 + BufLen, wp2, min(b2, ec) * sizeof(wp2[0]));
+					memcpy(wp2 + BufLen, wp2, (((b2) < (ec)) ? (b2) : (ec)) * sizeof(wp2[0]));
 				}
 
 				WritePos1 = (WritePos1 + b1) & BufLenMask;
@@ -1177,7 +1180,8 @@ namespace r8b {
 			static const double AttenCorrDiff = 176.25;
 			int AttenCorr = (int)floor((-atten - AttenCorrMin) * AttenCorrCount / AttenCorrDiff + 0.5);
 
-			AttenCorr = min(AttenCorrCount, max(0, AttenCorr));
+			AttenCorr = (((AttenCorrCount) < ((((0) > (AttenCorr)) ? (0) : (AttenCorr)))) ? (AttenCorrCount) : ((((0) > (AttenCorr)) ? (0) : (AttenCorr)))); // min(AttenCorrCount, max(0, AttenCorr));
+			
 
 			if (ExtAttenCorrs != NULL)
 			{
@@ -1647,7 +1651,7 @@ namespace r8b {
 		CFixedBuffer< double > WorkBlocks;
 		bool DoConsumeLatency;
 
-		void copyUpsample(double*& ip0, double* op, int l0) { int b = min(UpSkip, l0); if (b != 0) { UpSkip -= b; l0 -= b; *op = 0.0; op++; while (--b != 0) { *op = 0.0; op++; } } double* ip = ip0; const int upf = UpFactor; int l = l0 / upf; int lz = l0 - l * upf; if (upf == 3) { while (l != 0) { op[0] = *ip; op[1] = 0.0; op[2] = 0.0; ip++; op += upf; l--; } } else if (upf == 5) { while (l != 0) { op[0] = *ip; op[1] = 0.0; op[2] = 0.0; op[3] = 0.0; op[4] = 0.0; ip++; op += upf; l--; } } else { const size_t zc = (upf - 1) * sizeof(op[0]); while (l != 0) { *op = *ip; ip++; memset(op + 1, 0, zc); op += upf; l--; } } if (lz != 0) { *op = *ip; ip++; op++; UpSkip = upf - lz; while (--lz != 0) { *op = 0.0; op++; } } ip0 = ip; }
+		void copyUpsample(double*& ip0, double* op, int l0) { int b = (((UpSkip) < (l0)) ? (UpSkip) : (l0)) /*min(UpSkip, l0)*/; if (b != 0) { UpSkip -= b; l0 -= b; *op = 0.0; op++; while (--b != 0) { *op = 0.0; op++; } } double* ip = ip0; const int upf = UpFactor; int l = l0 / upf; int lz = l0 - l * upf; if (upf == 3) { while (l != 0) { op[0] = *ip; op[1] = 0.0; op[2] = 0.0; ip++; op += upf; l--; } } else if (upf == 5) { while (l != 0) { op[0] = *ip; op[1] = 0.0; op[2] = 0.0; op[3] = 0.0; op[4] = 0.0; ip++; op += upf; l--; } } else { const size_t zc = (upf - 1) * sizeof(op[0]); while (l != 0) { *op = *ip; ip++; memset(op + 1, 0, zc); op += upf; l--; } } if (lz != 0) { *op = *ip; ip++; op++; UpSkip = upf - lz; while (--lz != 0) { *op = 0.0; op++; } } ip0 = ip; }
 
 		void copyToOutput(int Offs, double*& op0, int b, int& l0) { if (Offs < 0) { if (Offs + b <= 0) { Offs += BlockLen2; } else { copyToOutput(Offs + BlockLen2, op0, -Offs, l0); b += Offs; Offs = 0; } } if (LatencyLeft != 0) { if (LatencyLeft >= b) { LatencyLeft -= b; return; } Offs += LatencyLeft; b -= LatencyLeft; LatencyLeft = 0; } const int df = DownFactor; if (DownShift > 0) { int Skip = Offs & (df - 1); if (Skip > 0) { Skip = df - Skip; b -= Skip; Offs += Skip; } if (b > 0) { b = (b + df - 1) >> DownShift; memcpy(op0, &CurOutput[Offs >> DownShift], b * sizeof(op0[0])); op0 += b; l0 += b; } } else { if (df > 1) { const double* ip = &CurOutput[Offs + DownSkip]; int l = (b + df - 1 - DownSkip) / df; DownSkip += l * df - b; double* op = op0; l0 += l; op0 += l; while (l > 0) { *op = *ip; ip += df; op++; l--; } } else { memcpy(op0, &CurOutput[Offs], b * sizeof(op0[0])); op0 += b; l0 += b; } } }
 
@@ -1869,7 +1873,7 @@ namespace r8b {
 				}
 				else
 				{
-					rc = min(iplen, MaxInLen);
+					rc = (((iplen) < (MaxInLen)) ? (iplen) : (MaxInLen));
 
 					if (sizeof(Tin) == sizeof(double)) { p = (double*)ip; }
 					else { p = &Buf[0]; for (i = 0; i < rc; i++) { p[i] = ip[i]; } }
@@ -1880,7 +1884,7 @@ namespace r8b {
 
 				double* op0;
 				int wc = process(p, rc, op0);
-				wc = min(oplen, wc);
+				wc = (((oplen) < (wc)) ? (oplen) : (wc));
 
 				for (i = 0; i < wc; i++)
 				{
@@ -2703,46 +2707,42 @@ namespace yg331 {
 	protected:
 
 		// int32 currentProcessMode;
-
+		
+		// Plugin controls ------------------------------------------------------------------
 		Vst::ParamValue fInput;
 		Vst::ParamValue fOutput;
 		Vst::ParamValue fEffect;
 		Vst::ParamValue fCurve;
+		Vst::ParamValue fParamZoom;
+		Vst::ParamValue fParamPhase;
 
-		Vst::ParamValue fInVuPPML;
-		Vst::ParamValue fInVuPPMR;
-		Vst::ParamValue fOutVuPPML;
-		Vst::ParamValue fOutVuPPMR;
+		bool            bBypass;
+		bool            bIn;
+		bool            bClip;
+		bool            bSplit;
 
-		Vst::ParamValue fInVuPPMLOld;
-		Vst::ParamValue fInVuPPMROld;
-		Vst::ParamValue fOutVuPPMLOld;
-		Vst::ParamValue fOutVuPPMROld;
 
-		Vst::ParamValue fMeter;
-		Vst::ParamValue fMeterOld;
-		Vst::ParamValue Meter = 0.0;
-
+		// Internal values --------------------------------------------------------------
 		Vst::Sample64   curvepct;
 		Vst::Sample64   curveA;
 		Vst::Sample64   curveB;
 		Vst::Sample64   curveC;
 		Vst::Sample64   curveD;
+		Band_Split      Band_Split_L, Band_Split_R;
+		overSample      fParamOS, fParamOSOld;
+		uint32          fpdL, fpdR;
 
-		bool            bBypass;
-		bool            bClip;
-		bool            bSplit;
 
-		overSample      fParamOS;
-		overSample      fParamOSOld;
-		Vst::ParamValue fParamZoom;
+		// VU metering ----------------------------------------------------------------
+		Vst::ParamValue fInVuPPML, fInVuPPMR;
+		Vst::ParamValue fOutVuPPML, fOutVuPPMR;
+		Vst::ParamValue fInVuPPMLOld, fInVuPPMROld;
+		Vst::ParamValue fOutVuPPMLOld, fOutVuPPMROld;
+		Vst::ParamValue fMeter, fMeterOld;
+		Vst::ParamValue Meter = 0.0;
 
-		Band_Split      Band_Split_L;
-		Band_Split      Band_Split_R;
-
-		uint32          fpdL;
-		uint32          fpdR;
-
+		
+		// Buffers ------------------------------------------------------------------
 		Steinberg::Vst::Sample64** in_0;
 		Steinberg::Vst::Sample64** in_1;
 		Steinberg::Vst::Sample64** in_2;
@@ -2752,6 +2752,7 @@ namespace yg331 {
 		Steinberg::Vst::Sample64** out_2;
 		Steinberg::Vst::Sample64** out_3;
 
+		// Oversamplers ------------------------------------------------------------------
 		hiir::upSample_2x_1   upSample_2x_1[2];
 		hiir::upSample_4x_1   upSample_4x_1[2];
 		hiir::upSample_4x_2   upSample_4x_2[2];
@@ -2765,22 +2766,12 @@ namespace yg331 {
 		hiir::dnSample_8x_2   dnSample_8x_2[2];
 		hiir::dnSample_8x_3   dnSample_8x_3[2];
 
-#define maxSample 32768
-		/*
-		r8b::CPtrKeeper< r8b::CDSPResampler* > upSample_2x_Lin[2];
-		r8b::CPtrKeeper< r8b::CDSPResampler* > upSample_4x_Lin[2];
-		r8b::CPtrKeeper< r8b::CDSPResampler* > upSample_8x_Lin[2];
-		r8b::CPtrKeeper< r8b::CDSPResampler* > dnSample_2x_Lin[2];
-		r8b::CPtrKeeper< r8b::CDSPResampler* > dnSample_4x_Lin[2];
-		r8b::CPtrKeeper< r8b::CDSPResampler* > dnSample_8x_Lin[2];
-		*/
+		#define maxSample 32768
+
 		r8b::CPtrKeeper< r8b::CDSPResampler* > OS_Lin[4];
 
 		int dly_up = 0;
 		int dly_dn = 0;
-		bool LinPhase = true;
-		double x8_3spl[3] = { 0, };
-		double *tmp;
 	};
 } // namespace yg331
 //------------------------------------------------------------------------

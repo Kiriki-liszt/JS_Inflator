@@ -144,7 +144,7 @@ namespace yg331 {
 
 
 		tag = kParamInVuPPML;
-		flags = Vst::ParameterInfo::kIsReadOnly;
+		flags = Vst::ParameterInfo::kIsHidden;
 		minPlain = -44.0;
 		maxPlain = 6.0;
 		defaultPlain = -44.0;
@@ -159,6 +159,12 @@ namespace yg331 {
 		tag = kParamOutVuPPMR;
 		auto* OutVuPPMR = new SliderParameter(USTRING("OutVuPPMR"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, 0, flags);
 		parameters.addParameter(OutVuPPMR);
+
+		tag = kParamMeter;
+		stepCount = 0;
+		defaultVal = 0;
+		flags = Vst::ParameterInfo::kIsHidden;
+		parameters.addParameter(STR16("Meter"), nullptr, stepCount, defaultVal, flags, tag);
 
 
 		tag = kParamEffect;
@@ -187,12 +193,6 @@ namespace yg331 {
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Clip"), nullptr, stepCount, defaultVal, flags, tag);
 
-		tag = kParamBypass;
-		stepCount = 1;
-		defaultVal = init_Bypass ? 1 : 0;
-		flags = Vst::ParameterInfo::kCanAutomate;
-		parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
-
 		Vst::StringListParameter* OS = new Vst::StringListParameter(STR("OS"), kParamOS);
 		OS->appendString(STR("x1"));
 		OS->appendString(STR("x2"));
@@ -202,7 +202,6 @@ namespace yg331 {
 		OS->addDependent(this);
 		parameters.addParameter(OS);
 
-
 		tag = kParamSplit;
 		stepCount = 1;
 		defaultVal = init_Split ? 1 : 0;
@@ -210,14 +209,6 @@ namespace yg331 {
 		parameters.addParameter(STR16("Split"), nullptr, stepCount, defaultVal, flags, tag);
 
 		Vst::ParamValue zoom_coef = 0.5;
-
-		/*
-#ifdef _ORIG
-		zoom_coef = 1.0;
-#elif _TWARCH
-		zoom_coef = 0.5;
-#endif // _ORIG 
-*/
 
 		if (zoomFactors.empty())
 		{
@@ -239,18 +230,26 @@ namespace yg331 {
 		zoomParameter->addDependent(this);
 		parameters.addParameter(zoomParameter);
 
-		tag = kParamMeter;
-		stepCount = 0;
-		defaultVal = 0;
-		flags = Vst::ParameterInfo::kCanAutomate;
-		parameters.addParameter(STR16("Meter"), nullptr, stepCount, defaultVal, flags, tag);
 
-		Vst::StringListParameter* Phase = new Vst::StringListParameter(STR("Phase"), kParamLin);
+		Vst::StringListParameter* Phase = new Vst::StringListParameter(STR("Phase"), kParamPhase);
 		Phase->appendString(STR("Min"));
 		Phase->appendString(STR("Lin")); // stepCount is automzed!
-		Phase->setNormalized(Phase->toNormalized(0));
+		defaultVal = init_Phase ? 1 : 0;
+		Phase->setNormalized(Phase->toNormalized(defaultVal));
 		Phase->addDependent(this);
 		parameters.addParameter(Phase);
+
+		tag = kParamIn;
+		stepCount = 1;
+		defaultVal = init_In ? 1 : 0;
+		flags = Vst::ParameterInfo::kCanAutomate;
+		parameters.addParameter(STR16("In"), nullptr, stepCount, defaultVal, flags, tag);
+
+		tag = kParamBypass;
+		stepCount = 1;
+		defaultVal = init_Bypass ? 1 : 0;
+		flags = Vst::ParameterInfo::kIsBypass;
+		parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
 
 		return result;
 	}
@@ -279,10 +278,11 @@ namespace yg331 {
 		Vst::ParamValue savedOutput = 0.0;
 		Vst::ParamValue savedOS     = 0.0;
 		int32           savedClip   = 0;
-		int32           savedBypass = 0;
+		int32           savedIn     = 0;
 		int32           savedSplit  = 0;
 		Vst::ParamValue savedZoom   = 0.0;
-		Vst::ParamValue savedLin    = 0.0;
+		Vst::ParamValue savedPhase  = 0.0;
+		int32           savedBypass = 0;
 
 		if (streamer.readDouble(savedInput)  == false) return kResultFalse;
 		if (streamer.readDouble(savedEffect) == false) return kResultFalse;
@@ -290,10 +290,11 @@ namespace yg331 {
 		if (streamer.readDouble(savedOutput) == false) return kResultFalse;
 		if (streamer.readDouble(savedOS)     == false) return kResultFalse;
 		if (streamer.readInt32 (savedClip)   == false) return kResultFalse;
-		if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
+		if (streamer.readInt32 (savedIn)     == false) return kResultFalse;
 		if (streamer.readInt32 (savedSplit)  == false) return kResultFalse;
 		if (streamer.readDouble(savedZoom)   == false) return kResultFalse;
-		if (streamer.readDouble(savedLin)    == false) return kResultFalse;
+		if (streamer.readDouble(savedPhase)  == false) return kResultFalse;
+		if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
 
 		setParamNormalized(kParamInput,  savedInput);
 		setParamNormalized(kParamEffect, savedEffect);
@@ -301,10 +302,11 @@ namespace yg331 {
 		setParamNormalized(kParamOutput, savedOutput);
 		setParamNormalized(kParamOS,     savedOS);
 		setParamNormalized(kParamClip,   savedClip   ? 1 : 0);
-		setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
+		setParamNormalized(kParamIn,     savedIn     ? 1 : 0);
 		setParamNormalized(kParamSplit,  savedSplit  ? 1 : 0);
 		setParamNormalized(kParamZoom,   savedZoom);
-		setParamNormalized(kParamLin,    savedLin);
+		setParamNormalized(kParamPhase,  savedPhase);
+		setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
 
 		return kResultOk;
 	}

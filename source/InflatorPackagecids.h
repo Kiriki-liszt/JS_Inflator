@@ -27,12 +27,13 @@ enum {
 	kParamInVuPPMR,
 	kParamOutVuPPML,	// Output VuPPM
 	kParamOutVuPPMR,
-	kParamBypass,		// ByPass
+	kParamMeter,
 	kParamOS,
 	kParamSplit,
 	kParamZoom,
-	kParamMeter,
-	kParamLin
+	kParamPhase,
+	kParamIn,		// ByPass
+	kParamBypass
 };
 
 #include <vector>
@@ -85,8 +86,9 @@ namespace yg331 {
 	static const bool
 		init_Clip      = false,
 		init_Bypass    = false,
+		init_In        = true,
 		init_Split     = false,
-		init_Lin       = false;
+		init_Phase     = false; // Min phase
 
 	static const overSample
 		init_OS        = overSample_1x;
