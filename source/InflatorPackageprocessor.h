@@ -2672,7 +2672,9 @@ namespace yg331 {
 		};
 
 		inline void Band_Split_set(Band_Split* filter, Vst::ParamValue Fc_L, Vst::ParamValue Fc_H, Vst::SampleRate Fs) {
-			double M_PI = 3.14159265358979323846;   // pi
+#ifndef M_PI
+#define M_PI        3.14159265358979323846264338327950288   /* pi             */
+#endif
 			(*filter).LP.C = 0.5 * tan(M_PI * ((Fc_L / Fs) - 0.25)) + 0.5;
 			(*filter).LP.R = 0.0;
 			(*filter).LP.I = 0.0;
