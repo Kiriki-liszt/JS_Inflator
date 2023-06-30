@@ -5,7 +5,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13 CACHE STRING "")
 if(SMTG_MAC)
     set(vst3sdk_SOURCE_DIR "/Users/yoon/VST_SDK/vst3sdk")
 elseif(SMTG_WIN)
-    set(vst3sdk_SOURCE_DIR "C:/VST_make/VST_SDK/vst3sdk")
+    set(vst3sdk_SOURCE_DIR "C:/VST_SDK/vst3sdk")
 endif(SMTG_MAC)
 
 if(NOT vst3sdk_SOURCE_DIR)
@@ -38,7 +38,7 @@ smtg_add_vst3plugin(InflatorPackage
 )
 
 set(ORIGINAL_GUI 1)
-# set(TWARCH 1)
+#set(TWARCH 1)
 
 
 if(ORIGINAL_GUI)

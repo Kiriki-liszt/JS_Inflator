@@ -74,7 +74,7 @@ namespace yg331 {
 		init_Curve     = 0.5,
 		init_Output    = 1.0,
 		init_VU        = 0.0,
-		init_Zoom      = 2.0 / 6.0;
+		init_Zoom      = 0.0 / 6.0;
 
 	static const Steinberg::Vst::Sample64
 		init_curvepct  = init_Curve - 0.5,

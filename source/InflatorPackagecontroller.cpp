@@ -208,17 +208,15 @@ namespace yg331 {
 		flags = Vst::ParameterInfo::kCanAutomate;
 		parameters.addParameter(STR16("Split"), nullptr, stepCount, defaultVal, flags, tag);
 
-		Vst::ParamValue zoom_coef = 0.5;
-
 		if (zoomFactors.empty())
 		{
-			zoomFactors.push_back(ZoomFactor(STR("50%"), zoom_coef * 0.5));  // 0/6
-			zoomFactors.push_back(ZoomFactor(STR("75%"), zoom_coef * 0.75)); // 1/6
-			zoomFactors.push_back(ZoomFactor(STR("100%"), zoom_coef * 1.0));  // 2/6
-			zoomFactors.push_back(ZoomFactor(STR("125%"), zoom_coef * 1.25)); // 3/6
-			zoomFactors.push_back(ZoomFactor(STR("150%"), zoom_coef * 1.5));  // 4/6
-			zoomFactors.push_back(ZoomFactor(STR("175%"), zoom_coef * 1.75)); // 5/6
-			zoomFactors.push_back(ZoomFactor(STR("200%"), zoom_coef * 2.0));  // 6/6
+			zoomFactors.push_back(ZoomFactor(STR("50%"), 0.5));  // 0/6
+			zoomFactors.push_back(ZoomFactor(STR("75%"), 0.75)); // 1/6
+			zoomFactors.push_back(ZoomFactor(STR("100%"), 1.0));  // 2/6
+			zoomFactors.push_back(ZoomFactor(STR("125%"), 1.25)); // 3/6
+			zoomFactors.push_back(ZoomFactor(STR("150%"), 1.5));  // 4/6
+			zoomFactors.push_back(ZoomFactor(STR("175%"), 1.75)); // 5/6
+			zoomFactors.push_back(ZoomFactor(STR("200%"), 2.0));  // 6/6
 		}
 
 		Vst::StringListParameter* zoomParameter = new Vst::StringListParameter(STR("Zoom"), kParamZoom);
@@ -226,7 +224,7 @@ namespace yg331 {
 		{
 			zoomParameter->appendString(it->title);
 		}
-		zoomParameter->setNormalized(zoomParameter->toNormalized(2)); // toNorm(2) == 100%
+		zoomParameter->setNormalized(zoomParameter->toNormalized(0));
 		zoomParameter->addDependent(this);
 		parameters.addParameter(zoomParameter);
 
@@ -336,6 +334,10 @@ namespace yg331 {
 		{
 			// create your editor here and return a IPlugView ptr of it
 			auto* view = new VSTGUI::VST3Editor(this, "view", "InflatorPackageeditor.uidesc");
+
+			view->setZoomFactor(0.5);
+			setKnobMode(Steinberg::Vst::KnobModes::kLinearMode);
+
 			return view;
 
 		}

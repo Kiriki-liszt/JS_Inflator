@@ -451,43 +451,44 @@ namespace yg331 {
 		Band_Split_set(&Band_Split_L, 240.0, 2400.0, newSetup.sampleRate);
 		Band_Split_set(&Band_Split_R, 240.0, 2400.0, newSetup.sampleRate);
 
+		if (newSetup.maxSamplesPerBlock > maxSample) {
+			for (int c = 0; c < 2; c++) {
+				in_0[c] = (Vst::Sample64*)realloc(in_0[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock);
+				in_1[c] = (Vst::Sample64*)realloc(in_1[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 2);
+				in_2[c] = (Vst::Sample64*)realloc(in_2[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 4);
+				in_3[c] = (Vst::Sample64*)realloc(in_3[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 8);
+				out_0[c] = (Vst::Sample64*)realloc(out_0[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock);
+				out_1[c] = (Vst::Sample64*)realloc(out_1[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 2);
+				out_2[c] = (Vst::Sample64*)realloc(out_2[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 4);
+				out_3[c] = (Vst::Sample64*)realloc(out_3[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 8);
+				if ((in_0[c] == NULL) || (in_1[c] == NULL) ||
+					(in_2[c] == NULL) || (in_3[c] == NULL)) return kResultFalse;
+				if ((out_0[c] == NULL) || (out_1[c] == NULL) ||
+					(out_2[c] == NULL) || (out_3[c] == NULL)) return kResultFalse;
 
-		for (int c = 0; c < 2; c++) {
-			in_0[c] = (Vst::Sample64*)realloc(in_0[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock);
-			in_1[c] = (Vst::Sample64*)realloc(in_1[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 2);
-			in_2[c] = (Vst::Sample64*)realloc(in_2[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 4);
-			in_3[c] = (Vst::Sample64*)realloc(in_3[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 8);
-			out_0[c] = (Vst::Sample64*)realloc(out_0[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock);
-			out_1[c] = (Vst::Sample64*)realloc(out_1[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 2);
-			out_2[c] = (Vst::Sample64*)realloc(out_2[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 4);
-			out_3[c] = (Vst::Sample64*)realloc(out_3[c], sizeof(Vst::Sample64) * newSetup.maxSamplesPerBlock * 8);
-			if ((in_0[c] == NULL) || (in_1[c] == NULL) ||
-				(in_2[c] == NULL) || (in_3[c] == NULL)) return kResultFalse;
-			if ((out_0[c] == NULL) || (out_1[c] == NULL) ||
-				(out_2[c] == NULL) || (out_3[c] == NULL)) return kResultFalse;
+				upSample_2x_1[c].clear_buffers();
+				upSample_4x_1[c].clear_buffers();
+				upSample_4x_2[c].clear_buffers();
+				upSample_8x_1[c].clear_buffers();
+				upSample_8x_2[c].clear_buffers();
+				upSample_8x_3[c].clear_buffers();
+				dnSample_2x_1[c].clear_buffers();
+				dnSample_4x_1[c].clear_buffers();
+				dnSample_4x_2[c].clear_buffers();
+				dnSample_8x_1[c].clear_buffers();
+				dnSample_8x_2[c].clear_buffers();
+				dnSample_8x_3[c].clear_buffers();
 
-			upSample_2x_1[c].clear_buffers();
-			upSample_4x_1[c].clear_buffers();
-			upSample_4x_2[c].clear_buffers();
-			upSample_8x_1[c].clear_buffers();
-			upSample_8x_2[c].clear_buffers();
-			upSample_8x_3[c].clear_buffers();
-			dnSample_2x_1[c].clear_buffers();
-			dnSample_4x_1[c].clear_buffers();
-			dnSample_4x_2[c].clear_buffers();
-			dnSample_8x_1[c].clear_buffers();
-			dnSample_8x_2[c].clear_buffers();
-			dnSample_8x_3[c].clear_buffers();
+				/*
+				upSample_2x_Lin[c]->clear();
+				upSample_4x_Lin[c]->clear();
+				upSample_8x_Lin[c]->clear();
+				dnSample_2x_Lin[c]->clear();
+				dnSample_4x_Lin[c]->clear();
+				dnSample_8x_Lin[c]->clear();
+				*/
 
-			/*
-			upSample_2x_Lin[c]->clear();
-			upSample_4x_Lin[c]->clear();
-			upSample_8x_Lin[c]->clear();
-			dnSample_2x_Lin[c]->clear();
-			dnSample_4x_Lin[c]->clear();
-			dnSample_8x_Lin[c]->clear();
-			*/
-
+			}
 		}
 
 		//--- called before any processing ----
