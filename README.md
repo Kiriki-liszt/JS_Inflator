@@ -42,6 +42,7 @@ v1.5.0: Band Split added.
 v1.5.1: macOS build added. Intel x86 tested, Apple silicon not tested(I dont have one).  
 v1.6.0rc: FX meter(Effect Meter) is added. Original GUI is now on high definition.  
 v1.6.0rc1: Linear phase Oversampling is now added.  
+v1.6.0: Linear knob mode is now specified, and GUI size flinching fixed.  
 
 Now up to date with latest RC Inflator form ReaTeam/JSFX repository.  
 
@@ -98,7 +99,7 @@ Meaning, HIIR is better at anti-alising.
 HIIR resampling is Min-phase resampler, meaning phase distortion at high freqs.  
 For more natural high frequency hearing I Implemented r8brain-free-src designed by Aleksey Vaneev of Voxengo.  
 Had some time with it trying understand how FIR works. I still don't know yet but it works.  
-About weird coices for x4 and x8 - these resamplers have asynchronous latencies so downsampling starts little before upsampling starts.  
+About weird choices for x4 and x8 - these resamplers have asynchronous latencies so downsampling starts little before upsampling starts.  
 To fix it, I just changed Transition band for x4 and 24-bit for x8.  
 Now it is free of Phase issuses. 
 
@@ -128,6 +129,15 @@ Now it is free of Phase issuses.
 
 Naive implementaiton could use 'sendTextMessage' and 'receiveText' pair.  
 
+* Knob Modes
+
+Specifying knob modes at 'createView' in 'controller.cpp' makes knobs work in selected mode.  
+``` c++
+setKnobMode(Steinberg::Vst::KnobModes::kLinearMode);
+```
+[https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/v1.6.0/source/InflatorPackagecontroller.cpp#L339](https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/v1.6.0/source/InflatorPackagecontroller.cpp#L339)  
+
+
 ## references
 
 1. RC Inflator  
@@ -146,5 +156,5 @@ Modified for my need: Fractional resampling, Interpolation parts are deleted.
 - [ ] Preset save & import menu bar.  
 - [x] malloc/realloc/free to new/delete change. -> stick with it. 
 - [x] Oversampling options : Linear phase, Balanced.  
-- [ ] GUI : resizing, and HDDPI.  
+- [x] GUI : resizing, and HDDPI.  
 - [ ] GUI : double click to enter value.  
