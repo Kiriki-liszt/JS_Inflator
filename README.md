@@ -10,6 +10,13 @@ The new GUI is made by Twarch.
 
 Windows and Mac(Intel tested, Apple silicons not tested). 
 At least Xcode says - Standard Architectures (Apple Silicon, Intel) - $(ARCHS_STANDARD).  
+
+> To install on MacOS, configure security options as  
+> ``` console  
+> sudo xattr -r -d com.apple.quarantine /Library/Audio/Plug-Ins/VST3/InflatorPackage.vst3  
+> ```  
+> tested by @jonasborneland [here](https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/issues/12#issuecomment-1616671177)
+
 Linux not compatible.  
 This is my first attempt with VSTSDK & VSTGUI.  
 Some codes might be inefficent...  
