@@ -8,8 +8,7 @@ JS Inflator, the copy of Sonox Inflator, in vstsdk
 Now comes in two GUIs.
 The new GUI is made by Twarch.
 
-Windows and Mac(Intel tested, Apple silicons not tested). 
-At least Xcode says - Standard Architectures (Apple Silicon, Intel) - $(ARCHS_STANDARD).  
+Windows and Mac (Intel & Apple silicon tested).
 
 > To install on MacOS, configure security options as  
 > ``` console  
@@ -46,7 +45,7 @@ v1.2.1: Channel configuration corrected. probably a bug fix for crashing sometim
 v1.3.0: Curve knob fixed!!! and 32FP dither by airwindows.  
 v1.4.0: Oversampling up to x8 now works! DPC works.  
 v1.5.0: Band Split added.  
-v1.5.1: macOS build added. Intel x86 tested, Apple silicon not tested(I dont have one).  
+v1.5.1: macOS build added. Intel x86 & Apple silicon tested.  
 v1.6.0rc: FX meter(Effect Meter) is added. Original GUI is now on high definition.  
 v1.6.0rc1: Linear phase Oversampling is now added.  
 v1.6.0: Linear knob mode is now specified, and GUI size flinching fixed.  
