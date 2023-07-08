@@ -163,4 +163,5 @@ Modified for my need: Fractional resampling, Interpolation parts are deleted.
 - [x] malloc/realloc/free to new/delete change. -> stick with it. 
 - [x] Oversampling options : Linear phase, Balanced.  
 - [x] GUI : resizing, and HDDPI.  
-- [ ] GUI : double click to enter value.  
+- [ ] GUI : double click to enter value.
+- [ ] soft bypass latency.  
