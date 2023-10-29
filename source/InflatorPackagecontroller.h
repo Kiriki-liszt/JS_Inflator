@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------
 
 #pragma once
-
+#include "InflatorPackagecids.h"
 #include "public.sdk/source/vst/vsteditcontroller.h"
 
 using namespace Steinberg;

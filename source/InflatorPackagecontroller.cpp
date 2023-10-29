@@ -2,10 +2,12 @@
 // Copyright(c) 2023 yg331.
 //------------------------------------------------------------------------
 
-#include "InflatorPackagecids.h"
+
 #include "InflatorPackagecontroller.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
+
 #include "pluginterfaces/base/ustring.h"
+#include "base/source/fstring.h"
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "vstgui/plugin-bindings/vst3groupcontroller.h"

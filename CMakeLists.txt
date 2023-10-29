@@ -17,7 +17,7 @@ project(InflatorPackage
     # This is your plug-in version number. Change it here only.
     # Version number symbols usable in C++ can be found in
     # source/version.h and ${PROJECT_BINARY_DIR}/projectversion.h.
-    VERSION 1.5.1.1
+    VERSION 1.7.0.0
     DESCRIPTION "InflatorPackage VST 3 Plug-in"
 )
 
@@ -34,7 +34,7 @@ smtg_add_vst3plugin(InflatorPackage
     source/InflatorPackagecontroller.h
     source/InflatorPackagecontroller.cpp
     source/InflatorPackageentry.cpp
-    ${vst3sdk_SOURCE_DIR}/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
+    # ${vst3sdk_SOURCE_DIR}/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
 )
 
 set(ORIGINAL_GUI 1)
@@ -48,7 +48,7 @@ elseif(TWARCH)
 endif()
 
 #- VSTGUI Wanted ----
-if(SMTG_ADD_VSTGUI)
+if(SMTG_ENABLE_VSTGUI_SUPPORT)
     if(ORIGINAL_GUI)
     target_sources(InflatorPackage
         PRIVATE
@@ -95,7 +95,7 @@ if(SMTG_ADD_VSTGUI)
         PRIVATE
             vstgui_support
     )
-endif(SMTG_ADD_VSTGUI)
+endif(SMTG_ENABLE_VSTGUI_SUPPORT)
 # -------------------
 
 smtg_target_add_plugin_snapshots (InflatorPackage
@@ -108,7 +108,21 @@ target_link_libraries(InflatorPackage
     PRIVATE
         sdk
 )
- 
+
+set(R8B_PATH "${PROJECT_BINARY_DIR}/../libs/r8brain-free-src" CACHE STRING "Path to r8brain-free-src library source tree")
+
+file(WRITE "${R8B_PATH}/CMakeLists.txt"
+           [=[
+project(r8brain-free-src)
+add_library(r8brain-free-src r8bbase.cpp)
+]=]
+)
+    
+add_subdirectory(${R8B_PATH} ${PROJECT_BINARY_DIR}/r8brain-free-src-build EXCLUDE_FROM_ALL)
+include_directories(${R8B_PATH})
+target_link_libraries(InflatorPackage PUBLIC r8brain-free-src)
+smtg_target_setup_universal_binary(r8brain-free-src)
+
 smtg_target_configure_version_file(InflatorPackage)
 
 if(SMTG_MAC)
@@ -140,3 +154,12 @@ if(SMTG_WIN)
         add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     endif(NOT MINGW)
 endif(SMTG_WIN)
+
+# Add an AUv2 target
+if (SMTG_MAC AND XCODE AND SMTG_COREAUDIO_SDK_PATH)
+	smtg_target_add_auv2(InflatorPackage-au
+		BUNDLE_NAME InflatorPackage
+		BUNDLE_IDENTIFIER io.github.vst3.Inflator.audiounit
+		INFO_PLIST_TEMPLATE resource/au-info.plist
+		VST3_PLUGIN_TARGET InflatorPackage)
+endif(SMTG_MAC AND XCODE AND SMTG_COREAUDIO_SDK_PATH)
