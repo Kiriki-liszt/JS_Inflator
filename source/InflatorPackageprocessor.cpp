@@ -11,6 +11,8 @@
 #include "public.sdk/source/vst/vstaudioprocessoralgo.h"
 #include "public.sdk/source/vst/vsthelpers.h"
 
+#define SIMDE_ENABLE_NATIVE_ALIASES
+#include "simde/x86/sse2.h"
 
 using namespace Steinberg;
 
@@ -190,9 +192,9 @@ namespace yg331 {
 		latency_r8b_x2 = -1 + 2 * upSample_2x_Lin[0].getInLenBeforeOutPos(1);
 		latency_r8b_x4 = -1 + 2 * upSample_4x_Lin[0].getInLenBeforeOutPos(1);
 		latency_r8b_x8 = -1 + 2 * upSample_8x_Lin[0].getInLenBeforeOutPos(1);
-		latency_Fir_x2 = 26;
-		latency_Fir_x4 = 53;
-		latency_Fir_x8 = 96;
+		latency_Fir_x2 = 35;
+		latency_Fir_x4 = 55;
+		latency_Fir_x8 = 69;
 		
 		return kResultOk;
 	}
@@ -991,8 +993,6 @@ namespace yg331 {
 	void InflatorPackageProcessor::Fir_x8_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
 	{
 		Vst::Sample64 inputSample = *in;
-		double inter_24[2];
-		double inter_48[4];
 
 		int32 upTap_81_size = sizeof(double) * (make_2(upTap_81) - 2);
 		memmove(upSample_81[channel].buff + 2, upSample_81[channel].buff, upTap_81_size);
@@ -1005,14 +1005,13 @@ namespace yg331 {
 			__m128d _mul_1 = _mm_mul_pd(coef_1, buff_1);
 			     _acc_in_1 = _mm_add_pd(_acc_in_1, _mul_1);
 		}
-		_mm_store_pd(inter_24, _acc_in_1);
 
 		int32 upTap_82_size = sizeof(double) * (make_4(upTap_82) - 4);
 		memmove(upSample_82[channel].buff + 4, upSample_82[channel].buff, upTap_82_size);
-		upSample_82[channel].buff[3] = inter_24[0];
-		upSample_82[channel].buff[2] = inter_24[0];
-		upSample_82[channel].buff[1] = inter_24[1];
-		upSample_82[channel].buff[0] = inter_24[1];
+		_mm_storel_pd(&upSample_82[channel].buff[3], _acc_in_1);
+		_mm_storel_pd(&upSample_82[channel].buff[2], _acc_in_1);
+		_mm_storeh_pd(&upSample_82[channel].buff[1], _acc_in_1);
+		_mm_storeh_pd(&upSample_82[channel].buff[0], _acc_in_1);
 		__m128d _acc_in_2a = _mm_setzero_pd();
 		__m128d _acc_in_2b = _mm_setzero_pd();
 		for (int i = 0; i < upTap_82; i += 2) {
@@ -1025,19 +1024,17 @@ namespace yg331 {
 			     _acc_in_2a = _mm_add_pd(_acc_in_2a, _mul_2a);
 			     _acc_in_2b = _mm_add_pd(_acc_in_2b, _mul_2b);
 		}
-		_mm_store_pd(inter_48    , _acc_in_2a);
-		_mm_store_pd(inter_48 + 2, _acc_in_2b);
 
 		int32 upTap_83_size = sizeof(double) * (make_8(upTap_83) - 8);
 		memmove(upSample_83[channel].buff + 8, upSample_83[channel].buff, upTap_83_size);
-		upSample_83[channel].buff[7] = inter_48[0];
-		upSample_83[channel].buff[6] = inter_48[0];
-		upSample_83[channel].buff[5] = inter_48[1];
-		upSample_83[channel].buff[4] = inter_48[1];
-		upSample_83[channel].buff[3] = inter_48[2];
-		upSample_83[channel].buff[2] = inter_48[2];
-		upSample_83[channel].buff[1] = inter_48[3];
-		upSample_83[channel].buff[0] = inter_48[3];
+		_mm_storel_pd(&upSample_83[channel].buff[7], _acc_in_2a);
+		_mm_storel_pd(&upSample_83[channel].buff[6], _acc_in_2a);
+		_mm_storeh_pd(&upSample_83[channel].buff[5], _acc_in_2a);
+		_mm_storeh_pd(&upSample_83[channel].buff[4], _acc_in_2a);
+		_mm_storel_pd(&upSample_83[channel].buff[3], _acc_in_2b);
+		_mm_storel_pd(&upSample_83[channel].buff[2], _acc_in_2b);
+		_mm_storeh_pd(&upSample_83[channel].buff[1], _acc_in_2b);
+		_mm_storeh_pd(&upSample_83[channel].buff[0], _acc_in_2b);
 		__m128d _acc_in_3a = _mm_setzero_pd();
 		__m128d _acc_in_3b = _mm_setzero_pd();
 		__m128d _acc_in_3c = _mm_setzero_pd();
@@ -1133,17 +1130,20 @@ namespace yg331 {
 		double inter_84[8];
 		double inter_42[4];
 		double inter_21[2];
-
+		double inin[8];
+		memcpy(inin, in, sizeof(double) * 8);
+		(std::reverse)(inin, inin + 8);
 		int32 dnTap_83_size = sizeof(double) * (make_8(dnTap_83) - 8);
 		memmove(dnSample_83[channel].buff + 8, dnSample_83[channel].buff, dnTap_83_size);
-		dnSample_83[channel].buff[7] = in[0]; 
+		memcpy(dnSample_83[channel].buff, inin, sizeof(double) * 8);
+		/*dnSample_83[channel].buff[7] = in[0];
 		dnSample_83[channel].buff[6] = in[1];
 		dnSample_83[channel].buff[5] = in[2];
 		dnSample_83[channel].buff[4] = in[3];
 		dnSample_83[channel].buff[3] = in[4];
 		dnSample_83[channel].buff[2] = in[5];
 		dnSample_83[channel].buff[1] = in[6];
-		dnSample_83[channel].buff[0] = in[7];
+		dnSample_83[channel].buff[0] = in[7];*/
 		__m128d _acc_out_3a = _mm_setzero_pd();
 		__m128d _acc_out_3b = _mm_setzero_pd();
 		__m128d _acc_out_3c = _mm_setzero_pd();

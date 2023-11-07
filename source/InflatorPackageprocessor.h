@@ -168,17 +168,22 @@ namespace yg331 {
 		} Flt;
 
 		Flt upSample_21[2];
-		Flt dnSample_21[2];
 		Flt upSample_41[2];
 		Flt upSample_42[2];
-		Flt dnSample_41[2];
-		Flt dnSample_42[2];
 		Flt upSample_81[2];
 		Flt upSample_82[2];
 		Flt upSample_83[2];
+
+		Flt dnSample_21[2];
+		Flt dnSample_41[2];
+		Flt dnSample_42[2];
 		Flt dnSample_81[2];
 		Flt dnSample_82[2];
 		Flt dnSample_83[2];
+
+		Flt dnSample_81_x[2];
+		Flt dnSample_82_x[2];
+		Flt dnSample_83_x[2];
 
 		int32 upTap_21;
 		int32 upTap_41;
