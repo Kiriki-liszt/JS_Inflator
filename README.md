@@ -49,6 +49,10 @@ v1.5.1: macOS build added. Intel x86 & Apple silicon tested.
 v1.6.0rc: FX meter(Effect Meter) is added. Original GUI is now on high definition.  
 v1.6.0rc1: Linear phase Oversampling is now added.  
 v1.6.0: Linear knob mode is now specified, and GUI size flinching fixed.  
+v1.7.0.beta
+1. AUv2 build added.
+2. Changed oversampling method from whole buff resample to each sample resample, for less crashes.  
+3. hiir min-phase resampler is no longer used, and implememted my own FIR resampler with SSE2 optimization.  
 
 Now up to date with latest RC Inflator form ReaTeam/JSFX repository.  
 
