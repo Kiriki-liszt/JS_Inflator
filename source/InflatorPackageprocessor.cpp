@@ -81,27 +81,166 @@ namespace yg331 {
 		/* If you don't need an event bus, you can remove the next line */
 		// addEventInput(STR16("Event In"), 1);
 
-		for (int c = 0; c < 2; c++) {
-			upSample_2x_1[c].set_coefs(hiir::coef_2x_1);
-			upSample_4x_1[c].set_coefs(hiir::coef_4x_1);
-			upSample_4x_2[c].set_coefs(hiir::coef_4x_2);
-			upSample_8x_1[c].set_coefs(hiir::coef_8x_1);
-			upSample_8x_2[c].set_coefs(hiir::coef_8x_2);
-			upSample_8x_3[c].set_coefs(hiir::coef_8x_3);
-			dnSample_2x_1[c].set_coefs(hiir::coef_2x_1);
-			dnSample_4x_2[c].set_coefs(hiir::coef_4x_1);
-			dnSample_4x_2[c].set_coefs(hiir::coef_4x_2);
-			dnSample_8x_1[c].set_coefs(hiir::coef_8x_1);
-			dnSample_8x_2[c].set_coefs(hiir::coef_8x_2);
-			dnSample_8x_3[c].set_coefs(hiir::coef_8x_3);
+		// Filter kernel
+		double fir_coef_up_x21[] = {
+#include "fir_coef_up_x21.in"
+		};
+		double fir_coef_dn_x21[] = {
+#include "fir_coef_dn_x21.in"
+		};
+
+		double fir_coef_up_x41[] = {
+#include "fir_coef_up_x41.in"
+		};
+		double fir_coef_up_x42[] = {
+#include "fir_coef_up_x42.in"
+		};
+		double fir_coef_dn_x41[] = {
+#include "fir_coef_dn_x41.in"
+		};
+		double fir_coef_dn_x42[] = {
+#include "fir_coef_dn_x42.in"
+		};
+
+		double fir_coef_up_x81[] = {
+#include "fir_coef_up_x81.in"
+		};
+		double fir_coef_up_x82[] = {
+#include "fir_coef_up_x82.in"
+		};
+		double fir_coef_up_x83[] = {
+#include "fir_coef_up_x83.in"
+		};
+		double fir_coef_dn_x81[] = {
+#include "fir_coef_dn_x81.in"
+		};
+		double fir_coef_dn_x82[] = {
+#include "fir_coef_dn_x82.in"
+		};
+		double fir_coef_dn_x83[] = {
+#include "fir_coef_dn_x83.in"
+		};
+
+
+#define make_2(t) (2 * ((t / 2) + 1))
+#define make_4(t) (4 * ((t / 4) + 1))
+#define make_8(t) (8 * ((t / 8) + 1))
+
+
+		upTap_21 = sizeof(fir_coef_up_x21) / sizeof(*fir_coef_up_x21);
+		upTap_41 = sizeof(fir_coef_up_x41) / sizeof(*fir_coef_up_x41);
+		upTap_42 = sizeof(fir_coef_up_x42) / sizeof(*fir_coef_up_x42);
+		upTap_81 = sizeof(fir_coef_up_x81) / sizeof(*fir_coef_up_x81);
+		upTap_82 = sizeof(fir_coef_up_x82) / sizeof(*fir_coef_up_x82);
+		upTap_83 = sizeof(fir_coef_up_x83) / sizeof(*fir_coef_up_x83);
+
+		dnTap_21 = sizeof(fir_coef_dn_x21) / sizeof(*fir_coef_dn_x21);
+		dnTap_41 = sizeof(fir_coef_dn_x41) / sizeof(*fir_coef_dn_x41);
+		dnTap_42 = sizeof(fir_coef_dn_x42) / sizeof(*fir_coef_dn_x42);
+		dnTap_81 = sizeof(fir_coef_dn_x81) / sizeof(*fir_coef_dn_x81);
+		dnTap_82 = sizeof(fir_coef_dn_x82) / sizeof(*fir_coef_dn_x82);
+		dnTap_83 = sizeof(fir_coef_dn_x83) / sizeof(*fir_coef_dn_x83);
+
+
+		for (int channel = 0; channel < 2; channel++) {
+			upSample_21[channel].coef = new double[make_2(upTap_21)] {};
+			upSample_41[channel].coef = new double[make_4(upTap_41)] {};
+			upSample_42[channel].coef = new double[make_4(upTap_42)] {};
+			upSample_81[channel].coef = new double[make_8(upTap_81)] {};
+			upSample_82[channel].coef = new double[make_8(upTap_82)] {};
+			upSample_83[channel].coef = new double[make_8(upTap_83)] {};
+
+			upSample_21[channel].buff = new double[make_2(upTap_21)] {};
+			upSample_41[channel].buff = new double[make_4(upTap_41)] {};
+			upSample_42[channel].buff = new double[make_4(upTap_42)] {};
+			upSample_81[channel].buff = new double[make_8(upTap_81)] {};
+			upSample_82[channel].buff = new double[make_8(upTap_82)] {};
+			upSample_83[channel].buff = new double[make_8(upTap_83)] {};
+
+			memcpy(upSample_21[channel].coef, fir_coef_up_x21, sizeof(fir_coef_up_x21));
+			memcpy(upSample_41[channel].coef, fir_coef_up_x41, sizeof(fir_coef_up_x41));
+			memcpy(upSample_42[channel].coef, fir_coef_up_x42, sizeof(fir_coef_up_x42));
+			memcpy(upSample_81[channel].coef, fir_coef_up_x81, sizeof(fir_coef_up_x81));
+			memcpy(upSample_82[channel].coef, fir_coef_up_x82, sizeof(fir_coef_up_x82));
+			memcpy(upSample_83[channel].coef, fir_coef_up_x83, sizeof(fir_coef_up_x83));
+
+
+			dnSample_21[channel].coef = new double[make_2(dnTap_21)] {};
+			dnSample_41[channel].coef = new double[make_4(dnTap_41)] {};
+			dnSample_42[channel].coef = new double[make_4(dnTap_42)] {};
+			dnSample_81[channel].coef = new double[make_8(dnTap_81)] {};
+			dnSample_82[channel].coef = new double[make_8(dnTap_82)] {};
+			dnSample_83[channel].coef = new double[make_8(dnTap_83)] {};
+
+			dnSample_21[channel].buff = new double[make_2(dnTap_21)] {};
+			dnSample_41[channel].buff = new double[make_4(dnTap_41)] {};
+			dnSample_42[channel].buff = new double[make_4(dnTap_42)] {};
+			dnSample_81[channel].buff = new double[make_8(dnTap_81)] {};
+			dnSample_82[channel].buff = new double[make_8(dnTap_82)] {};
+			dnSample_83[channel].buff = new double[make_8(dnTap_83)] {};
+
+			memcpy(dnSample_21[channel].coef, fir_coef_dn_x21, sizeof(fir_coef_dn_x21));
+			memcpy(dnSample_41[channel].coef, fir_coef_dn_x41, sizeof(fir_coef_dn_x41));
+			memcpy(dnSample_42[channel].coef, fir_coef_dn_x42, sizeof(fir_coef_dn_x42));
+			memcpy(dnSample_81[channel].coef, fir_coef_dn_x81, sizeof(fir_coef_dn_x81));
+			memcpy(dnSample_82[channel].coef, fir_coef_dn_x82, sizeof(fir_coef_dn_x82));
+			memcpy(dnSample_83[channel].coef, fir_coef_dn_x83, sizeof(fir_coef_dn_x83));
 		}
 
+		latency_r8b_x2 = -1 + 2 * upSample_2x_Lin[0].getInLenBeforeOutPos(1);
+		latency_r8b_x4 = -1 + 2 * upSample_4x_Lin[0].getInLenBeforeOutPos(1);
+		latency_r8b_x8 = -1 + 2 * upSample_8x_Lin[0].getInLenBeforeOutPos(1);
+		latency_Fir_x2 = 26;
+		latency_Fir_x4 = 53;
+		latency_Fir_x8 = 96;
+		
 		return kResultOk;
 	}
 
-	
+	//------------------------------------------------------------------------
+	tresult PLUGIN_API InflatorPackageProcessor::terminate()
+	{
+		// Here the Plug-in will be de-instantiated, last possibility to remove some memory!
+		for (int channel = 0; channel < 2; channel++) {
+			delete[] upSample_21[channel].coef;
+			delete[] upSample_41[channel].coef;
+			delete[] upSample_42[channel].coef;
+			delete[] upSample_81[channel].coef;
+			delete[] upSample_82[channel].coef;
+			delete[] upSample_83[channel].coef;
+
+			delete[] upSample_21[channel].buff;
+			delete[] upSample_41[channel].buff;
+			delete[] upSample_42[channel].buff;
+			delete[] upSample_81[channel].buff;
+			delete[] upSample_82[channel].buff;
+			delete[] upSample_83[channel].buff;
+
+
+			delete[] dnSample_21[channel].coef;
+			delete[] dnSample_41[channel].coef;
+			delete[] dnSample_42[channel].coef;
+			delete[] dnSample_81[channel].coef;
+			delete[] dnSample_82[channel].coef;
+			delete[] dnSample_83[channel].coef;
+
+			delete[] dnSample_21[channel].buff;
+			delete[] dnSample_41[channel].buff;
+			delete[] dnSample_42[channel].buff;
+			delete[] dnSample_81[channel].buff;
+			delete[] dnSample_82[channel].buff;
+			delete[] dnSample_83[channel].buff;
+
+
+			delete[] delay_buff[channel];
+		}
+		//---do not forget to call parent ------
+		return AudioEffect::terminate();
+	}
+
+
 	tresult PLUGIN_API InflatorPackageProcessor::setBusArrangements(
-		Vst::SpeakerArrangement* inputs,  int32 numIns,
+		Vst::SpeakerArrangement* inputs, int32 numIns,
 		Vst::SpeakerArrangement* outputs, int32 numOuts)
 	{
 		if (numIns == 1 && numOuts == 1)
@@ -159,17 +298,7 @@ namespace yg331 {
 		}
 		return kResultFalse;
 	}
-	
 
-
-	//------------------------------------------------------------------------
-	tresult PLUGIN_API InflatorPackageProcessor::terminate()
-	{
-		// Here the Plug-in will be de-instantiated, last possibility to remove some memory!
-
-		//---do not forget to call parent ------
-		return AudioEffect::terminate();
-	}
 
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API InflatorPackageProcessor::setActive(TBool state)
@@ -361,40 +490,23 @@ namespace yg331 {
 		{
 			int32 index = 0;
 			Vst::IParamValueQueue* paramQueue = outParamChanges->addParameterData(kParamInVuPPML, index);
-			if (paramQueue)
-			{
-				int32 index2 = 0;
-				paramQueue->addPoint(0, fInVuPPML, index2);
-			}
+			if (paramQueue) { int32 index2 = 0; paramQueue->addPoint(0, fInVuPPML, index2); }
+
 			index = 0;
 			paramQueue = outParamChanges->addParameterData(kParamInVuPPMR, index);
-			if (paramQueue)
-			{
-				int32 index2 = 0;
-				paramQueue->addPoint(0, fInVuPPMR, index2);
-			}
+			if (paramQueue) { int32 index2 = 0; paramQueue->addPoint(0, fInVuPPMR, index2); }
+
 			index = 0;
 			paramQueue = outParamChanges->addParameterData(kParamOutVuPPML, index);
-			if (paramQueue)
-			{
-				int32 index2 = 0;
-				paramQueue->addPoint(0, fOutVuPPML, index2);
-			}
+			if (paramQueue) { int32 index2 = 0; paramQueue->addPoint(0, fOutVuPPML, index2); }
+
 			index = 0;
 			paramQueue = outParamChanges->addParameterData(kParamOutVuPPMR, index);
-			if (paramQueue)
-			{
-				int32 index2 = 0;
-				paramQueue->addPoint(0, fOutVuPPMR, index2);
-			}
+			if (paramQueue) { int32 index2 = 0; paramQueue->addPoint(0, fOutVuPPMR, index2); }
 
 			index = 0;
 			paramQueue = outParamChanges->addParameterData(kParamMeter, index);
-			if (paramQueue)
-			{
-				int32 index2 = 0;
-				paramQueue->addPoint(0, fMeter, index2);
-			}
+			if (paramQueue) { int32 index2 = 0; paramQueue->addPoint(0, fMeter, index2); }
 
 		}
 		fInVuPPMLOld = fInVuPPML;
@@ -411,10 +523,13 @@ namespace yg331 {
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API InflatorPackageProcessor::setupProcessing(Vst::ProcessSetup& newSetup)
 	{
+		max_lat = (std::max)({ latency_r8b_x2, latency_r8b_x4, latency_r8b_x8, latency_Fir_x2, latency_Fir_x4, latency_Fir_x8 });
+		max_lat += newSetup.maxSamplesPerBlock;
 		int32 numChannels = 2;
 		for (int32 channel = 0; channel < numChannels; channel++)
 		{
 			Band_Split_set(&Band_Split[channel], 240.0, 2400.0, newSetup.sampleRate);
+			delay_buff[channel] = new double[max_lat];
 		}
 		//--- called before any processing ----
 		return AudioEffect::setupProcessing(newSetup);
@@ -428,11 +543,12 @@ namespace yg331 {
 			else if (fParamOS == overSample_4x) return -1 + 2 * upSample_4x_Lin[0].getInLenBeforeOutPos(1);
 			else                                return -1 + 2 * upSample_8x_Lin[0].getInLenBeforeOutPos(1);
 		}
-
-		if      (fParamOS == overSample_1x) return 0;
-		else if (fParamOS == overSample_2x) return hiir::os_2x_latency;
-		else if (fParamOS == overSample_4x) return hiir::os_4x_latency;
-		else                                return hiir::os_8x_latency;
+		else {
+			if      (fParamOS == overSample_1x) return 0;
+			else if (fParamOS == overSample_2x) return latency_Fir_x2;
+			else if (fParamOS == overSample_4x) return latency_Fir_x4;
+			else                                return latency_Fir_x8;
+		}
 	}
 
 	//------------------------------------------------------------------------
@@ -545,12 +661,12 @@ namespace yg331 {
 		float normValue;
 
 		if (dB >= 6.0) normValue = 1.0;
-		else if (dB >= 5.0) normValue = 0.96;
-		else if (dB >= 4.0) normValue = 0.92;
-		else if (dB >= 3.0) normValue = 0.88;
-		else if (dB >= 2.0) normValue = 0.84;
-		else if (dB >= 1.0) normValue = 0.80;
-		else if (dB >= 0.0) normValue = 0.76;
+		else if (dB >=  5.0) normValue = 0.96;
+		else if (dB >=  4.0) normValue = 0.92;
+		else if (dB >=  3.0) normValue = 0.88;
+		else if (dB >=  2.0) normValue = 0.84;
+		else if (dB >=  1.0) normValue = 0.80;
+		else if (dB >=  0.0) normValue = 0.76;
 		else if (dB >= -1.0) normValue = 0.72;
 		else if (dB >= -2.0) normValue = 0.68;
 		else if (dB >= -3.0) normValue = 0.64;
@@ -558,17 +674,17 @@ namespace yg331 {
 		else if (dB >= -5.0) normValue = 0.56;
 		else if (dB >= -6.0) normValue = 0.52;
 		else if (dB >= -8.0) normValue = 0.48;
-		else if (dB >= -10) normValue = 0.44;
-		else if (dB >= -12) normValue = 0.40;
-		else if (dB >= -14) normValue = 0.36;
-		else if (dB >= -16) normValue = 0.32;
-		else if (dB >= -18) normValue = 0.28;
-		else if (dB >= -22) normValue = 0.24;
-		else if (dB >= -26) normValue = 0.20;
-		else if (dB >= -30) normValue = 0.16;
-		else if (dB >= -34) normValue = 0.12;
-		else if (dB >= -38) normValue = 0.08;
-		else if (dB >= -42) normValue = 0.04;
+		else if (dB >= -10 ) normValue = 0.44;
+		else if (dB >= -12 ) normValue = 0.40;
+		else if (dB >= -14 ) normValue = 0.36;
+		else if (dB >= -16 ) normValue = 0.32;
+		else if (dB >= -18 ) normValue = 0.28;
+		else if (dB >= -22 ) normValue = 0.24;
+		else if (dB >= -26 ) normValue = 0.20;
+		else if (dB >= -30 ) normValue = 0.16;
+		else if (dB >= -34 ) normValue = 0.12;
+		else if (dB >= -38 ) normValue = 0.08;
+		else if (dB >= -42 ) normValue = 0.04;
 		else normValue = 0.0;
 
 		return normValue;
@@ -627,7 +743,6 @@ namespace yg331 {
 	Vst::Sample64 InflatorPackageProcessor::process_inflator(Vst::Sample64 inputSample) 
 	{
 		Vst::Sample64 drySample = inputSample;
-		Vst::Sample64 wet = fEffect;
 		Vst::Sample64 sign;
 
 		if (inputSample > 0.0) sign =  1.0;
@@ -644,20 +759,12 @@ namespace yg331 {
 		                                  (curveB * s2) +
 		                                  (curveC * s3) -
 		                                  (curveD * (s2 - (2.0 * s3) + s4));
-
 		inputSample *= sign;
 
-		if (wet != 1.0) {
-			inputSample = (drySample * (1.0 - wet)) + (inputSample * wet);
-		}
-
-		if (bClip) {
-			if      (inputSample >  1.0) inputSample =  1.0;
-			else if (inputSample < -1.0) inputSample = -1.0;
-		}
-
 		// Meter += 20.0 * (log10(inputSample) - log10(dry));
-		Meter += 20.0 * log10(inputSample / drySample);
+		
+		inputSample = (drySample * (1- fEffect)) + (inputSample * fEffect);
+		
 		return inputSample;
 	}
 
@@ -670,7 +777,7 @@ namespace yg331 {
 		long long sampleFrames
 	)
 	{
-		Vst::Sample64 In_db = expf(logf(10.f) * (24.0 * fInput - 12.0) / 20.f);
+		Vst::Sample64 In_db  = expf(logf(10.f) * (24.0 * fInput  - 12.0) / 20.f);
 		Vst::Sample64 Out_db = expf(logf(10.f) * (12.0 * fOutput - 12.0) / 20.f);
 
 		curvepct = fCurve - 0.5;
@@ -683,145 +790,107 @@ namespace yg331 {
 
 		for (int32 channel = 0; channel < numChannels; channel++)
 		{
-
-			if (!bIn) {
-				memcpy(outputs[channel], inputs[channel], sizeof(SampleType) * sampleFrames);
-				continue;
-			}
-
 			SampleType* ptrIn  = (SampleType*) inputs[channel];
 			SampleType* ptrOut = (SampleType*)outputs[channel];
 
-			int32 samples = sampleFrames;
+			int32 samples = 0;
 
-			while (--samples >= 0)
+			while (samples++ < sampleFrames)
 			{
 				Vst::Sample64 inputSample = *ptrIn;
 
 				inputSample *= In_db;
 
 				if (bClip) {
-					if (inputSample > 1.0) inputSample = 1.0;
+					if      (inputSample >  1.0) inputSample =  1.0;
 					else if (inputSample < -1.0) inputSample = -1.0;
 				}
 
-				if (inputSample > 2.0) inputSample = 2.0;
+				if      (inputSample >  2.0) inputSample = 2.0;
 				else if (inputSample < -2.0) inputSample = -2.0;
 
 				if (inputSample > tmp) { tmp = inputSample; }
 
-				int oversampling = 1;
-				if (fParamOS == overSample_8x) { oversampling = 8; }
-				else if (fParamOS == overSample_4x) { oversampling = 4; }
-				else if (fParamOS == overSample_2x) { oversampling = 2; }
+				Vst::Sample64 drySample = inputSample;
 
-				double* upSample_buff;
-				double upSample_buff_2[2];
-				double upSample_buff_4[4];
-				double upSample_buff_8[8];
-				double* dnSample_buff;
-				double dnSample_buff_1[1];
-				double dnSample_buff_2[2];
-				double dnSample_buff_4[4];
-				double dnSample_buff_8[8];
+				int32 oversampling = 1;
+				if      (fParamOS == overSample_2x) oversampling = 2;
+				else if (fParamOS == overSample_4x) oversampling = 4;
+				else if (fParamOS == overSample_8x) oversampling = 8;
+
+				double up_x[8];
+				double up_y[8];
 
 				if (!fParamPhase) {
-					if (fParamOS == overSample_1x) {
-						memcpy(upSample_buff_8, &inputSample, sizeof(Vst::Sample64) * oversampling);
-					}
-					else if (fParamOS == overSample_2x) {
-						upSample_2x_1[channel].process_block(upSample_buff_8, &inputSample, 1);
-					}
-					else if (fParamOS == overSample_4x) {
-						upSample_4x_1[channel].process_block(upSample_buff_2, &inputSample, 1);
-						upSample_4x_2[channel].process_block(upSample_buff_8, upSample_buff_2, 2);
-					}
-					else {
-						upSample_8x_1[channel].process_block(upSample_buff_2, &inputSample, 1);
-						upSample_8x_2[channel].process_block(upSample_buff_4, upSample_buff_2, 2);
-						upSample_8x_3[channel].process_block(upSample_buff_8, upSample_buff_4, 4);
-					}
+					if      (fParamOS == overSample_1x) up_x[0] = inputSample;
+					else if (fParamOS == overSample_2x) Fir_x2_up(&inputSample, up_x, channel);
+					else if (fParamOS == overSample_4x) Fir_x4_up(&inputSample, up_x, channel);
+					else                                Fir_x8_up(&inputSample, up_x, channel);
 				}
 				else {
+					double* upSample_buff;
 					if (fParamOS == overSample_1x) {
-						memcpy(upSample_buff_8, &inputSample, sizeof(Vst::Sample64) * oversampling);
-					}
-					else if (fParamOS == overSample_2x) {
-						upSample_2x_Lin[channel].process(&inputSample, 1, upSample_buff);
-						memcpy(upSample_buff_8, upSample_buff, sizeof(Vst::Sample64) * oversampling);
-					}
-					else if (fParamOS == overSample_4x) {
-						upSample_4x_Lin[channel].process(&inputSample, 1, upSample_buff);
-						memcpy(upSample_buff_8, upSample_buff, sizeof(Vst::Sample64) * oversampling);
+						up_x[0] = inputSample;
 					}
 					else {
-						upSample_8x_Lin[channel].process(&inputSample, 1, upSample_buff);
-						memcpy(upSample_buff_8, upSample_buff, sizeof(Vst::Sample64) * oversampling);
+						if      (fParamOS == overSample_2x) upSample_2x_Lin[channel].process(&inputSample, 1, upSample_buff);
+						else if (fParamOS == overSample_4x) upSample_4x_Lin[channel].process(&inputSample, 1, upSample_buff);
+						else                                upSample_8x_Lin[channel].process(&inputSample, 1, upSample_buff);
+						memcpy(up_x, upSample_buff, sizeof(Vst::Sample64) * oversampling);
 					}
 				}
-				
-				for (int k = 0; k < oversampling; k++) {
 
+				for (int k = 0; k < oversampling; k++) {
+					if (!bIn) {
+						up_y[k] = up_x[k];
+						continue;
+					}
+					Vst::Sample64 sampleOS = up_x[k];
 					if (bSplit) {
-						Band_Split[channel].LP.R = Band_Split[channel].LP.I + Band_Split[channel].LP.C * (upSample_buff_8[k] - Band_Split[channel].LP.I);
+						Band_Split[channel].LP.R = Band_Split[channel].LP.I + Band_Split[channel].LP.C * (sampleOS - Band_Split[channel].LP.I);
 						Band_Split[channel].LP.I = 2 * Band_Split[channel].LP.R - Band_Split[channel].LP.I;
 
-						Band_Split[channel].HP.R = (1 - Band_Split[channel].HP.C) * Band_Split[channel].HP.I + Band_Split[channel].HP.C * upSample_buff_8[k];
+						Band_Split[channel].HP.R = (1 - Band_Split[channel].HP.C) * Band_Split[channel].HP.I + Band_Split[channel].HP.C * sampleOS;
 						Band_Split[channel].HP.I = 2 * Band_Split[channel].HP.R - Band_Split[channel].HP.I;
 
 						Vst::Sample64 inputSample_L = Band_Split[channel].LP.R;
-						Vst::Sample64 inputSample_H = upSample_buff_8[k] - Band_Split[channel].HP.R;
+						Vst::Sample64 inputSample_H = sampleOS - Band_Split[channel].HP.R;
 						Vst::Sample64 inputSample_M = Band_Split[channel].HP.R - Band_Split[channel].LP.R;
 
-						dnSample_buff_8[k] =
+						up_y[k] =
 							process_inflator(inputSample_L) +
 							process_inflator(inputSample_M * Band_Split[channel].G) * Band_Split[channel].GR +
 							process_inflator(inputSample_H);
 					}
 					else {
-						dnSample_buff_8[k] = process_inflator(upSample_buff_8[k]);
+						up_y[k] = process_inflator(sampleOS);
 					}
-				}	
+				}
 
 				if (!fParamPhase) {
-					if (fParamOS == overSample_1x) {
-						inputSample = dnSample_buff_8[0];
-					}
-					else if (fParamOS == overSample_2x) {
-						dnSample_2x_1[channel].process_block(dnSample_buff_1, dnSample_buff_8, 1);
-						inputSample = *dnSample_buff_1;
-					}
-					else if (fParamOS == overSample_4x) {
-						dnSample_4x_1[channel].process_block(dnSample_buff_2, dnSample_buff_8, 2);
-						dnSample_4x_2[channel].process_block(dnSample_buff_1, dnSample_buff_2, 1);
-						inputSample = *dnSample_buff_1;
-					}
-					else {
-						dnSample_8x_1[channel].process_block(dnSample_buff_4, dnSample_buff_8, 4);
-						dnSample_8x_2[channel].process_block(dnSample_buff_2, dnSample_buff_4, 2);
-						dnSample_8x_3[channel].process_block(dnSample_buff_1, dnSample_buff_2, 1);
-						inputSample = *dnSample_buff_1;
-					}
+					if      (fParamOS == overSample_1x) inputSample = up_y[0];
+					else if (fParamOS == overSample_2x) Fir_x2_dn(up_y, &inputSample, channel);
+					else if (fParamOS == overSample_4x) Fir_x4_dn(up_y, &inputSample, channel);
+					else                                Fir_x8_dn(up_y, &inputSample, channel);
 				}
 				else {
+
 					if (fParamOS == overSample_1x) {
-						inputSample = dnSample_buff_8[0];
-					}
-					else if (fParamOS == overSample_2x) {
-						dnSample_2x_Lin[channel].process(dnSample_buff_8, 1 * oversampling, dnSample_buff);
-						inputSample = *dnSample_buff;
-					}
-					else if (fParamOS == overSample_4x) {
-						dnSample_4x_Lin[channel].process(dnSample_buff_8, 1 * oversampling, dnSample_buff);
-						inputSample = *dnSample_buff;
+						inputSample = up_y[0];
 					}
 					else {
-						dnSample_8x_Lin[channel].process(dnSample_buff_8, 1 * oversampling, dnSample_buff);
+						double* dnSample_buff;
+						if      (fParamOS == overSample_2x) dnSample_2x_Lin[channel].process(up_y, oversampling, dnSample_buff);
+						else if (fParamOS == overSample_4x) dnSample_4x_Lin[channel].process(up_y, oversampling, dnSample_buff);
+						else                                dnSample_8x_Lin[channel].process(up_y, oversampling, dnSample_buff);
 						inputSample = *dnSample_buff;
 					}
 				}
-				
 
+				Meter += 20.0 * log10(inputSample / drySample);
+
+				if (bClip && inputSample >  1.0) inputSample =  1.0;
+				if (bClip && inputSample < -1.0) inputSample = -1.0;
 				inputSample *= Out_db;
 
 				*ptrOut = (SampleType)inputSample;
@@ -840,6 +909,7 @@ namespace yg331 {
 		return;
 	}
 
+
 	template <typename SampleType>
 	void InflatorPackageProcessor::overSampling(
 		SampleType** inputs,
@@ -853,6 +923,288 @@ namespace yg331 {
 
 		//processVuPPM_Out<SampleType>((SampleType**)outputs, numChannels, sampleFrames);
 		return;
+	}
+
+
+
+	/// Fir Linear Oversamplers
+
+	// 1 in 2 out
+	void InflatorPackageProcessor::Fir_x2_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
+	{
+		Vst::Sample64 inputSample = *in;
+
+		int32 upTap_21_size = sizeof(double) * (make_2(upTap_21) - 2);
+		memmove(upSample_21[channel].buff + 2, upSample_21[channel].buff, upTap_21_size);
+		upSample_21[channel].buff[1] = inputSample;
+		upSample_21[channel].buff[0] = inputSample;
+		__m128d _acc_in = _mm_setzero_pd();
+		for (int i = 0; i < upTap_21; i += 2) {
+			__m128d coef = _mm_load_pd(&upSample_21[channel].coef[i]);
+			__m128d buff = _mm_load_pd(&upSample_21[channel].buff[i]);
+			__m128d _mul = _mm_mul_pd(coef, buff);
+			     _acc_in = _mm_add_pd(_acc_in, _mul);
+		}
+		_mm_store_pd(out, _acc_in);
+	}
+	// 1 in 4 out
+	void InflatorPackageProcessor::Fir_x4_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
+	{
+		Vst::Sample64 inputSample = *in;
+		double inter_24[2];
+
+		int32 upTap_41_size = sizeof(double) * (make_4(upTap_41) - 2);
+		memmove(upSample_41[channel].buff + 2, upSample_41[channel].buff, upTap_41_size);
+		upSample_41[channel].buff[1] = inputSample;
+		upSample_41[channel].buff[0] = inputSample;
+		__m128d _acc_in = _mm_setzero_pd();
+		for (int i = 0; i < upTap_41; i += 2) {
+			__m128d coef = _mm_load_pd(&upSample_41[channel].coef[i]);
+			__m128d buff = _mm_load_pd(&upSample_41[channel].buff[i]);
+			__m128d _mul = _mm_mul_pd(coef, buff);
+			     _acc_in = _mm_add_pd(_acc_in, _mul);
+		}
+		_mm_store_pd(inter_24, _acc_in);
+
+		int32 upTap_42_size = sizeof(double) * (make_4(upTap_42) - 4);
+		memmove(upSample_42[channel].buff + 4, upSample_42[channel].buff, upTap_42_size);
+		upSample_42[channel].buff[3] = inter_24[0];
+		upSample_42[channel].buff[2] = inter_24[0];
+		upSample_42[channel].buff[1] = inter_24[1];
+		upSample_42[channel].buff[0] = inter_24[1];
+		__m128d _acc_in_a = _mm_setzero_pd();
+		__m128d _acc_in_b = _mm_setzero_pd();
+		for (int i = 0; i < upTap_42; i += 2) {
+			__m128d coef_a = _mm_load_pd(&upSample_42[channel].coef[i    ]);
+			__m128d buff_a = _mm_load_pd(&upSample_42[channel].buff[i + 2]);
+			__m128d coef_b = _mm_load_pd(&upSample_42[channel].coef[i    ]);
+			__m128d buff_b = _mm_load_pd(&upSample_42[channel].buff[i    ]);
+			__m128d _mul_a = _mm_mul_pd(coef_a, buff_a);
+			__m128d _mul_b = _mm_mul_pd(coef_b, buff_b);
+			     _acc_in_a = _mm_add_pd(_acc_in_a, _mul_a);
+			     _acc_in_b = _mm_add_pd(_acc_in_b, _mul_b);
+		}
+		_mm_store_pd(out, _acc_in_a);
+		_mm_store_pd(out + 2, _acc_in_b);
+	}
+	// 1 in 8 out
+	void InflatorPackageProcessor::Fir_x8_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
+	{
+		Vst::Sample64 inputSample = *in;
+		double inter_24[2];
+		double inter_48[4];
+
+		int32 upTap_81_size = sizeof(double) * (make_2(upTap_81) - 2);
+		memmove(upSample_81[channel].buff + 2, upSample_81[channel].buff, upTap_81_size);
+		upSample_81[channel].buff[1] = inputSample;
+		upSample_81[channel].buff[0] = inputSample;
+		__m128d _acc_in_1 = _mm_setzero_pd();
+		for (int i = 0; i < upTap_81; i += 2) {
+			__m128d coef_1 = _mm_load_pd(&upSample_81[channel].coef[i]);
+			__m128d buff_1 = _mm_load_pd(&upSample_81[channel].buff[i]);
+			__m128d _mul_1 = _mm_mul_pd(coef_1, buff_1);
+			     _acc_in_1 = _mm_add_pd(_acc_in_1, _mul_1);
+		}
+		_mm_store_pd(inter_24, _acc_in_1);
+
+		int32 upTap_82_size = sizeof(double) * (make_4(upTap_82) - 4);
+		memmove(upSample_82[channel].buff + 4, upSample_82[channel].buff, upTap_82_size);
+		upSample_82[channel].buff[3] = inter_24[0];
+		upSample_82[channel].buff[2] = inter_24[0];
+		upSample_82[channel].buff[1] = inter_24[1];
+		upSample_82[channel].buff[0] = inter_24[1];
+		__m128d _acc_in_2a = _mm_setzero_pd();
+		__m128d _acc_in_2b = _mm_setzero_pd();
+		for (int i = 0; i < upTap_82; i += 2) {
+			__m128d coef_2a = _mm_load_pd(&upSample_82[channel].coef[i    ]);
+			__m128d buff_2a = _mm_load_pd(&upSample_82[channel].buff[i + 2]);
+			__m128d coef_2b = _mm_load_pd(&upSample_82[channel].coef[i    ]);
+			__m128d buff_2b = _mm_load_pd(&upSample_82[channel].buff[i    ]);
+			__m128d _mul_2a = _mm_mul_pd(coef_2a, buff_2a);
+			__m128d _mul_2b = _mm_mul_pd(coef_2b, buff_2b);
+			     _acc_in_2a = _mm_add_pd(_acc_in_2a, _mul_2a);
+			     _acc_in_2b = _mm_add_pd(_acc_in_2b, _mul_2b);
+		}
+		_mm_store_pd(inter_48    , _acc_in_2a);
+		_mm_store_pd(inter_48 + 2, _acc_in_2b);
+
+		int32 upTap_83_size = sizeof(double) * (make_8(upTap_83) - 8);
+		memmove(upSample_83[channel].buff + 8, upSample_83[channel].buff, upTap_83_size);
+		upSample_83[channel].buff[7] = inter_48[0];
+		upSample_83[channel].buff[6] = inter_48[0];
+		upSample_83[channel].buff[5] = inter_48[1];
+		upSample_83[channel].buff[4] = inter_48[1];
+		upSample_83[channel].buff[3] = inter_48[2];
+		upSample_83[channel].buff[2] = inter_48[2];
+		upSample_83[channel].buff[1] = inter_48[3];
+		upSample_83[channel].buff[0] = inter_48[3];
+		__m128d _acc_in_3a = _mm_setzero_pd();
+		__m128d _acc_in_3b = _mm_setzero_pd();
+		__m128d _acc_in_3c = _mm_setzero_pd();
+		__m128d _acc_in_3d = _mm_setzero_pd();
+		for (int i = 0; i < upTap_83; i += 2) { // make_8(upTap_83) == sizeof_buff > upTap_83 + 6
+			__m128d coef_3a = _mm_load_pd(&upSample_83[channel].coef[i    ]);
+			__m128d buff_3a = _mm_load_pd(&upSample_83[channel].buff[i + 6]);
+			__m128d coef_3b = _mm_load_pd(&upSample_83[channel].coef[i    ]);
+			__m128d buff_3b = _mm_load_pd(&upSample_83[channel].buff[i + 4]);
+			__m128d coef_3c = _mm_load_pd(&upSample_83[channel].coef[i    ]);
+			__m128d buff_3c = _mm_load_pd(&upSample_83[channel].buff[i + 2]);
+			__m128d coef_3d = _mm_load_pd(&upSample_83[channel].coef[i    ]);
+			__m128d buff_3d = _mm_load_pd(&upSample_83[channel].buff[i    ]);
+			__m128d _mul_3a = _mm_mul_pd(coef_3a, buff_3a);
+			__m128d _mul_3b = _mm_mul_pd(coef_3b, buff_3b);
+			__m128d _mul_3c = _mm_mul_pd(coef_3c, buff_3c);
+			__m128d _mul_3d = _mm_mul_pd(coef_3d, buff_3d);
+			     _acc_in_3a = _mm_add_pd(_acc_in_3a, _mul_3a);
+			     _acc_in_3b = _mm_add_pd(_acc_in_3b, _mul_3b);
+			     _acc_in_3c = _mm_add_pd(_acc_in_3c, _mul_3c);
+			     _acc_in_3d = _mm_add_pd(_acc_in_3d, _mul_3d);
+		}
+		_mm_store_pd(out    , _acc_in_3a);
+		_mm_store_pd(out + 2, _acc_in_3b);
+		_mm_store_pd(out + 4, _acc_in_3c);
+		_mm_store_pd(out + 6, _acc_in_3d);
+	}
+
+
+	// 2 in 1 out
+	void InflatorPackageProcessor::Fir_x2_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
+	{
+		double inter_21[2];
+
+		int32 dnTap_21_size = sizeof(double) * (make_2(dnTap_21) - 2);
+		memmove(dnSample_21[channel].buff + 2, dnSample_21[channel].buff, dnTap_21_size);
+		dnSample_21[channel].buff[1] = in[0];
+		dnSample_21[channel].buff[0] = in[1];
+		__m128d _acc_out = _mm_setzero_pd();
+		for (int i = 0; i < dnTap_21; i += 2) {
+			__m128d coef = _mm_load_pd (&dnSample_21[channel].coef[i    ]);
+			__m128d buff = _mm_loadu_pd(&dnSample_21[channel].buff[i + 1]);
+			__m128d _mul = _mm_mul_pd(coef, buff);
+			    _acc_out = _mm_add_pd(_acc_out, _mul);
+		}
+		_mm_store_pd(inter_21, _acc_out);
+		*out = inter_21[0] + inter_21[1];
+	}
+	// 4 in 1 out
+	void InflatorPackageProcessor::Fir_x4_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
+	{
+		double inter_42[4];
+		double inter_21[2];
+
+		int32 dnTap_42_size = sizeof(double) * (make_4(dnTap_42) - 4);
+		memmove(dnSample_42[channel].buff + 4, dnSample_42[channel].buff, dnTap_42_size);
+		dnSample_42[channel].buff[3] = in[0]; // buff[3]
+		dnSample_42[channel].buff[2] = in[1];
+		dnSample_42[channel].buff[1] = in[2];
+		dnSample_42[channel].buff[0] = in[3];
+		__m128d _acc_out_a = _mm_setzero_pd();
+		__m128d _acc_out_b = _mm_setzero_pd();
+		for (int i = 0; i < dnTap_42; i += 2) { // tt >= dnTap_42+3
+			__m128d coef_a = _mm_load_pd (&dnSample_42[channel].coef[i    ]);
+			__m128d buff_a = _mm_loadu_pd(&dnSample_42[channel].buff[i + 3]); // unaligned...? 
+			__m128d coef_b = _mm_load_pd (&dnSample_42[channel].coef[i    ]);
+			__m128d buff_b = _mm_loadu_pd(&dnSample_42[channel].buff[i + 1]);
+			__m128d _mul_a = _mm_mul_pd(coef_a, buff_a);
+			__m128d _mul_b = _mm_mul_pd(coef_b, buff_b);
+			    _acc_out_a = _mm_add_pd(_acc_out_a, _mul_a);
+			    _acc_out_b = _mm_add_pd(_acc_out_b, _mul_b);
+		}
+		_mm_store_pd(inter_42    , _acc_out_a);
+		_mm_store_pd(inter_42 + 2, _acc_out_b);
+
+		int32 dnTap_41_size = sizeof(double) * (make_2(dnTap_41) - 2);
+		memmove(dnSample_41[channel].buff + 2, dnSample_41[channel].buff, dnTap_41_size);
+		dnSample_41[channel].buff[1] = inter_42[0] + inter_42[1];
+		dnSample_41[channel].buff[0] = inter_42[2] + inter_42[3];
+		__m128d _acc_out = _mm_setzero_pd();
+		for (int i = 0; i < dnTap_41; i += 2) {
+			__m128d coef = _mm_load_pd (&dnSample_41[channel].coef[i    ]);
+			__m128d buff = _mm_loadu_pd(&dnSample_41[channel].buff[i + 1]);
+			__m128d _mul = _mm_mul_pd(coef, buff);
+			    _acc_out = _mm_add_pd(_acc_out, _mul);
+		}
+		_mm_store_pd(inter_21, _acc_out);
+		*out = inter_21[0] + inter_21[1];
+	}
+	// 8 in 1 out
+	void InflatorPackageProcessor::Fir_x8_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
+	{
+		double inter_84[8];
+		double inter_42[4];
+		double inter_21[2];
+
+		int32 dnTap_83_size = sizeof(double) * (make_8(dnTap_83) - 8);
+		memmove(dnSample_83[channel].buff + 8, dnSample_83[channel].buff, dnTap_83_size);
+		dnSample_83[channel].buff[7] = in[0]; 
+		dnSample_83[channel].buff[6] = in[1];
+		dnSample_83[channel].buff[5] = in[2];
+		dnSample_83[channel].buff[4] = in[3];
+		dnSample_83[channel].buff[3] = in[4];
+		dnSample_83[channel].buff[2] = in[5];
+		dnSample_83[channel].buff[1] = in[6];
+		dnSample_83[channel].buff[0] = in[7];
+		__m128d _acc_out_3a = _mm_setzero_pd();
+		__m128d _acc_out_3b = _mm_setzero_pd();
+		__m128d _acc_out_3c = _mm_setzero_pd();
+		__m128d _acc_out_3d = _mm_setzero_pd();
+		for (int i = 0; i < dnTap_83; i += 2) {
+			__m128d coef_3a = _mm_load_pd (&dnSample_83[channel].coef[i    ]);
+			__m128d buff_3a = _mm_loadu_pd(&dnSample_83[channel].buff[i + 7]); 
+			__m128d coef_3b = _mm_load_pd (&dnSample_83[channel].coef[i    ]);
+			__m128d buff_3b = _mm_loadu_pd(&dnSample_83[channel].buff[i + 5]);
+			__m128d coef_3c = _mm_load_pd (&dnSample_83[channel].coef[i    ]);
+			__m128d buff_3c = _mm_loadu_pd(&dnSample_83[channel].buff[i + 3]);
+			__m128d coef_3d = _mm_load_pd (&dnSample_83[channel].coef[i    ]);
+			__m128d buff_3d = _mm_loadu_pd(&dnSample_83[channel].buff[i + 1]);
+			__m128d _mul_3a = _mm_mul_pd(coef_3a, buff_3a);
+			__m128d _mul_3b = _mm_mul_pd(coef_3b, buff_3b);
+			__m128d _mul_3c = _mm_mul_pd(coef_3c, buff_3c);
+			__m128d _mul_3d = _mm_mul_pd(coef_3d, buff_3d);
+			    _acc_out_3a = _mm_add_pd(_acc_out_3a, _mul_3a);
+			    _acc_out_3b = _mm_add_pd(_acc_out_3b, _mul_3b);
+			    _acc_out_3c = _mm_add_pd(_acc_out_3c, _mul_3c);
+			    _acc_out_3d = _mm_add_pd(_acc_out_3d, _mul_3d);
+		}
+		_mm_store_pd(inter_84    , _acc_out_3a);
+		_mm_store_pd(inter_84 + 2, _acc_out_3b);
+		_mm_store_pd(inter_84 + 4, _acc_out_3c);
+		_mm_store_pd(inter_84 + 6, _acc_out_3d);
+
+		int32 dnTap_82_size = sizeof(double) * (make_4(dnTap_82) - 4);
+		memmove(dnSample_82[channel].buff + 4, dnSample_82[channel].buff, dnTap_82_size);
+		dnSample_82[channel].buff[3] = inter_84[0] + inter_84[1];
+		dnSample_82[channel].buff[2] = inter_84[2] + inter_84[3];
+		dnSample_82[channel].buff[1] = inter_84[4] + inter_84[5];
+		dnSample_82[channel].buff[0] = inter_84[6] + inter_84[7];
+		__m128d _acc_out_2a = _mm_setzero_pd();
+		__m128d _acc_out_2b = _mm_setzero_pd();
+		for (int i = 0; i < dnTap_82; i += 2) { 
+			__m128d coef_2a = _mm_load_pd (&dnSample_82[channel].coef[i    ]);
+			__m128d buff_2a = _mm_loadu_pd(&dnSample_82[channel].buff[i + 3]); 
+			__m128d coef_2b = _mm_load_pd (&dnSample_82[channel].coef[i    ]);
+			__m128d buff_2b = _mm_loadu_pd(&dnSample_82[channel].buff[i + 1]);
+			__m128d _mul_2a = _mm_mul_pd(coef_2a, buff_2a);
+			__m128d _mul_2b = _mm_mul_pd(coef_2b, buff_2b);
+			    _acc_out_2a = _mm_add_pd(_acc_out_2a, _mul_2a);
+			    _acc_out_2b = _mm_add_pd(_acc_out_2b, _mul_2b);
+		}
+		_mm_store_pd(inter_42    , _acc_out_2a);
+		_mm_store_pd(inter_42 + 2, _acc_out_2b);
+
+		int32 dnTap_81_size = sizeof(double) * (make_2(dnTap_81) - 2);
+		memmove(dnSample_81[channel].buff + 2, dnSample_81[channel].buff, dnTap_81_size);
+		dnSample_81[channel].buff[1] = inter_42[0] + inter_42[1];
+		dnSample_81[channel].buff[0] = inter_42[2] + inter_42[3];
+		__m128d _acc_out = _mm_setzero_pd();
+		for (int i = 0; i < dnTap_81; i += 2) {
+			__m128d coef = _mm_load_pd (&dnSample_81[channel].coef[i    ]);
+			__m128d buff = _mm_loadu_pd(&dnSample_81[channel].buff[i + 1]);
+			__m128d _mul = _mm_mul_pd(coef, buff);
+			    _acc_out = _mm_add_pd(_acc_out, _mul);
+		}
+		_mm_store_pd(inter_21, _acc_out);
+		*out = inter_21[0] + inter_21[1];
 	}
 
 } // namespace yg331
