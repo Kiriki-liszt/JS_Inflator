@@ -123,12 +123,11 @@ namespace yg331 {
 #include "fir_coef_dn_x83.in"
 		};
 
-
 #define make_2(t) (2 * ((t / 2) + 1))
 #define make_4(t) (4 * ((t / 4) + 1))
 #define make_8(t) (8 * ((t / 8) + 1))
 
-
+		/*
 		upTap_21 = sizeof(fir_coef_up_x21) / sizeof(*fir_coef_up_x21);
 		upTap_41 = sizeof(fir_coef_up_x41) / sizeof(*fir_coef_up_x41);
 		upTap_42 = sizeof(fir_coef_up_x42) / sizeof(*fir_coef_up_x42);
@@ -142,9 +141,10 @@ namespace yg331 {
 		dnTap_81 = sizeof(fir_coef_dn_x81) / sizeof(*fir_coef_dn_x81);
 		dnTap_82 = sizeof(fir_coef_dn_x82) / sizeof(*fir_coef_dn_x82);
 		dnTap_83 = sizeof(fir_coef_dn_x83) / sizeof(*fir_coef_dn_x83);
-
+		*/
 
 		for (int channel = 0; channel < 2; channel++) {
+			/*
 			upSample_21[channel].coef = new double[make_2(upTap_21)] {};
 			upSample_41[channel].coef = new double[make_4(upTap_41)] {};
 			upSample_42[channel].coef = new double[make_4(upTap_42)] {};
@@ -158,6 +158,7 @@ namespace yg331 {
 			upSample_81[channel].buff = new double[make_8(upTap_81)] {};
 			upSample_82[channel].buff = new double[make_8(upTap_82)] {};
 			upSample_83[channel].buff = new double[make_8(upTap_83)] {};
+			*/
 
 			memcpy(upSample_21[channel].coef, fir_coef_up_x21, sizeof(fir_coef_up_x21));
 			memcpy(upSample_41[channel].coef, fir_coef_up_x41, sizeof(fir_coef_up_x41));
@@ -166,7 +167,7 @@ namespace yg331 {
 			memcpy(upSample_82[channel].coef, fir_coef_up_x82, sizeof(fir_coef_up_x82));
 			memcpy(upSample_83[channel].coef, fir_coef_up_x83, sizeof(fir_coef_up_x83));
 
-
+			/*
 			dnSample_21[channel].coef = new double[make_2(dnTap_21)] {};
 			dnSample_41[channel].coef = new double[make_4(dnTap_41)] {};
 			dnSample_42[channel].coef = new double[make_4(dnTap_42)] {};
@@ -180,6 +181,7 @@ namespace yg331 {
 			dnSample_81[channel].buff = new double[make_8(dnTap_81)] {};
 			dnSample_82[channel].buff = new double[make_8(dnTap_82)] {};
 			dnSample_83[channel].buff = new double[make_8(dnTap_83)] {};
+			*/
 
 			memcpy(dnSample_21[channel].coef, fir_coef_dn_x21, sizeof(fir_coef_dn_x21));
 			memcpy(dnSample_41[channel].coef, fir_coef_dn_x41, sizeof(fir_coef_dn_x41));
@@ -189,13 +191,12 @@ namespace yg331 {
 			memcpy(dnSample_83[channel].coef, fir_coef_dn_x83, sizeof(fir_coef_dn_x83));
 		}
 
+		/*
 		latency_r8b_x2 = -1 + 2 * upSample_2x_Lin[0].getInLenBeforeOutPos(1);
 		latency_r8b_x4 = -1 + 2 * upSample_4x_Lin[0].getInLenBeforeOutPos(1);
 		latency_r8b_x8 = -1 + 2 * upSample_8x_Lin[0].getInLenBeforeOutPos(1);
-		latency_Fir_x2 = 35;
-		latency_Fir_x4 = 55;
-		latency_Fir_x8 = 69;
-		
+		*/
+
 		return kResultOk;
 	}
 
@@ -204,6 +205,7 @@ namespace yg331 {
 	{
 		// Here the Plug-in will be de-instantiated, last possibility to remove some memory!
 		for (int channel = 0; channel < 2; channel++) {
+			/*
 			delete[] upSample_21[channel].coef;
 			delete[] upSample_41[channel].coef;
 			delete[] upSample_42[channel].coef;
@@ -232,9 +234,7 @@ namespace yg331 {
 			delete[] dnSample_81[channel].buff;
 			delete[] dnSample_82[channel].buff;
 			delete[] dnSample_83[channel].buff;
-
-
-			delete[] delay_buff[channel];
+			*/
 		}
 		//---do not forget to call parent ------
 		return AudioEffect::terminate();
@@ -370,9 +370,8 @@ namespace yg331 {
 							bIn = (value > 0.5f);
 							break;
 						case kParamOS:
-							fParamOSOld = fParamOS;
 							fParamOS = convert_to_OS(value);
-							if (fParamOSOld != fParamOS) sendTextMessage("OS");
+							sendTextMessage("OS");
 							break;
 						case kParamZoom:
 							fParamZoom = value;
@@ -436,16 +435,11 @@ namespace yg331 {
 		//---in bypass mode outputs should be like inputs-----
 		if (bBypass)
 		{
-			for (int32 channel = 0; channel < numChannels; channel++)
-			{
-				if (in[channel] != out[channel]) { memcpy(out[channel], in[channel], sampleFramesSize); }
-			}
-
 			if (data.symbolicSampleSize == Vst::kSample32) {
-				//processVuPPM_In<Vst::Sample32>((Vst::Sample32**)in, numChannels, data.numSamples);
+				latencyBypass<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, numChannels, getSampleRate, data.numSamples);
 			}
 			else if (data.symbolicSampleSize == Vst::kSample64) {
-				//processVuPPM_In<Vst::Sample64>((Vst::Sample64**)in, numChannels, data.numSamples);
+				latencyBypass<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, numChannels, getSampleRate, data.numSamples);
 			}
 
 			fMeter = 0.0;
@@ -458,14 +452,14 @@ namespace yg331 {
 		}
 		else {
 			if (data.symbolicSampleSize == Vst::kSample32) {
-				overSampling<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, numChannels, getSampleRate, data.numSamples);
+				processAudio<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, numChannels, getSampleRate, data.numSamples);
 			}
 			else {
-				overSampling<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, numChannels, getSampleRate, data.numSamples);
+				processAudio<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, numChannels, getSampleRate, data.numSamples);
 			}
 
 			long div = data.numSamples;
-			if (fParamOS == overSample_1x) div = data.numSamples;
+			if      (fParamOS == overSample_1x) div =     data.numSamples;
 			else if (fParamOS == overSample_2x) div = 2 * data.numSamples;
 			else if (fParamOS == overSample_4x) div = 4 * data.numSamples;
 			else div = 8 * data.numSamples;
@@ -531,7 +525,6 @@ namespace yg331 {
 		for (int32 channel = 0; channel < numChannels; channel++)
 		{
 			Band_Split_set(&Band_Split[channel], 240.0, 2400.0, newSetup.sampleRate);
-			delay_buff[channel] = new double[max_lat];
 		}
 		//--- called before any processing ----
 		return AudioEffect::setupProcessing(newSetup);
@@ -541,9 +534,9 @@ namespace yg331 {
 	{
 		if (fParamPhase) {
 			if      (fParamOS == overSample_1x) return 0;
-			else if (fParamOS == overSample_2x) return -1 + 2 * upSample_2x_Lin[0].getInLenBeforeOutPos(1);
-			else if (fParamOS == overSample_4x) return -1 + 2 * upSample_4x_Lin[0].getInLenBeforeOutPos(1);
-			else                                return -1 + 2 * upSample_8x_Lin[0].getInLenBeforeOutPos(1);
+			else if (fParamOS == overSample_2x) return latency_r8b_x2;
+			else if (fParamOS == overSample_4x) return latency_r8b_x4;
+			else                                return latency_r8b_x8;
 		}
 		else {
 			if      (fParamOS == overSample_1x) return 0;
@@ -662,7 +655,7 @@ namespace yg331 {
 		float dB = 20 * log10f(plainValue);
 		float normValue;
 
-		if (dB >= 6.0) normValue = 1.0;
+		if      (dB >=  6.0) normValue = 1.0;
 		else if (dB >=  5.0) normValue = 0.96;
 		else if (dB >=  4.0) normValue = 0.92;
 		else if (dB >=  3.0) normValue = 0.88;
@@ -696,55 +689,32 @@ namespace yg331 {
 	template <typename SampleType>
 	void InflatorPackageProcessor::processVuPPM_In(SampleType** inputs, int32 numChannels, int32 sampleFrames)
 	{
-		SampleType* In_L = (SampleType*)inputs[0];
-		SampleType* In_R = (SampleType*)inputs[1];
+		for (int32 channel = 0; channel < numChannels; channel++)
+		{
+			SampleType* ptrIn = (SampleType*)inputs[channel];
+			SampleType tmp = 0.0; /*/ VuPPM /*/
 
-		SampleType tmpL = 0.0; /*/ VuPPM /*/
-		SampleType tmpR = 0.0; /*/ VuPPM /*/
+			while (--sampleFrames >= 0) {
+				SampleType inputSample = *ptrIn;
+				if (inputSample > tmp) { tmp = inputSample; }
+				ptrIn++;
+			}
 
-		while (--sampleFrames >= 0) {
-			SampleType inputSampleL = *In_L;
-			SampleType inputSampleR = *In_R;
-
-			if (inputSampleL > tmpL) { tmpL = inputSampleL; }
-			if (inputSampleR > tmpR) { tmpR = inputSampleR; }
-
-			In_L++;
-			In_R++;
+			if (channel == 0) {
+				fInVuPPML = tmp;
+				fInVuPPMR = tmp;
+			}
+			else {
+				fInVuPPMR = tmp;
+			}
 		}
-
-		fInVuPPML = tmpL;
-		fInVuPPMR = tmpR;
 		return;
 	}
 
-	template <typename SampleType>
-	void InflatorPackageProcessor::processVuPPM_Out(SampleType** outputs, int32 numChannels, int32 sampleFrames)
-	{
-		SampleType* Out_L = (SampleType*)outputs[0];
-		SampleType* Out_R = (SampleType*)outputs[1];
-		
-		SampleType tmpL = 0.0; /*/ VuPPM /*/
-		SampleType tmpR = 0.0; /*/ VuPPM /*/
-
-		while (--sampleFrames >= 0) {
-			SampleType inputSampleL = *Out_L;
-			SampleType inputSampleR = *Out_R;
-
-			if (inputSampleL > tmpL) { tmpL = inputSampleL; }
-			if (inputSampleR > tmpR) { tmpR = inputSampleR; }
-
-			Out_L++;
-			Out_R++;
-		}
-		fOutVuPPML = tmpL;
-		fOutVuPPMR = tmpR;
-		return;
-	}
 
 	Vst::Sample64 InflatorPackageProcessor::process_inflator(Vst::Sample64 inputSample) 
 	{
-		Vst::Sample64 drySample = inputSample;
+		// Vst::Sample64 drySample = inputSample;
 		Vst::Sample64 sign;
 
 		if (inputSample > 0.0) sign =  1.0;
@@ -765,10 +735,66 @@ namespace yg331 {
 
 		// Meter += 20.0 * (log10(inputSample) - log10(dry));
 		
-		inputSample = (drySample * (1- fEffect)) + (inputSample * fEffect);
+		// inputSample = (drySample * (1- fEffect)) + (inputSample * fEffect);
 		
 		return inputSample;
 	}
+
+	template <typename SampleType>
+	void InflatorPackageProcessor::latencyBypass(
+		SampleType** inputs,
+		SampleType** outputs,
+		int32 numChannels,
+		Vst::SampleRate getSampleRate,
+		long long sampleFrames
+	)
+	{
+		for (int32 channel = 0; channel < numChannels; channel++)
+		{
+			SampleType* ptrIn  = (SampleType*) inputs[channel];
+			SampleType* ptrOut = (SampleType*)outputs[channel];
+			int32 samples = sampleFrames;
+			
+			if (fParamOS == overSample_1x) {
+				memcpy(ptrOut, ptrIn, sizeof(SampleType) * sampleFrames);
+				continue;
+			}
+
+			int32 latency = 0;
+			if (!fParamPhase) {
+				if      (fParamOS == overSample_2x) latency = latency_Fir_x2;
+				else if (fParamOS == overSample_4x) latency = latency_Fir_x4;
+				else if (fParamOS == overSample_8x) latency = latency_Fir_x8;
+			}
+			else {
+				if      (fParamOS == overSample_2x) latency = latency_r8b_x2;
+				else if (fParamOS == overSample_4x) latency = latency_r8b_x4;
+				else if (fParamOS == overSample_8x) latency = latency_r8b_x8;
+			}
+			if (latency != latency_q[channel].size()) {
+				int32 diff = latency - (int32)latency_q[channel].size();
+				if (diff > 0) {
+					for (int i = 0; i < diff; i++) latency_q[channel].push(0.0);
+				}
+				else {
+					for (int i = 0; i < -diff; i++) latency_q[channel].pop();
+				}
+			}
+
+			while (--samples >= 0)
+			{
+				double inin = *ptrIn;
+				*ptrOut = (SampleType)latency_q[channel].front();
+				latency_q[channel].pop();
+				latency_q[channel].push(inin);
+
+				ptrIn++;
+				ptrOut++;
+			}
+		}
+		return;
+	}
+
 
 	template <typename SampleType>
 	void InflatorPackageProcessor::processAudio(
@@ -783,21 +809,43 @@ namespace yg331 {
 		Vst::Sample64 Out_db = expf(logf(10.f) * (12.0 * fOutput - 12.0) / 20.f);
 
 		curvepct = fCurve - 0.5;
-		curveA = 1.5 + curvepct; 
+		curveA =        1.5 + curvepct; 
 		curveB = -(curvepct + curvepct); 
-		curveC = curvepct - 0.5; 
+		curveC =   curvepct - 0.5; 
 		curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;	
 
-		Vst::Sample64 tmp = 0.0; /*/ VuPPM /*/
+		Vst::Sample64 tmpIn  = 0.0; /*/ VuPPM /*/
+		Vst::Sample64 tmpOut = 0.0; /*/ VuPPM /*/
 
 		for (int32 channel = 0; channel < numChannels; channel++)
 		{
 			SampleType* ptrIn  = (SampleType*) inputs[channel];
 			SampleType* ptrOut = (SampleType*)outputs[channel];
 
-			int32 samples = 0;
+			int32 latency = 0;
+			if (!fParamPhase) {
+				if      (fParamOS == overSample_2x) latency = latency_Fir_x2;
+				else if (fParamOS == overSample_4x) latency = latency_Fir_x4;
+				else if (fParamOS == overSample_8x) latency = latency_Fir_x8;
+			}
+			else {
+				if      (fParamOS == overSample_2x) latency = latency_r8b_x2;
+				else if (fParamOS == overSample_4x) latency = latency_r8b_x4;
+				else if (fParamOS == overSample_8x) latency = latency_r8b_x8;
+			}
+			if (latency != latency_q[channel].size()) {
+				int32 diff = latency - (int32)latency_q[channel].size();
+				if (diff > 0) {
+					for (int i = 0; i < diff; i++) latency_q[channel].push(0.0);
+				}
+				else {
+					for (int i = 0; i < -diff; i++) latency_q[channel].pop();
+				}
+			}
 
-			while (samples++ < sampleFrames)
+			int32 samples = sampleFrames;
+
+			while (--samples >= 0)
 			{
 				Vst::Sample64 inputSample = *ptrIn;
 
@@ -808,10 +856,10 @@ namespace yg331 {
 					else if (inputSample < -1.0) inputSample = -1.0;
 				}
 
-				if      (inputSample >  2.0) inputSample = 2.0;
+				if      (inputSample >  2.0) inputSample =  2.0;
 				else if (inputSample < -2.0) inputSample = -2.0;
 
-				if (inputSample > tmp) { tmp = inputSample; }
+				if (inputSample > tmpIn) { tmpIn = inputSample; }
 
 				Vst::Sample64 drySample = inputSample;
 
@@ -823,18 +871,16 @@ namespace yg331 {
 				double up_x[8];
 				double up_y[8];
 
-				if (!fParamPhase) {
-					if      (fParamOS == overSample_1x) up_x[0] = inputSample;
-					else if (fParamOS == overSample_2x) Fir_x2_up(&inputSample, up_x, channel);
-					else if (fParamOS == overSample_4x) Fir_x4_up(&inputSample, up_x, channel);
-					else                                Fir_x8_up(&inputSample, up_x, channel);
-				}
+				// Upsampling
+				if              (fParamOS == overSample_1x) up_x[0] = inputSample;
 				else {
-					double* upSample_buff;
-					if (fParamOS == overSample_1x) {
-						up_x[0] = inputSample;
+					if (!fParamPhase) {
+						if      (fParamOS == overSample_2x) Fir_x2_up(&inputSample, up_x, channel);
+						else if (fParamOS == overSample_4x) Fir_x4_up(&inputSample, up_x, channel);
+						else                                Fir_x8_up(&inputSample, up_x, channel);
 					}
 					else {
+						double* upSample_buff;
 						if      (fParamOS == overSample_2x) upSample_2x_Lin[channel].process(&inputSample, 1, upSample_buff);
 						else if (fParamOS == overSample_4x) upSample_4x_Lin[channel].process(&inputSample, 1, upSample_buff);
 						else                                upSample_8x_Lin[channel].process(&inputSample, 1, upSample_buff);
@@ -842,6 +888,7 @@ namespace yg331 {
 					}
 				}
 
+				// Processing
 				for (int k = 0; k < oversampling; k++) {
 					if (!bIn) {
 						up_y[k] = up_x[k];
@@ -849,36 +896,32 @@ namespace yg331 {
 					}
 					Vst::Sample64 sampleOS = up_x[k];
 					if (bSplit) {
-						Band_Split[channel].LP.R = Band_Split[channel].LP.I + Band_Split[channel].LP.C * (sampleOS - Band_Split[channel].LP.I);
-						Band_Split[channel].LP.I = 2 * Band_Split[channel].LP.R - Band_Split[channel].LP.I;
+						Band_Split[channel].LP.R =      Band_Split[channel].LP.I  + Band_Split[channel].LP.C * (sampleOS - Band_Split[channel].LP.I);
+						Band_Split[channel].LP.I =  2 * Band_Split[channel].LP.R  - Band_Split[channel].LP.I;
 
 						Band_Split[channel].HP.R = (1 - Band_Split[channel].HP.C) * Band_Split[channel].HP.I + Band_Split[channel].HP.C * sampleOS;
-						Band_Split[channel].HP.I = 2 * Band_Split[channel].HP.R - Band_Split[channel].HP.I;
+						Band_Split[channel].HP.I =  2 * Band_Split[channel].HP.R  - Band_Split[channel].HP.I;
 
 						Vst::Sample64 inputSample_L = Band_Split[channel].LP.R;
 						Vst::Sample64 inputSample_H = sampleOS - Band_Split[channel].HP.R;
 						Vst::Sample64 inputSample_M = Band_Split[channel].HP.R - Band_Split[channel].LP.R;
 
-						up_y[k] =
-							process_inflator(inputSample_L) +
-							process_inflator(inputSample_M * Band_Split[channel].G) * Band_Split[channel].GR +
-							process_inflator(inputSample_H);
+						up_y[k] = process_inflator(inputSample_L) +
+						          process_inflator(inputSample_M * Band_Split[channel].G) * Band_Split[channel].GR +
+						          process_inflator(inputSample_H);
 					}
 					else {
 						up_y[k] = process_inflator(sampleOS);
 					}
 				}
 
-				if (!fParamPhase) {
-					if      (fParamOS == overSample_1x) inputSample = up_y[0];
-					else if (fParamOS == overSample_2x) Fir_x2_dn(up_y, &inputSample, channel);
-					else if (fParamOS == overSample_4x) Fir_x4_dn(up_y, &inputSample, channel);
-					else                                Fir_x8_dn(up_y, &inputSample, channel);
-				}
+				// Downsampling
+				if              (fParamOS == overSample_1x) inputSample = up_y[0];
 				else {
-
-					if (fParamOS == overSample_1x) {
-						inputSample = up_y[0];
+					if (!fParamPhase) {
+						if      (fParamOS == overSample_2x) Fir_x2_dn(up_y, &inputSample, channel);
+						else if (fParamOS == overSample_4x) Fir_x4_dn(up_y, &inputSample, channel);
+						else                                Fir_x8_dn(up_y, &inputSample, channel);
 					}
 					else {
 						double* dnSample_buff;
@@ -889,11 +932,27 @@ namespace yg331 {
 					}
 				}
 
-				Meter += 20.0 * log10(inputSample / drySample);
+				// Latency compensate
+				Vst::Sample64 delayed;
+				if (fParamOS == overSample_1x) {
+					delayed = drySample;
+				}
+				else {
+					delayed = latency_q[channel].front();
+					latency_q[channel].pop();
+					latency_q[channel].push(drySample);
+				}
+
+				inputSample = (delayed * (1 - fEffect)) + (inputSample * fEffect);
+
+				Meter += 20.0 * log10(inputSample / delayed);
 
 				if (bClip && inputSample >  1.0) inputSample =  1.0;
 				if (bClip && inputSample < -1.0) inputSample = -1.0;
+
 				inputSample *= Out_db;
+
+				if (inputSample > tmpOut) { tmpOut = inputSample; }
 
 				*ptrOut = (SampleType)inputSample;
 
@@ -901,33 +960,18 @@ namespace yg331 {
 				ptrOut++;
 			}
 			if (channel == 0) {
-				fInVuPPML = tmp;
-				fInVuPPMR = tmp;
+				fInVuPPML  = tmpIn;
+				fInVuPPMR  = tmpIn;
+				fOutVuPPML = tmpOut;
+				fOutVuPPMR = tmpOut;
 			}
 			else {
-				fInVuPPMR = tmp;
+				fInVuPPMR  = tmpIn;
+				fOutVuPPMR = tmpOut;
 			}
 		}
 		return;
 	}
-
-
-	template <typename SampleType>
-	void InflatorPackageProcessor::overSampling(
-		SampleType** inputs,
-		SampleType** outputs,
-		int32 numChannels,
-		Vst::SampleRate getSampleRate,
-		int32 sampleFrames
-	)
-	{
-		processAudio<SampleType>(inputs, outputs, numChannels, getSampleRate, sampleFrames);
-
-		//processVuPPM_Out<SampleType>((SampleType**)outputs, numChannels, sampleFrames);
-		return;
-	}
-
-
 
 	/// Fir Linear Oversamplers
 

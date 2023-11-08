@@ -14,6 +14,8 @@
 #include <CDSPResampler.h>
 #include <math.h>
 
+#include <queue>
+
 using namespace Steinberg;
 
 namespace yg331 {
@@ -101,13 +103,11 @@ namespace yg331 {
 
 		template <typename SampleType>
 		void processVuPPM_In(SampleType** inputs, Steinberg::int32 numChannels, int32 sampleFrames);
-		template <typename SampleType>
-		void processVuPPM_Out(SampleType** outputs, Steinberg::int32 numChannels, int32 sampleFrames);
-
-		template <typename SampleType>
-		void overSampling(SampleType** inputs, SampleType** outputs, Steinberg::int32 numChannels, Vst::SampleRate getSampleRate, int32 sampleFrames);
+		
 		template <typename SampleType>
 		void processAudio(SampleType** inputs, SampleType** outputs, Steinberg::int32 numChannels, Vst::SampleRate getSampleRate, long long sampleFrames);
+		template <typename SampleType>
+		void latencyBypass(SampleType** inputs, SampleType** outputs, Steinberg::int32 numChannels, Vst::SampleRate getSampleRate, long long sampleFrames);
 
 		Vst::Sample64 process_inflator(Vst::Sample64 inputSample);
 
@@ -163,9 +163,23 @@ namespace yg331 {
 		r8b::CDSPResampler	dnSample_8x_Lin[2];
 
 		typedef struct _Flt {
-			double* coef;
-			double* buff;
+			double coef[128] = {0, };
+			double buff[128] = {0, };
 		} Flt;
+
+		int32 upTap_21 = 71;
+		int32 upTap_41 = 103;
+		int32 upTap_42 = 17;
+		int32 upTap_81 = 127;
+		int32 upTap_82 = 17;
+		int32 upTap_83 = 17;
+
+		int32 dnTap_21 = 71;
+		int32 dnTap_41 = 103;
+		int32 dnTap_42 = 17;
+		int32 dnTap_81 = 127;
+		int32 dnTap_82 = 17;
+		int32 dnTap_83 = 17;
 
 		Flt upSample_21[2];
 		Flt upSample_41[2];
@@ -179,34 +193,17 @@ namespace yg331 {
 		Flt dnSample_42[2];
 		Flt dnSample_81[2];
 		Flt dnSample_82[2];
-		Flt dnSample_83[2];
+		Flt dnSample_83[2];		
 
-		Flt dnSample_81_x[2];
-		Flt dnSample_82_x[2];
-		Flt dnSample_83_x[2];
-
-		int32 upTap_21;
-		int32 upTap_41;
-		int32 upTap_42;
-		int32 upTap_81;
-		int32 upTap_82;
-		int32 upTap_83;
-		int32 dnTap_21;
-		int32 dnTap_41;
-		int32 dnTap_42;
-		int32 dnTap_81;
-		int32 dnTap_82;
-		int32 dnTap_83;
-
-		int32 latency_r8b_x2 = 53;
-		int32 latency_r8b_x4 = 53;
-		int32 latency_r8b_x8 = 53;
-		int32 latency_Fir_x2 = 53;
-		int32 latency_Fir_x4 = 53;
-		int32 latency_Fir_x8 = 53;
+		int32 latency_r8b_x2 = 3285; //upSample_2x_Lin{ {1.0, 2.0, 1 * 2}
+		int32 latency_r8b_x4 = 3337; //upSample_4x_Lin{ {1.0, 4.0, 1 * 4, 2.1}
+		int32 latency_r8b_x8 = 3401; //upSample_8x_Lin{ {1.0, 8.0, 1 * 8, 2.0, 180.0}
+		int32 latency_Fir_x2 = 35;
+		int32 latency_Fir_x4 = 55;
+		int32 latency_Fir_x8 = 69;
 
 		int32 max_lat = 0;
-		double* delay_buff[2];
+		std::queue<double> latency_q[2];
 	};
 } // namespace yg331
 //------------------------------------------------------------------------
