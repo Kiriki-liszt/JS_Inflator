@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 // Copyright(c) 2023 yg331.
 // GPL v3
 //------------------------------------------------------------------------
@@ -201,8 +201,8 @@ namespace yg331 {
 		r8b::CDSPResampler24	dnSample_8x_Lin[2];
 
 		typedef struct _Flt {
-			double alignas(16) coef[maxTap] = { 0, };
-			double alignas(16) buff[maxTap] = { 0, };
+			double coef alignas(16) [maxTap] = { 0, };
+			double buff alignas(16) [maxTap] = { 0, };
 		} Flt;
 
 		Flt upSample_21[2];
