@@ -73,7 +73,7 @@
 		"custom": {
 			"FocusDrawing": {},
 			"VST3Editor": {
-				"Path": "C:\\VST_make\\Kiriki_yg_Liszt\\generator\\InflatorPackage\\resource\\twarch\\InflatorPackageeditor.uidesc"
+				"Path": "D:\\0. Production\\VST_Production\\Generator\\InflatorPackage\\resource\\twarch\\InflatorPackageeditor.uidesc"
 			},
 			"UIGridController": {
 				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
@@ -88,7 +88,7 @@
 				"SplitViewSize_1_1": "0.5113484646194926819262605022231582552195",
 				"SplitViewSize_2_0": "0.7705627705627705603674826306814793497324",
 				"SplitViewSize_2_1": "0.2240259740259740173229374704533256590366",
-				"TabSwitchValue": "2",
+				"TabSwitchValue": "0",
 				"Version": "1"
 			},
 			"UITemplateController": {
@@ -218,6 +218,45 @@
 							"wheel-inc-value": "0.1"
 						}
 					},
+					"COptionMenu": {
+						"attributes": {
+							"back-color": "OS_back",
+							"background-offset": "0, 0",
+							"class": "COptionMenu",
+							"control-tag": "Phase",
+							"default-value": "0",
+							"font": "Arial_26",
+							"font-antialias": "true",
+							"font-color": "mid_back",
+							"frame-color": "OS_back",
+							"frame-width": "0",
+							"max-value": "1",
+							"menu-check-style": "false",
+							"menu-popup-style": "false",
+							"min-value": "0",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "555, 180",
+							"round-rect-radius": "5",
+							"shadow-color": "~ RedCColor",
+							"size": "60, 27",
+							"style-3D-in": "false",
+							"style-3D-out": "false",
+							"style-no-draw": "false",
+							"style-no-frame": "true",
+							"style-no-text": "false",
+							"style-round-rect": "true",
+							"style-shadow-text": "false",
+							"text-alignment": "center",
+							"text-inset": "0, 0",
+							"text-rotation": "0",
+							"text-shadow-offset": "1, 1",
+							"transparent": "false",
+							"value-precision": "2",
+							"wants-focus": "true",
+							"wheel-inc-value": "0.1"
+						}
+					},
 					"COnOffButton": {
 						"attributes": {
 							"bitmap": "btn_IN",
@@ -227,7 +266,7 @@
 							"max-value": "1",
 							"min-value": "0",
 							"mouse-enabled": "true",
-							"opacity": "1", 
+							"opacity": "1",
 							"origin": "440, 775",
 							"size": "116, 116",
 							"transparent": "false",
@@ -554,7 +593,7 @@
 							"default-value": "0",
 							"max-value": "1",
 							"min-value": "0",
-							"mouse-enabled": "false",
+							"mouse-enabled": "true",
 							"num-led": "25",
 							"off-bitmap": "meter_off",
 							"opacity": "1",
@@ -575,7 +614,7 @@
 							"default-value": "0",
 							"max-value": "1",
 							"min-value": "0",
-							"mouse-enabled": "false",
+							"mouse-enabled": "true",
 							"num-led": "25",
 							"off-bitmap": "meter_off",
 							"opacity": "1",
@@ -605,45 +644,6 @@
 							"size": "40, 392",
 							"transparent": "false",
 							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"COptionMenu": {
-						"attributes": {
-							"back-color": "OS_back",
-							"background-offset": "0, 0",
-							"class": "COptionMenu",
-							"control-tag": "Phase",
-							"default-value": "0",
-							"font": "Arial_26",
-							"font-antialias": "true",
-							"font-color": "mid_back",
-							"frame-color": "OS_back",
-							"frame-width": "0",
-							"max-value": "1",
-							"menu-check-style": "false",
-							"menu-popup-style": "false",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "555, 180",
-							"round-rect-radius": "5",
-							"shadow-color": "~ RedCColor",
-							"size": "60, 27",
-							"style-3D-in": "false",
-							"style-3D-out": "false",
-							"style-no-draw": "false",
-							"style-no-frame": "true",
-							"style-no-text": "false",
-							"style-round-rect": "true",
-							"style-shadow-text": "false",
-							"text-alignment": "center",
-							"text-inset": "0, 0",
-							"text-rotation": "0",
-							"text-shadow-offset": "1, 1",
-							"transparent": "false",
-							"value-precision": "2",
-							"wants-focus": "true",
 							"wheel-inc-value": "0.1"
 						}
 					}

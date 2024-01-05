@@ -233,7 +233,7 @@ namespace yg331 {
 
 		Vst::StringListParameter* Phase = new Vst::StringListParameter(STR("Phase"), kParamPhase);
 		Phase->appendString(STR("Min"));
-		Phase->appendString(STR("Lin")); // stepCount is automzed!
+		Phase->appendString(STR("Max")); // stepCount is automzed!
 		defaultVal = init_Phase ? 1 : 0;
 		Phase->setNormalized(Phase->toNormalized(defaultVal));
 		Phase->addDependent(this);
