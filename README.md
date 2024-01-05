@@ -73,7 +73,7 @@ v1.7.0.beta + beta 2
 2. Changed oversampling method from whole buff resample to each sample resample, for less crashes.  
 3. hiir min-phase resampler is no longer used, and implememted my own FIR resampler with SSE2 optimization.
 4. Fir filter is now hardwired.
-5. Bypass latency compensated.
+5. Bypass latency compensated.  
 v1.7.0: Fir using Kaiser-Bessel window, label change from 'Lin' to 'Max'.  
 
 Now up to date with latest RC Inflator form ReaTeam/JSFX repository.  
