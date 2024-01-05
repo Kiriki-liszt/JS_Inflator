@@ -5,8 +5,8 @@ JS Inflator, the copy of Sonox Inflator, in vstsdk
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot_orig.png"  width="200"/>  
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot_twarch.png"  width="400"/>
 
-Now comes in two GUIs.
-The new GUI is made by Twarch.
+Comes in two GUIs.
+The alternative GUI is made by Twarch.
 
 ## Requirements 
 
