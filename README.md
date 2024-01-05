@@ -8,6 +8,11 @@ JS Inflator, the copy of Sonox Inflator, in vstsdk
 Now comes in two GUIs.
 The new GUI is made by Twarch.
 
+## Requirements 
+
+Windows - x64, SSE2  
+Mac - macos 10.13 ~ 14.2, NEON  
+
 ## How to use  
 
 1. Windows
