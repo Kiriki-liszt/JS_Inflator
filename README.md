@@ -69,11 +69,13 @@ v1.6.0rc: FX meter(Effect Meter) is added. Original GUI is now on high definitio
 v1.6.0rc1: Linear phase Oversampling is now added.  
 v1.6.0: Linear knob mode is now specified, and GUI size flinching fixed.  
 v1.7.0.beta + beta 2
+
 1. AUv2 build added. VSTSDK update to 3.7.9. Xcode 15.2, OSX 14.2 build.  
 2. Changed oversampling method from whole buff resample to each sample resample, for less crashes.  
 3. hiir min-phase resampler is no longer used, and implememted my own FIR resampler with SSE2 optimization.
 4. Fir filter is now hardwired.
-5. Bypass latency compensated.  
+5. Bypass latency compensated.
+
 v1.7.0: Fir using Kaiser-Bessel window, label change from 'Lin' to 'Max'.  
 
 Now up to date with latest RC Inflator form ReaTeam/JSFX repository.  
