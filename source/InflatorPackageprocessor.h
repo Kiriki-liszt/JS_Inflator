@@ -70,15 +70,29 @@ namespace yg331 {
 
 		//==============================================================================
 
+	protected:
+
+		float VuPPMconvert(float plainValue);
+
+		template <typename SampleType>
+		void processVuPPM_In(SampleType** inputs, Steinberg::int32 numChannels, int32 sampleFrames);
+
+		template <typename SampleType>
+		void processAudio(SampleType** inputs, SampleType** outputs, Steinberg::int32 numChannels, Vst::SampleRate getSampleRate, long long sampleFrames);
+		template <typename SampleType>
+		void latencyBypass(SampleType** inputs, SampleType** outputs, Steinberg::int32 numChannels, Vst::SampleRate getSampleRate, long long sampleFrames);
+
+		Vst::Sample64 process_inflator(Vst::Sample64 inputSample);
+
 		overSample convert_to_OS(Steinberg::Vst::ParamValue value) {
 			value *= overSample_num;
-			if      (value < overSample_2x) return overSample_1x;
+			if (value < overSample_2x) return overSample_1x;
 			else if (value < overSample_4x) return overSample_2x;
 			else if (value < overSample_8x) return overSample_4x;
 			else                            return overSample_8x;
 		};
 		Steinberg::Vst::ParamValue convert_from_OS(overSample OS) {
-			if      (OS == overSample_1x)   return (Steinberg::Vst::ParamValue)overSample_1x / overSample_num;
+			if (OS == overSample_1x)   return (Steinberg::Vst::ParamValue)overSample_1x / overSample_num;
 			else if (OS == overSample_2x)   return (Steinberg::Vst::ParamValue)overSample_2x / overSample_num;
 			else if (OS == overSample_4x)   return (Steinberg::Vst::ParamValue)overSample_4x / overSample_num;
 			else                            return (Steinberg::Vst::ParamValue)overSample_8x / overSample_num;
@@ -99,29 +113,53 @@ namespace yg331 {
 			return;
 		};
 
-		float VuPPMconvert(float plainValue);
+#define maxTap 128
+#define halfTap 64
 
-		template <typename SampleType>
-		void processVuPPM_In(SampleType** inputs, Steinberg::int32 numChannels, int32 sampleFrames);
-		
-		template <typename SampleType>
-		void processAudio(SampleType** inputs, SampleType** outputs, Steinberg::int32 numChannels, Vst::SampleRate getSampleRate, long long sampleFrames);
-		template <typename SampleType>
-		void latencyBypass(SampleType** inputs, SampleType** outputs, Steinberg::int32 numChannels, Vst::SampleRate getSampleRate, long long sampleFrames);
+		inline double Ino(double x)
+		{
+			double d = 0, ds = 1, s = 1;
+			do
+			{
+				d += 2;
+				ds *= x * x / (d * d);
+				s += ds;
+			} while (ds > s * 1e-6);
+			return s;
+		}
 
-		Vst::Sample64 process_inflator(Vst::Sample64 inputSample);
+		void calcFilter(double Fs, double Fa, double Fb, int M, double Att, double* dest)
+		{
+			// Kaiser windowed FIR filter "DIGITAL SIGNAL PROCESSING, II" IEEE Press pp 123-126.
 
-		void Fir_x2_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
-		void Fir_x2_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
-		void Fir_x4_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
-		void Fir_x4_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
-		void Fir_x8_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
-		void Fir_x8_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
+			int Np = (M - 1) / 2;
+			double A[maxTap] = { 0, };
+			double Alpha;
+			double Inoalpha;
+			//double H[maxTap] = { 0, };
 
-		//------------------------------------------------------------------------
-	protected:
+			A[0] = 2 * (Fb - Fa) / Fs;
 
-		// int32 currentProcessMode;
+			for (int j = 1; j <= Np; j++)
+				A[j] = (sin(2.0 * j * M_PI * Fb / Fs) - sin(2.0 * j * M_PI * Fa / Fs)) / (j * M_PI);
+
+			if (Att < 21.0)
+				Alpha = 0;
+			else if (Att > 50.0)
+				Alpha = 0.1102 * (Att - 8.7);
+			else
+				Alpha = 0.5842 * pow((Att - 21), 0.4) + 0.07886 * (Att - 21);
+
+			Inoalpha = Ino(Alpha);
+
+			for (int j = 0; j <= Np; j++)
+				dest[Np + j] = A[j] * Ino(Alpha * sqrt(1.0 - ((double)(j * j) / (double)(Np * Np)))) / Inoalpha;
+
+			for (int j = 0; j < Np; j++)
+				dest[j] = dest[M - 1 - j];
+		}
+
+		std::queue<double> latency_q[2];
 		
 		// Plugin controls ------------------------------------------------------------------
 		Vst::ParamValue fInput;
@@ -155,31 +193,17 @@ namespace yg331 {
 		Vst::ParamValue Meter = 0.0;
 
 		// Oversamplers ------------------------------------------------------------------
-		r8b::CDSPResampler	upSample_2x_Lin[2];
-		r8b::CDSPResampler	upSample_4x_Lin[2];
-		r8b::CDSPResampler	upSample_8x_Lin[2];
-		r8b::CDSPResampler	dnSample_2x_Lin[2];
-		r8b::CDSPResampler	dnSample_4x_Lin[2];
-		r8b::CDSPResampler	dnSample_8x_Lin[2];
+		r8b::CDSPResampler24	upSample_2x_Lin[2];
+		r8b::CDSPResampler24	upSample_4x_Lin[2];
+		r8b::CDSPResampler24	upSample_8x_Lin[2];
+		r8b::CDSPResampler24	dnSample_2x_Lin[2];
+		r8b::CDSPResampler24	dnSample_4x_Lin[2];
+		r8b::CDSPResampler24	dnSample_8x_Lin[2];
 
 		typedef struct _Flt {
-			double coef[128] = {0, };
-			double buff[128] = {0, };
+			double alignas(16) coef[maxTap] = { 0, };
+			double alignas(16) buff[maxTap] = { 0, };
 		} Flt;
-
-		int32 upTap_21 = 71;
-		int32 upTap_41 = 103;
-		int32 upTap_42 = 17;
-		int32 upTap_81 = 127;
-		int32 upTap_82 = 17;
-		int32 upTap_83 = 17;
-
-		int32 dnTap_21 = 71;
-		int32 dnTap_41 = 103;
-		int32 dnTap_42 = 17;
-		int32 dnTap_81 = 127;
-		int32 dnTap_82 = 17;
-		int32 dnTap_83 = 17;
 
 		Flt upSample_21[2];
 		Flt upSample_41[2];
@@ -195,15 +219,33 @@ namespace yg331 {
 		Flt dnSample_82[2];
 		Flt dnSample_83[2];		
 
-		int32 latency_r8b_x2 = 3285; //upSample_2x_Lin{ {1.0, 2.0, 1 * 2}
-		int32 latency_r8b_x4 = 3337; //upSample_4x_Lin{ {1.0, 4.0, 1 * 4, 2.1}
-		int32 latency_r8b_x8 = 3401; //upSample_8x_Lin{ {1.0, 8.0, 1 * 8, 2.0, 180.0}
-		int32 latency_Fir_x2 = 35;
-		int32 latency_Fir_x4 = 55;
-		int32 latency_Fir_x8 = 69;
+		const int32 upTap_21 = 85;
+		const int32 upTap_41 = 83;
+		const int32 upTap_42 = 31;
+		const int32 upTap_81 = 87;
+		const int32 upTap_82 = 33;
+		const int32 upTap_83 = 21;
 
-		int32 max_lat = 0;
-		std::queue<double> latency_q[2];
+		const int32 dnTap_21 = 113;
+		const int32 dnTap_41 = 113;
+		const int32 dnTap_42 = 31;
+		const int32 dnTap_81 = 113;
+		const int32 dnTap_82 = 33;
+		const int32 dnTap_83 = 21;
+
+		void Fir_x2_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
+		void Fir_x2_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
+		void Fir_x4_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
+		void Fir_x4_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
+		void Fir_x8_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
+		void Fir_x8_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel);
+
+		const int32 latency_r8b_x2 = 3388;
+		const int32 latency_r8b_x4 = 3431;
+		const int32 latency_r8b_x8 = 3465;
+		const int32 latency_Fir_x2 = 49;
+		const int32 latency_Fir_x4 = 56;
+		const int32 latency_Fir_x8 = 60;
 	};
 } // namespace yg331
 //------------------------------------------------------------------------

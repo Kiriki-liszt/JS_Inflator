@@ -52,8 +52,8 @@ namespace yg331 {
 		dnSample_2x_Lin{ {2.0, 1.0, 1 * 2}, {2.0, 1.0, 1 * 2} },
 		upSample_4x_Lin{ {1.0, 4.0, 1 * 4, 2.1}, {1.0, 4.0, 1 * 4, 2.1} },
 		dnSample_4x_Lin{ {4.0, 1.0, 1 * 4, 2.1}, {4.0, 1.0, 1 * 4, 2.1} },
-		upSample_8x_Lin{ {1.0, 8.0, 1 * 8, 2.0, 180.0}, {1.0, 8.0, 1 * 8, 2.0, 180.0} },
-		dnSample_8x_Lin{ {8.0, 1.0, 1 * 8, 2.0, 180.0}, {8.0, 1.0, 1 * 8, 2.0, 180.0} }
+		upSample_8x_Lin{ {1.0, 8.0, 1 * 8, 2.2}, {1.0, 8.0, 1 * 8, 2.2} },
+		dnSample_8x_Lin{ {8.0, 1.0, 1 * 8, 2.2}, {8.0, 1.0, 1 * 8, 2.2} }
 	{
 		//--- set the wanted controller for our processor
 		setControllerClass(kInflatorPackageControllerUID);
@@ -83,120 +83,33 @@ namespace yg331 {
 		/* If you don't need an event bus, you can remove the next line */
 		// addEventInput(STR16("Event In"), 1);
 
-		// Filter kernel
-		double fir_coef_up_x21[] = {
-#include "fir_coef_up_x21.in"
-		};
-		double fir_coef_dn_x21[] = {
-#include "fir_coef_dn_x21.in"
-		};
-
-		double fir_coef_up_x41[] = {
-#include "fir_coef_up_x41.in"
-		};
-		double fir_coef_up_x42[] = {
-#include "fir_coef_up_x42.in"
-		};
-		double fir_coef_dn_x41[] = {
-#include "fir_coef_dn_x41.in"
-		};
-		double fir_coef_dn_x42[] = {
-#include "fir_coef_dn_x42.in"
-		};
-
-		double fir_coef_up_x81[] = {
-#include "fir_coef_up_x81.in"
-		};
-		double fir_coef_up_x82[] = {
-#include "fir_coef_up_x82.in"
-		};
-		double fir_coef_up_x83[] = {
-#include "fir_coef_up_x83.in"
-		};
-		double fir_coef_dn_x81[] = {
-#include "fir_coef_dn_x81.in"
-		};
-		double fir_coef_dn_x82[] = {
-#include "fir_coef_dn_x82.in"
-		};
-		double fir_coef_dn_x83[] = {
-#include "fir_coef_dn_x83.in"
-		};
-
-#define make_2(t) (2 * ((t / 2) + 1))
-#define make_4(t) (4 * ((t / 4) + 1))
-#define make_8(t) (8 * ((t / 8) + 1))
-
-		/*
-		upTap_21 = sizeof(fir_coef_up_x21) / sizeof(*fir_coef_up_x21);
-		upTap_41 = sizeof(fir_coef_up_x41) / sizeof(*fir_coef_up_x41);
-		upTap_42 = sizeof(fir_coef_up_x42) / sizeof(*fir_coef_up_x42);
-		upTap_81 = sizeof(fir_coef_up_x81) / sizeof(*fir_coef_up_x81);
-		upTap_82 = sizeof(fir_coef_up_x82) / sizeof(*fir_coef_up_x82);
-		upTap_83 = sizeof(fir_coef_up_x83) / sizeof(*fir_coef_up_x83);
-
-		dnTap_21 = sizeof(fir_coef_dn_x21) / sizeof(*fir_coef_dn_x21);
-		dnTap_41 = sizeof(fir_coef_dn_x41) / sizeof(*fir_coef_dn_x41);
-		dnTap_42 = sizeof(fir_coef_dn_x42) / sizeof(*fir_coef_dn_x42);
-		dnTap_81 = sizeof(fir_coef_dn_x81) / sizeof(*fir_coef_dn_x81);
-		dnTap_82 = sizeof(fir_coef_dn_x82) / sizeof(*fir_coef_dn_x82);
-		dnTap_83 = sizeof(fir_coef_dn_x83) / sizeof(*fir_coef_dn_x83);
-		*/
-
 		for (int channel = 0; channel < 2; channel++) {
-			/*
-			upSample_21[channel].coef = new double[make_2(upTap_21)] {};
-			upSample_41[channel].coef = new double[make_4(upTap_41)] {};
-			upSample_42[channel].coef = new double[make_4(upTap_42)] {};
-			upSample_81[channel].coef = new double[make_8(upTap_81)] {};
-			upSample_82[channel].coef = new double[make_8(upTap_82)] {};
-			upSample_83[channel].coef = new double[make_8(upTap_83)] {};
+			calcFilter(96000.0, 0.0, 24000.0, upTap_21, 100.00, upSample_21[channel].coef); //
+			calcFilter(96000.0, 0.0, 24000.0, upTap_41, 100.00, upSample_41[channel].coef); //
+			calcFilter(192000.0, 0.0, 49000.0, upTap_42, 100.00, upSample_42[channel].coef);
+			calcFilter(96000.0, 0.0, 24000.0, upTap_81, 100.0, upSample_81[channel].coef); //
+			calcFilter(192000.0, 0.0, 50000.0, upTap_82, 100.0, upSample_82[channel].coef);
+			calcFilter(384000.0, 0.0, 98000.0, upTap_83, 100.0, upSample_83[channel].coef); 
 
-			upSample_21[channel].buff = new double[make_2(upTap_21)] {};
-			upSample_41[channel].buff = new double[make_4(upTap_41)] {};
-			upSample_42[channel].buff = new double[make_4(upTap_42)] {};
-			upSample_81[channel].buff = new double[make_8(upTap_81)] {};
-			upSample_82[channel].buff = new double[make_8(upTap_82)] {};
-			upSample_83[channel].buff = new double[make_8(upTap_83)] {};
-			*/
+			calcFilter(96000.0, 0.0, 24000.0, dnTap_21, 100.00, dnSample_21[channel].coef); //
+			calcFilter(96000.0, 0.0, 24000.0, dnTap_41, 100.00, dnSample_41[channel].coef); //
+			calcFilter(192000.0, 0.0, 49000.0, dnTap_42, 100.00, dnSample_42[channel].coef);
+			calcFilter(96000.0, 0.0, 24000.0, dnTap_81, 100.0, dnSample_81[channel].coef); //
+			calcFilter(192000.0, 0.0, 50000.0, dnTap_82, 100.0, dnSample_82[channel].coef);
+			calcFilter(384000.0, 0.0, 98000.0, dnTap_83, 100.0, dnSample_83[channel].coef);
 
-			memcpy(upSample_21[channel].coef, fir_coef_up_x21, sizeof(fir_coef_up_x21));
-			memcpy(upSample_41[channel].coef, fir_coef_up_x41, sizeof(fir_coef_up_x41));
-			memcpy(upSample_42[channel].coef, fir_coef_up_x42, sizeof(fir_coef_up_x42));
-			memcpy(upSample_81[channel].coef, fir_coef_up_x81, sizeof(fir_coef_up_x81));
-			memcpy(upSample_82[channel].coef, fir_coef_up_x82, sizeof(fir_coef_up_x82));
-			memcpy(upSample_83[channel].coef, fir_coef_up_x83, sizeof(fir_coef_up_x83));
-
-			/*
-			dnSample_21[channel].coef = new double[make_2(dnTap_21)] {};
-			dnSample_41[channel].coef = new double[make_4(dnTap_41)] {};
-			dnSample_42[channel].coef = new double[make_4(dnTap_42)] {};
-			dnSample_81[channel].coef = new double[make_8(dnTap_81)] {};
-			dnSample_82[channel].coef = new double[make_8(dnTap_82)] {};
-			dnSample_83[channel].coef = new double[make_8(dnTap_83)] {};
-
-			dnSample_21[channel].buff = new double[make_2(dnTap_21)] {};
-			dnSample_41[channel].buff = new double[make_4(dnTap_41)] {};
-			dnSample_42[channel].buff = new double[make_4(dnTap_42)] {};
-			dnSample_81[channel].buff = new double[make_8(dnTap_81)] {};
-			dnSample_82[channel].buff = new double[make_8(dnTap_82)] {};
-			dnSample_83[channel].buff = new double[make_8(dnTap_83)] {};
-			*/
-
-			memcpy(dnSample_21[channel].coef, fir_coef_dn_x21, sizeof(fir_coef_dn_x21));
-			memcpy(dnSample_41[channel].coef, fir_coef_dn_x41, sizeof(fir_coef_dn_x41));
-			memcpy(dnSample_42[channel].coef, fir_coef_dn_x42, sizeof(fir_coef_dn_x42));
-			memcpy(dnSample_81[channel].coef, fir_coef_dn_x81, sizeof(fir_coef_dn_x81));
-			memcpy(dnSample_82[channel].coef, fir_coef_dn_x82, sizeof(fir_coef_dn_x82));
-			memcpy(dnSample_83[channel].coef, fir_coef_dn_x83, sizeof(fir_coef_dn_x83));
+			for (int i = 0; i < upTap_21; i++) upSample_21[channel].coef[i] *= 2.0;
+			for (int i = 0; i < upTap_41; i++) upSample_41[channel].coef[i] *= 2.0;
+			for (int i = 0; i < upTap_42; i++) upSample_42[channel].coef[i] *= 2.0;
+			for (int i = 0; i < upTap_81; i++) upSample_81[channel].coef[i] *= 2.0;
+			for (int i = 0; i < upTap_82; i++) upSample_82[channel].coef[i] *= 2.0;
+			for (int i = 0; i < upTap_83; i++) upSample_83[channel].coef[i] *= 2.0;
 		}
 
-		/*
-		latency_r8b_x2 = -1 + 2 * upSample_2x_Lin[0].getInLenBeforeOutPos(1);
-		latency_r8b_x4 = -1 + 2 * upSample_4x_Lin[0].getInLenBeforeOutPos(1);
-		latency_r8b_x8 = -1 + 2 * upSample_8x_Lin[0].getInLenBeforeOutPos(1);
-		*/
-
+		// latency_r8b_x2 = -1 + 2 * upSample_2x_Lin[0].getInLenBeforeOutPos(1) +1;
+		// latency_r8b_x4 = -1 + 2 * upSample_4x_Lin[0].getInLenBeforeOutPos(1);
+		// latency_r8b_x8 = -1 + 2 * upSample_8x_Lin[0].getInLenBeforeOutPos(1);
+		
 		return kResultOk;
 	}
 
@@ -205,36 +118,7 @@ namespace yg331 {
 	{
 		// Here the Plug-in will be de-instantiated, last possibility to remove some memory!
 		for (int channel = 0; channel < 2; channel++) {
-			/*
-			delete[] upSample_21[channel].coef;
-			delete[] upSample_41[channel].coef;
-			delete[] upSample_42[channel].coef;
-			delete[] upSample_81[channel].coef;
-			delete[] upSample_82[channel].coef;
-			delete[] upSample_83[channel].coef;
-
-			delete[] upSample_21[channel].buff;
-			delete[] upSample_41[channel].buff;
-			delete[] upSample_42[channel].buff;
-			delete[] upSample_81[channel].buff;
-			delete[] upSample_82[channel].buff;
-			delete[] upSample_83[channel].buff;
-
-
-			delete[] dnSample_21[channel].coef;
-			delete[] dnSample_41[channel].coef;
-			delete[] dnSample_42[channel].coef;
-			delete[] dnSample_81[channel].coef;
-			delete[] dnSample_82[channel].coef;
-			delete[] dnSample_83[channel].coef;
-
-			delete[] dnSample_21[channel].buff;
-			delete[] dnSample_41[channel].buff;
-			delete[] dnSample_42[channel].buff;
-			delete[] dnSample_81[channel].buff;
-			delete[] dnSample_82[channel].buff;
-			delete[] dnSample_83[channel].buff;
-			*/
+			//
 		}
 		//---do not forget to call parent ------
 		return AudioEffect::terminate();
@@ -519,8 +403,6 @@ namespace yg331 {
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API InflatorPackageProcessor::setupProcessing(Vst::ProcessSetup& newSetup)
 	{
-		max_lat = (std::max)({ latency_r8b_x2, latency_r8b_x4, latency_r8b_x8, latency_Fir_x2, latency_Fir_x4, latency_Fir_x8 });
-		max_lat += newSetup.maxSamplesPerBlock;
 		int32 numChannels = 2;
 		for (int32 channel = 0; channel < numChannels; channel++)
 		{
@@ -980,53 +862,55 @@ namespace yg331 {
 	{
 		Vst::Sample64 inputSample = *in;
 
-		int32 upTap_21_size = sizeof(double) * (make_2(upTap_21) - 2);
-		memmove(upSample_21[channel].buff + 2, upSample_21[channel].buff, upTap_21_size);
-		upSample_21[channel].buff[1] = inputSample;
+		const size_t upTap_21_size = sizeof(double) * (upTap_21 - 1) / 2;
+		memmove(upSample_21[channel].buff + 1, upSample_21[channel].buff, upTap_21_size);
 		upSample_21[channel].buff[0] = inputSample;
-		__m128d _acc_in = _mm_setzero_pd();
-		for (int i = 0; i < upTap_21; i += 2) {
-			__m128d coef = _mm_load_pd(&upSample_21[channel].coef[i]);
-			__m128d buff = _mm_load_pd(&upSample_21[channel].buff[i]);
-			__m128d _mul = _mm_mul_pd(coef, buff);
-			     _acc_in = _mm_add_pd(_acc_in, _mul);
+		__m128d _acc_a = _mm_setzero_pd();
+		for (int i = 0, j = 0; i < upTap_21; i += 4, j += 2) {
+			__m128d coef_a = _mm_load_pd(&upSample_21[channel].coef[i]);
+			__m128d coef_b = _mm_load_pd(&upSample_21[channel].coef[i + 2]);
+			__m128d buff_a = _mm_load_pd(&upSample_21[channel].buff[j]);
+			__m128d _mul_a = _mm_mul_pd(coef_a, _mm_shuffle_pd(buff_a, buff_a, 0)); 
+			__m128d _mul_b = _mm_mul_pd(coef_b, _mm_shuffle_pd(buff_a, buff_a, 3)); 
+			        _acc_a = _mm_add_pd(_acc_a, _mul_a);
+			        _acc_a = _mm_add_pd(_acc_a, _mul_b);
 		}
-		_mm_store_pd(out, _acc_in);
+		_mm_store_pd(out, _acc_a);
 	}
 	// 1 in 4 out
 	void InflatorPackageProcessor::Fir_x4_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
 	{
 		Vst::Sample64 inputSample = *in;
-		double inter_24[2];
 
-		int32 upTap_41_size = sizeof(double) * (make_4(upTap_41) - 2);
-		memmove(upSample_41[channel].buff + 2, upSample_41[channel].buff, upTap_41_size);
-		upSample_41[channel].buff[1] = inputSample;
+		const size_t  upTap_41_size = sizeof(double) * (upTap_41 - 1)/2;
+		memmove(upSample_41[channel].buff + 1, upSample_41[channel].buff, upTap_41_size);
 		upSample_41[channel].buff[0] = inputSample;
 		__m128d _acc_in = _mm_setzero_pd();
-		for (int i = 0; i < upTap_41; i += 2) {
-			__m128d coef = _mm_load_pd(&upSample_41[channel].coef[i]);
-			__m128d buff = _mm_load_pd(&upSample_41[channel].buff[i]);
-			__m128d _mul = _mm_mul_pd(coef, buff);
-			     _acc_in = _mm_add_pd(_acc_in, _mul);
+		for (int i = 0, j = 0; i < upTap_41; i += 4, j += 2) {
+			__m128d coef_a = _mm_load_pd(&upSample_41[channel].coef[i]);
+			__m128d coef_b = _mm_load_pd(&upSample_41[channel].coef[i+2]);
+			__m128d buff = _mm_load_pd(&upSample_41[channel].buff[j]);
+			__m128d _mul_a = _mm_mul_pd(coef_a, _mm_shuffle_pd(buff, buff, 0));
+			__m128d _mul_b = _mm_mul_pd(coef_b, _mm_shuffle_pd(buff, buff, 3));
+			_acc_in = _mm_add_pd(_acc_in, _mul_a);
+			_acc_in = _mm_add_pd(_acc_in, _mul_b);
 		}
-		_mm_store_pd(inter_24, _acc_in);
 
-		int32 upTap_42_size = sizeof(double) * (make_4(upTap_42) - 4);
+		const size_t upTap_42_size = sizeof(double) * (upTap_42);
 		memmove(upSample_42[channel].buff + 4, upSample_42[channel].buff, upTap_42_size);
-		upSample_42[channel].buff[3] = inter_24[0];
-		upSample_42[channel].buff[2] = inter_24[0];
-		upSample_42[channel].buff[1] = inter_24[1];
-		upSample_42[channel].buff[0] = inter_24[1];
+		_mm_storel_pd(upSample_42[channel].buff + 3, _acc_in);
+		_mm_storel_pd(upSample_42[channel].buff + 2, _acc_in);
+		_mm_storeh_pd(upSample_42[channel].buff + 1, _acc_in);
+		_mm_storeh_pd(upSample_42[channel].buff    , _acc_in);
 		__m128d _acc_in_a = _mm_setzero_pd();
 		__m128d _acc_in_b = _mm_setzero_pd();
 		for (int i = 0; i < upTap_42; i += 2) {
 			__m128d coef_a = _mm_load_pd(&upSample_42[channel].coef[i    ]);
 			__m128d buff_a = _mm_load_pd(&upSample_42[channel].buff[i + 2]);
-			__m128d coef_b = _mm_load_pd(&upSample_42[channel].coef[i    ]);
+			//__m128d coef_b = _mm_load_pd(&upSample_42[channel].coef[i    ]);
 			__m128d buff_b = _mm_load_pd(&upSample_42[channel].buff[i    ]);
 			__m128d _mul_a = _mm_mul_pd(coef_a, buff_a);
-			__m128d _mul_b = _mm_mul_pd(coef_b, buff_b);
+			__m128d _mul_b = _mm_mul_pd(coef_a, buff_b);
 			     _acc_in_a = _mm_add_pd(_acc_in_a, _mul_a);
 			     _acc_in_b = _mm_add_pd(_acc_in_b, _mul_b);
 		}
@@ -1038,19 +922,21 @@ namespace yg331 {
 	{
 		Vst::Sample64 inputSample = *in;
 
-		int32 upTap_81_size = sizeof(double) * (make_2(upTap_81) - 2);
-		memmove(upSample_81[channel].buff + 2, upSample_81[channel].buff, upTap_81_size);
-		upSample_81[channel].buff[1] = inputSample;
+		const size_t upTap_81_size = sizeof(double) * (upTap_81 - 1) / 2;
+		memmove(upSample_81[channel].buff + 1, upSample_81[channel].buff, upTap_81_size);
 		upSample_81[channel].buff[0] = inputSample;
 		__m128d _acc_in_1 = _mm_setzero_pd();
-		for (int i = 0; i < upTap_81; i += 2) {
+		for (int i = 0, j = 0; i < upTap_81; i += 4, j += 2) {
 			__m128d coef_1 = _mm_load_pd(&upSample_81[channel].coef[i]);
-			__m128d buff_1 = _mm_load_pd(&upSample_81[channel].buff[i]);
-			__m128d _mul_1 = _mm_mul_pd(coef_1, buff_1);
+			__m128d coef_2 = _mm_load_pd(&upSample_81[channel].coef[i+2]);
+			__m128d buff_1 = _mm_load_pd(&upSample_81[channel].buff[j]);
+			__m128d _mul_1 = _mm_mul_pd(coef_1, _mm_shuffle_pd(buff_1, buff_1, 0));
+			__m128d _mul_2 = _mm_mul_pd(coef_2, _mm_shuffle_pd(buff_1, buff_1, 3));
 			     _acc_in_1 = _mm_add_pd(_acc_in_1, _mul_1);
+			     _acc_in_1 = _mm_add_pd(_acc_in_1, _mul_2);
 		}
 
-		int32 upTap_82_size = sizeof(double) * (make_4(upTap_82) - 4);
+		const size_t upTap_82_size = sizeof(double) * (upTap_82);
 		memmove(upSample_82[channel].buff + 4, upSample_82[channel].buff, upTap_82_size);
 		_mm_storel_pd(&upSample_82[channel].buff[3], _acc_in_1);
 		_mm_storel_pd(&upSample_82[channel].buff[2], _acc_in_1);
@@ -1061,15 +947,15 @@ namespace yg331 {
 		for (int i = 0; i < upTap_82; i += 2) {
 			__m128d coef_2a = _mm_load_pd(&upSample_82[channel].coef[i    ]);
 			__m128d buff_2a = _mm_load_pd(&upSample_82[channel].buff[i + 2]);
-			__m128d coef_2b = _mm_load_pd(&upSample_82[channel].coef[i    ]);
+			//__m128d coef_2b = _mm_load_pd(&upSample_82[channel].coef[i    ]);
 			__m128d buff_2b = _mm_load_pd(&upSample_82[channel].buff[i    ]);
 			__m128d _mul_2a = _mm_mul_pd(coef_2a, buff_2a);
-			__m128d _mul_2b = _mm_mul_pd(coef_2b, buff_2b);
+			__m128d _mul_2b = _mm_mul_pd(coef_2a, buff_2b);
 			     _acc_in_2a = _mm_add_pd(_acc_in_2a, _mul_2a);
 			     _acc_in_2b = _mm_add_pd(_acc_in_2b, _mul_2b);
 		}
 
-		int32 upTap_83_size = sizeof(double) * (make_8(upTap_83) - 8);
+		const size_t upTap_83_size = sizeof(double) * (upTap_83);
 		memmove(upSample_83[channel].buff + 8, upSample_83[channel].buff, upTap_83_size);
 		_mm_storel_pd(&upSample_83[channel].buff[7], _acc_in_2a);
 		_mm_storel_pd(&upSample_83[channel].buff[6], _acc_in_2a);
@@ -1086,16 +972,16 @@ namespace yg331 {
 		for (int i = 0; i < upTap_83; i += 2) { // make_8(upTap_83) == sizeof_buff > upTap_83 + 6
 			__m128d coef_3a = _mm_load_pd(&upSample_83[channel].coef[i    ]);
 			__m128d buff_3a = _mm_load_pd(&upSample_83[channel].buff[i + 6]);
-			__m128d coef_3b = _mm_load_pd(&upSample_83[channel].coef[i    ]);
+			//__m128d coef_3b = _mm_load_pd(&upSample_83[channel].coef[i    ]);
 			__m128d buff_3b = _mm_load_pd(&upSample_83[channel].buff[i + 4]);
-			__m128d coef_3c = _mm_load_pd(&upSample_83[channel].coef[i    ]);
+			//__m128d coef_3c = _mm_load_pd(&upSample_83[channel].coef[i    ]);
 			__m128d buff_3c = _mm_load_pd(&upSample_83[channel].buff[i + 2]);
-			__m128d coef_3d = _mm_load_pd(&upSample_83[channel].coef[i    ]);
+			//__m128d coef_3d = _mm_load_pd(&upSample_83[channel].coef[i    ]);
 			__m128d buff_3d = _mm_load_pd(&upSample_83[channel].buff[i    ]);
 			__m128d _mul_3a = _mm_mul_pd(coef_3a, buff_3a);
-			__m128d _mul_3b = _mm_mul_pd(coef_3b, buff_3b);
-			__m128d _mul_3c = _mm_mul_pd(coef_3c, buff_3c);
-			__m128d _mul_3d = _mm_mul_pd(coef_3d, buff_3d);
+			__m128d _mul_3b = _mm_mul_pd(coef_3a, buff_3b);
+			__m128d _mul_3c = _mm_mul_pd(coef_3a, buff_3c);
+			__m128d _mul_3d = _mm_mul_pd(coef_3a, buff_3d);
 			     _acc_in_3a = _mm_add_pd(_acc_in_3a, _mul_3a);
 			     _acc_in_3b = _mm_add_pd(_acc_in_3b, _mul_3b);
 			     _acc_in_3c = _mm_add_pd(_acc_in_3c, _mul_3c);
@@ -1113,19 +999,20 @@ namespace yg331 {
 	{
 		double inter_21[2];
 
-		int32 dnTap_21_size = sizeof(double) * (make_2(dnTap_21) - 2);
-		memmove(dnSample_21[channel].buff + 2, dnSample_21[channel].buff, dnTap_21_size);
-		dnSample_21[channel].buff[1] = in[0];
-		dnSample_21[channel].buff[0] = in[1];
+		const size_t dnTap_21_size = sizeof(double) * (dnTap_21 - 2);
+		memmove(dnSample_21[channel].buff + 3, dnSample_21[channel].buff + 1, dnTap_21_size);
+		dnSample_21[channel].buff[2] = in[0];
+		dnSample_21[channel].buff[1] = in[1];
 		__m128d _acc_out = _mm_setzero_pd();
 		for (int i = 0; i < dnTap_21; i += 2) {
-			__m128d coef = _mm_load_pd (&dnSample_21[channel].coef[i    ]);
-			__m128d buff = _mm_loadu_pd(&dnSample_21[channel].buff[i + 1]);
+			__m128d coef = _mm_load_pd(&dnSample_21[channel].coef[i    ]);
+			__m128d buff = _mm_load_pd(&dnSample_21[channel].buff[i + 2]);
 			__m128d _mul = _mm_mul_pd(coef, buff);
 			    _acc_out = _mm_add_pd(_acc_out, _mul);
 		}
 		_mm_store_pd(inter_21, _acc_out);
 		*out = inter_21[0] + inter_21[1];
+		return;
 	}
 	// 4 in 1 out
 	void InflatorPackageProcessor::Fir_x4_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
@@ -1133,35 +1020,35 @@ namespace yg331 {
 		double inter_42[4];
 		double inter_21[2];
 
-		int32 dnTap_42_size = sizeof(double) * (make_4(dnTap_42) - 4);
+		const size_t dnTap_42_size = sizeof(double) * (dnTap_42);
 		memmove(dnSample_42[channel].buff + 4, dnSample_42[channel].buff, dnTap_42_size);
-		dnSample_42[channel].buff[3] = in[0]; // buff[3]
-		dnSample_42[channel].buff[2] = in[1];
-		dnSample_42[channel].buff[1] = in[2];
-		dnSample_42[channel].buff[0] = in[3];
+		dnSample_42[channel].buff[4] = in[0]; // buff[3]
+		dnSample_42[channel].buff[3] = in[1];
+		dnSample_42[channel].buff[2] = in[2];
+		dnSample_42[channel].buff[1] = in[3];
 		__m128d _acc_out_a = _mm_setzero_pd();
 		__m128d _acc_out_b = _mm_setzero_pd();
 		for (int i = 0; i < dnTap_42; i += 2) { // tt >= dnTap_42+3
-			__m128d coef_a = _mm_load_pd (&dnSample_42[channel].coef[i    ]);
-			__m128d buff_a = _mm_loadu_pd(&dnSample_42[channel].buff[i + 3]); // unaligned...? 
-			__m128d coef_b = _mm_load_pd (&dnSample_42[channel].coef[i    ]);
-			__m128d buff_b = _mm_loadu_pd(&dnSample_42[channel].buff[i + 1]);
+			__m128d coef_a = _mm_load_pd(&dnSample_42[channel].coef[i    ]);
+			__m128d buff_a = _mm_load_pd(&dnSample_42[channel].buff[i + 4]); 
+			//__m128d coef_b = _mm_load_pd(&dnSample_42[channel].coef[i    ]);
+			__m128d buff_b = _mm_load_pd(&dnSample_42[channel].buff[i + 2]);
 			__m128d _mul_a = _mm_mul_pd(coef_a, buff_a);
-			__m128d _mul_b = _mm_mul_pd(coef_b, buff_b);
+			__m128d _mul_b = _mm_mul_pd(coef_a, buff_b);
 			    _acc_out_a = _mm_add_pd(_acc_out_a, _mul_a);
 			    _acc_out_b = _mm_add_pd(_acc_out_b, _mul_b);
 		}
 		_mm_store_pd(inter_42    , _acc_out_a);
 		_mm_store_pd(inter_42 + 2, _acc_out_b);
 
-		int32 dnTap_41_size = sizeof(double) * (make_2(dnTap_41) - 2);
-		memmove(dnSample_41[channel].buff + 2, dnSample_41[channel].buff, dnTap_41_size);
-		dnSample_41[channel].buff[1] = inter_42[0] + inter_42[1];
-		dnSample_41[channel].buff[0] = inter_42[2] + inter_42[3];
+		const size_t dnTap_41_size = sizeof(double) * (dnTap_41);
+		memmove(dnSample_41[channel].buff + 3, dnSample_41[channel].buff + 1, dnTap_41_size);
+		dnSample_41[channel].buff[2] = inter_42[0] + inter_42[1];
+		dnSample_41[channel].buff[1] = inter_42[2] + inter_42[3];
 		__m128d _acc_out = _mm_setzero_pd();
 		for (int i = 0; i < dnTap_41; i += 2) {
-			__m128d coef = _mm_load_pd (&dnSample_41[channel].coef[i    ]);
-			__m128d buff = _mm_loadu_pd(&dnSample_41[channel].buff[i + 1]);
+			__m128d coef = _mm_load_pd(&dnSample_41[channel].coef[i    ]);
+			__m128d buff = _mm_load_pd(&dnSample_41[channel].buff[i + 2]);
 			__m128d _mul = _mm_mul_pd(coef, buff);
 			    _acc_out = _mm_add_pd(_acc_out, _mul);
 		}
@@ -1174,37 +1061,33 @@ namespace yg331 {
 		double inter_84[8];
 		double inter_42[4];
 		double inter_21[2];
-		double inin[8];
-		memcpy(inin, in, sizeof(double) * 8);
-		(std::reverse)(inin, inin + 8);
-		int32 dnTap_83_size = sizeof(double) * (make_8(dnTap_83) - 8);
-		memmove(dnSample_83[channel].buff + 8, dnSample_83[channel].buff, dnTap_83_size);
-		memcpy(dnSample_83[channel].buff, inin, sizeof(double) * 8);
-		/*dnSample_83[channel].buff[7] = in[0];
-		dnSample_83[channel].buff[6] = in[1];
-		dnSample_83[channel].buff[5] = in[2];
-		dnSample_83[channel].buff[4] = in[3];
-		dnSample_83[channel].buff[3] = in[4];
-		dnSample_83[channel].buff[2] = in[5];
-		dnSample_83[channel].buff[1] = in[6];
-		dnSample_83[channel].buff[0] = in[7];*/
+		const size_t dnTap_83_size = sizeof(double) * (dnTap_83);
+		memmove(dnSample_83[channel].buff + 9, dnSample_83[channel].buff + 1, dnTap_83_size);
+		dnSample_83[channel].buff[8] = in[0];
+		dnSample_83[channel].buff[7] = in[1];
+		dnSample_83[channel].buff[6] = in[2];
+		dnSample_83[channel].buff[5] = in[3];
+		dnSample_83[channel].buff[4] = in[4];
+		dnSample_83[channel].buff[3] = in[5];
+		dnSample_83[channel].buff[2] = in[6];
+		dnSample_83[channel].buff[1] = in[7];
 		__m128d _acc_out_3a = _mm_setzero_pd();
 		__m128d _acc_out_3b = _mm_setzero_pd();
 		__m128d _acc_out_3c = _mm_setzero_pd();
 		__m128d _acc_out_3d = _mm_setzero_pd();
 		for (int i = 0; i < dnTap_83; i += 2) {
-			__m128d coef_3a = _mm_load_pd (&dnSample_83[channel].coef[i    ]);
-			__m128d buff_3a = _mm_loadu_pd(&dnSample_83[channel].buff[i + 7]); 
-			__m128d coef_3b = _mm_load_pd (&dnSample_83[channel].coef[i    ]);
-			__m128d buff_3b = _mm_loadu_pd(&dnSample_83[channel].buff[i + 5]);
-			__m128d coef_3c = _mm_load_pd (&dnSample_83[channel].coef[i    ]);
-			__m128d buff_3c = _mm_loadu_pd(&dnSample_83[channel].buff[i + 3]);
-			__m128d coef_3d = _mm_load_pd (&dnSample_83[channel].coef[i    ]);
-			__m128d buff_3d = _mm_loadu_pd(&dnSample_83[channel].buff[i + 1]);
+			__m128d coef_3a = _mm_load_pd(&dnSample_83[channel].coef[i    ]);
+			__m128d buff_3a = _mm_load_pd(&dnSample_83[channel].buff[i + 8]); 
+			//__m128d coef_3b = _mm_load_pd(&dnSample_83[channel].coef[i    ]);
+			__m128d buff_3b = _mm_load_pd(&dnSample_83[channel].buff[i + 6]);
+			//__m128d coef_3c = _mm_load_pd(&dnSample_83[channel].coef[i    ]);
+			__m128d buff_3c = _mm_load_pd(&dnSample_83[channel].buff[i + 4]);
+			//__m128d coef_3d = _mm_load_pd(&dnSample_83[channel].coef[i    ]);
+			__m128d buff_3d = _mm_load_pd(&dnSample_83[channel].buff[i + 2]);
 			__m128d _mul_3a = _mm_mul_pd(coef_3a, buff_3a);
-			__m128d _mul_3b = _mm_mul_pd(coef_3b, buff_3b);
-			__m128d _mul_3c = _mm_mul_pd(coef_3c, buff_3c);
-			__m128d _mul_3d = _mm_mul_pd(coef_3d, buff_3d);
+			__m128d _mul_3b = _mm_mul_pd(coef_3a, buff_3b);
+			__m128d _mul_3c = _mm_mul_pd(coef_3a, buff_3c);
+			__m128d _mul_3d = _mm_mul_pd(coef_3a, buff_3d);
 			    _acc_out_3a = _mm_add_pd(_acc_out_3a, _mul_3a);
 			    _acc_out_3b = _mm_add_pd(_acc_out_3b, _mul_3b);
 			    _acc_out_3c = _mm_add_pd(_acc_out_3c, _mul_3c);
@@ -1215,35 +1098,35 @@ namespace yg331 {
 		_mm_store_pd(inter_84 + 4, _acc_out_3c);
 		_mm_store_pd(inter_84 + 6, _acc_out_3d);
 
-		int32 dnTap_82_size = sizeof(double) * (make_4(dnTap_82) - 4);
-		memmove(dnSample_82[channel].buff + 4, dnSample_82[channel].buff, dnTap_82_size);
-		dnSample_82[channel].buff[3] = inter_84[0] + inter_84[1];
-		dnSample_82[channel].buff[2] = inter_84[2] + inter_84[3];
-		dnSample_82[channel].buff[1] = inter_84[4] + inter_84[5];
-		dnSample_82[channel].buff[0] = inter_84[6] + inter_84[7];
+		const size_t dnTap_82_size = sizeof(double) * (dnTap_82);
+		memmove(dnSample_82[channel].buff + 5, dnSample_82[channel].buff + 1, dnTap_82_size);
+		dnSample_82[channel].buff[4] = inter_84[0] + inter_84[1];
+		dnSample_82[channel].buff[3] = inter_84[2] + inter_84[3];
+		dnSample_82[channel].buff[2] = inter_84[4] + inter_84[5];
+		dnSample_82[channel].buff[1] = inter_84[6] + inter_84[7];
 		__m128d _acc_out_2a = _mm_setzero_pd();
 		__m128d _acc_out_2b = _mm_setzero_pd();
 		for (int i = 0; i < dnTap_82; i += 2) { 
-			__m128d coef_2a = _mm_load_pd (&dnSample_82[channel].coef[i    ]);
-			__m128d buff_2a = _mm_loadu_pd(&dnSample_82[channel].buff[i + 3]); 
-			__m128d coef_2b = _mm_load_pd (&dnSample_82[channel].coef[i    ]);
-			__m128d buff_2b = _mm_loadu_pd(&dnSample_82[channel].buff[i + 1]);
+			__m128d coef_2a = _mm_load_pd(&dnSample_82[channel].coef[i    ]);
+			__m128d buff_2a = _mm_load_pd(&dnSample_82[channel].buff[i + 4]); 
+			//__m128d coef_2b = _mm_load_pd(&dnSample_82[channel].coef[i    ]);
+			__m128d buff_2b = _mm_load_pd(&dnSample_82[channel].buff[i + 2]);
 			__m128d _mul_2a = _mm_mul_pd(coef_2a, buff_2a);
-			__m128d _mul_2b = _mm_mul_pd(coef_2b, buff_2b);
+			__m128d _mul_2b = _mm_mul_pd(coef_2a, buff_2b);
 			    _acc_out_2a = _mm_add_pd(_acc_out_2a, _mul_2a);
 			    _acc_out_2b = _mm_add_pd(_acc_out_2b, _mul_2b);
 		}
 		_mm_store_pd(inter_42    , _acc_out_2a);
 		_mm_store_pd(inter_42 + 2, _acc_out_2b);
 
-		int32 dnTap_81_size = sizeof(double) * (make_2(dnTap_81) - 2);
+		const size_t dnTap_81_size = sizeof(double) * (dnTap_81);
 		memmove(dnSample_81[channel].buff + 2, dnSample_81[channel].buff, dnTap_81_size);
-		dnSample_81[channel].buff[1] = inter_42[0] + inter_42[1];
-		dnSample_81[channel].buff[0] = inter_42[2] + inter_42[3];
+		dnSample_81[channel].buff[2] = inter_42[0] + inter_42[1];
+		dnSample_81[channel].buff[1] = inter_42[2] + inter_42[3];
 		__m128d _acc_out = _mm_setzero_pd();
 		for (int i = 0; i < dnTap_81; i += 2) {
-			__m128d coef = _mm_load_pd (&dnSample_81[channel].coef[i    ]);
-			__m128d buff = _mm_loadu_pd(&dnSample_81[channel].buff[i + 1]);
+			__m128d coef = _mm_load_pd(&dnSample_81[channel].coef[i    ]);
+			__m128d buff = _mm_load_pd(&dnSample_81[channel].buff[i + 2]);
 			__m128d _mul = _mm_mul_pd(coef, buff);
 			    _acc_out = _mm_add_pd(_acc_out, _mul);
 		}
@@ -1252,5 +1135,3 @@ namespace yg331 {
 	}
 
 } // namespace yg331
-
-
