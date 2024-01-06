@@ -78,7 +78,7 @@ v1.7.0.beta + beta 2
 
 v1.7.0: Fir using Kaiser-Bessel window, label change from 'Lin' to 'Max'.  
 
-Now up to date with latest RC Inflator form ReaTeam/JSFX repository.  
+Now up to date with latest RC Inflator from ReaTeam/JSFX repository.  
 
 ## What I've learned
 
