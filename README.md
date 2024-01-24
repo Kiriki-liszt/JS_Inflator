@@ -11,7 +11,7 @@ The alternative GUI is made by Twarch.
 ## Requirements 
 
 Windows - x64, SSE2  
-Mac - macos 10.13 ~ 14.2, NEON  
+Mac - macos 10.13 ~ 14.2, SSE2 or NEON  
 
 ## How to use  
 
