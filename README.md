@@ -1,6 +1,7 @@
 # JS_Inflator_to_VST2_VST3
 
-JS Inflator, the copy of Sonox Inflator, in vstsdk
+JS Inflator, the copy of Sonox Inflator, in vstsdk.  
+Runs in double precision 64-bit internal processing. Also double precision input / output if supported.  
 
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot_orig.png"  width="200"/>  
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot_twarch.png"  width="400"/>
