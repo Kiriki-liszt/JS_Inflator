@@ -104,6 +104,8 @@ namespace yg331 {
 			for (int i = 0; i < upTap_81; i++) upSample_81[channel].coef[i] *= 2.0;
 			for (int i = 0; i < upTap_82; i++) upSample_82[channel].coef[i] *= 2.0;
 			for (int i = 0; i < upTap_83; i++) upSample_83[channel].coef[i] *= 2.0;
+
+			nlProc.push_back(std::make_unique<NLProcessor>(&fCurve));
 		}
 
 		// latency_r8b_x2 = -1 + 2 * upSample_2x_Lin[0].getInLenBeforeOutPos(1) +1;
@@ -407,6 +409,7 @@ namespace yg331 {
 		for (int32 channel = 0; channel < numChannels; channel++)
 		{
 			Band_Split_set(&Band_Split[channel], 240.0, 2400.0, newSetup.sampleRate);
+			nlProc[channel]->prepare(newSetup.sampleRate, newSetup.maxSamplesPerBlock);
 		}
 		//--- called before any processing ----
 		return AudioEffect::setupProcessing(newSetup);
@@ -415,13 +418,13 @@ namespace yg331 {
 	uint32 PLUGIN_API InflatorPackageProcessor::getLatencySamples() 
 	{
 		if (fParamPhase) {
-			if      (fParamOS == overSample_1x) return 0;
+			if      (fParamOS == overSample_1x) return base_latency;
 			else if (fParamOS == overSample_2x) return latency_r8b_x2;
 			else if (fParamOS == overSample_4x) return latency_r8b_x4;
 			else                                return latency_r8b_x8;
 		}
 		else {
-			if      (fParamOS == overSample_1x) return 0;
+			if      (fParamOS == overSample_1x) return base_latency;
 			else if (fParamOS == overSample_2x) return latency_Fir_x2;
 			else if (fParamOS == overSample_4x) return latency_Fir_x4;
 			else                                return latency_Fir_x8;
@@ -642,7 +645,7 @@ namespace yg331 {
 				continue;
 			}
 
-			int32 latency = 0;
+			int32 latency = base_latency;
 			if (!fParamPhase) {
 				if      (fParamOS == overSample_2x) latency = latency_Fir_x2;
 				else if (fParamOS == overSample_4x) latency = latency_Fir_x4;
@@ -704,7 +707,7 @@ namespace yg331 {
 			SampleType* ptrIn  = (SampleType*) inputs[channel];
 			SampleType* ptrOut = (SampleType*)outputs[channel];
 
-			int32 latency = 0;
+			int32 latency = base_latency;
 			if (!fParamPhase) {
 				if      (fParamOS == overSample_2x) latency = latency_Fir_x2;
 				else if (fParamOS == overSample_4x) latency = latency_Fir_x4;
@@ -793,7 +796,9 @@ namespace yg331 {
 						          process_inflator(inputSample_H);
 					}
 					else {
-						up_y[k] = process_inflator(sampleOS);
+						//up_y[k] = process_inflator(sampleOS);
+						nlProc[channel]->processBlock(&up_x[k], 1);
+						up_y[k] = up_x[k];
 					}
 				}
 
@@ -814,16 +819,12 @@ namespace yg331 {
 					}
 				}
 
+
 				// Latency compensate
 				Vst::Sample64 delayed;
-				if (fParamOS == overSample_1x) {
-					delayed = drySample;
-				}
-				else {
-					delayed = latency_q[channel].front();
-					latency_q[channel].pop();
-					latency_q[channel].push(drySample);
-				}
+				latency_q[channel].push(drySample);
+				delayed = latency_q[channel].front();
+				latency_q[channel].pop();
 
 				inputSample = (delayed * (1 - fEffect)) + (inputSample * fEffect);
 
