@@ -38,7 +38,7 @@ enum {
 
 #include <vector>
 namespace yg331 {
-	//------------------------------------------------------------------------	
+	//------------------------------------------------------------------------
 	struct ZoomFactor {
 		const Steinberg::tchar* title;
 		double factor;
@@ -48,7 +48,7 @@ namespace yg331 {
 	typedef std::vector<ZoomFactor> ZoomFactorVector;
 
 	typedef enum {
-		overSample_1x, 
+		overSample_1x,
 		overSample_2x,
 		overSample_4x,
 		overSample_8x,
@@ -66,7 +66,7 @@ namespace yg331 {
 		SVF HP;
 		Steinberg::Vst::Sample64 G  = 0.0;
 		Steinberg::Vst::Sample64 GR = 0.0;
-	} Band_Split;
+	} Band_Split_t;
 
 	static const Steinberg::Vst::ParamValue
 		init_Input     = 0.5,
