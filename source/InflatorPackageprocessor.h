@@ -76,7 +76,7 @@ namespace yg331 {
 
 			memmove(x8 + 1, x8, m7); x8[0] = x;
 			x = x8[4];
-			
+
 			bool illCondition = std::abs(x - x1) < ADAAConst::TOL;
 			double ad1_x = nlFunc_AD1(x);
 
@@ -89,7 +89,7 @@ namespace yg331 {
 			memmove(y8 + 1, y8, m7); y8[0] = y;
 			double out = Lanczos_Half(y8[7], y8[6], y8[5], y8[4], y8[3], y8[2], y8[1], y8[0]);
 
-			x = Lanczos_Half(x8[7], x8[6], x8[5], x8[4], x8[3], x8[2], x8[1], x8[0]); 
+			x = Lanczos_Half(x8[7], x8[6], x8[5], x8[4], x8[3], x8[2], x8[1], x8[0]);
 			illCondition = std::abs(x - x1) < ADAAConst::TOL;
 			ad1_x = nlFunc_AD1(x);
 
@@ -112,7 +112,7 @@ namespace yg331 {
 
 		double x8[8] = { 0.0, };
 		double y8[8] = { 0.0, };
-		
+
 		inline double kernel(double x)
 		{
 			if (fabs(x) < 1e-7)
@@ -128,7 +128,7 @@ namespace yg331 {
 		const double LH[8]   = { kernel( 3.5 ), kernel( 2.5 ), kernel( 1.5 ), kernel( 0.5 ),
 		                         kernel(-0.5 ), kernel(-1.5 ), kernel(-2.5 ), kernel(-3.5 ) };
 		/*
-		const double LH[8] = { 
+		const double LH[8] = {
 			-1.26608778212386683e-02,
 			5.99094833772628801e-02,
 			-1.66415231603508018e-01,
@@ -138,9 +138,9 @@ namespace yg331 {
 			5.99094833772628801e-02,
 			-1.26608778212386683e-02 };
 		*/
-		
+
 		double Lanczos_Half(
-			double y0, double y1, double y2, double y3, 
+			double y0, double y1, double y2, double y3,
 			double y4, double y5, double y6, double y7) const
 		{
 			return y0 * LH[0] + y1 * LH[1] + y2 * LH[2] + y3 * LH[3]
@@ -377,7 +377,7 @@ namespace yg331 {
 	class NLProcessor
 	{
 	public:
-		NLProcessor(double* param) 
+		NLProcessor(double* param)
 		{
 			NLSet Procs;
 			Procs.push_back(std::make_unique<Inflator<StandardNL>>());
@@ -427,7 +427,7 @@ namespace yg331 {
 		// std::atomic<float>* nlParam = nullptr;
 		std::atomic<double*> ParamListener = nullptr;
 		double prevCurve = 0.0;
-		
+
 		using NLSet = std::vector<std::unique_ptr<BaseNL>>;
 		std::vector<NLSet> nlProcs;
 	};
@@ -511,7 +511,7 @@ namespace yg331 {
 			else                            return (Steinberg::Vst::ParamValue)overSample_8x / overSample_num;
 		};
 
-		inline void Band_Split_set(Band_Split* filter, Vst::ParamValue Fc_L, Vst::ParamValue Fc_H, Vst::SampleRate Fs) {
+		inline void Band_Split_set(Band_Split_t* filter, Vst::ParamValue Fc_L, Vst::ParamValue Fc_H, Vst::SampleRate Fs) {
 			(*filter).LP.C = 0.5 * tan(M_PI * ((Fc_L / Fs) - 0.25)) + 0.5;
 			(*filter).LP.R = 0.0;
 			(*filter).LP.I = 0.0;
@@ -570,7 +570,7 @@ namespace yg331 {
 		}
 
 		std::queue<double> latency_q[2];
-		
+
 		// Plugin controls ------------------------------------------------------------------
 		Vst::ParamValue fInput;
 		Vst::ParamValue fOutput;
@@ -590,7 +590,7 @@ namespace yg331 {
 		Vst::Sample64   curveB;
 		Vst::Sample64   curveC;
 		Vst::Sample64   curveD;
-		Band_Split      Band_Split[2];
+		Band_Split_t    Band_Split[2];
 		overSample      fParamOS, fParamOSOld;
 
 		// VU metering ----------------------------------------------------------------
@@ -626,7 +626,7 @@ namespace yg331 {
 		Flt dnSample_42[2];
 		Flt dnSample_81[2];
 		Flt dnSample_82[2];
-		Flt dnSample_83[2];		
+		Flt dnSample_83[2];
 
 		const int32 upTap_21 = 85;
 		const int32 upTap_41 = 83;
