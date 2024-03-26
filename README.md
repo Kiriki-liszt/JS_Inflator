@@ -1,7 +1,8 @@
 # JS_Inflator_to_VST2_VST3
 
 JS Inflator is a copy of Sonox Inflator.  
-Runs in double precision 64-bit internal processing. Also double precision input / output if supported.  
+Runs in double precision 64-bit internal processing.  
+Also double precision input / output if supported.  
 
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot_orig.png"  width="200"/>  
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot_twarch.png"  width="400"/>
@@ -9,10 +10,14 @@ Runs in double precision 64-bit internal processing. Also double precision input
 Comes in two GUIs.
 The alternative GUI is made by Twarch.
 
-## Requirements 
+## Builds and Requirements  
 
 Windows - x64, SSE2  
 Mac - macos 10.13 ~ 14.2, SSE2 or NEON  
+
+## Project Compability  
+
+Windows, Mac and Linux.  
 
 ## How to use  
 
@@ -36,7 +41,6 @@ Unzip MacOS.zip from latest release and copy vst3 to "/Library/Audio/Plug-Ins/VS
 >  
 > tested by @jonasborneland [here](https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/issues/12#issuecomment-1616671177)
 
-Linux not compatible.  
 This is my first attempt with VSTSDK & VSTGUI.  
 Some codes might be inefficent...  
 
