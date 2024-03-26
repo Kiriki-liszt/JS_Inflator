@@ -43,111 +43,7 @@ namespace yg331 {
 		virtual double func_AD1(double) const noexcept = 0;
 		virtual double func_AD2(double) const noexcept = 0;
 
-	private:
-	};
-
-
-	namespace ADAAConst
-	{
-		constexpr double TOL = 1.0e-5;
-	}
-
-	/** Base class for 1st-order ADAA */
-	class ADAA1 : public StandardNL
-	{
-	public:
-		ADAA1() = default;
-		virtual ~ADAA1() {}
-
-		void prepare() override
-		{
-			x1 = 0.0;
-			ad1_x1 = 0.0;
-		}
-
-		inline double process(double x) noexcept override
-		{
-			// both x and y interpolation method take effect
-			// interpolation at ill condition is better with simple linear - less quantization noise
-
-			// TODO : x4 Interpolation?
-
-			const size_t m7 = sizeof(double) * 7;
-
-			memmove(x8 + 1, x8, m7); x8[0] = x;
-			x = x8[4];
-			
-			bool illCondition = std::abs(x - x1) < ADAAConst::TOL;
-			double ad1_x = nlFunc_AD1(x);
-
-			double y = illCondition ?
-				nlFunc(0.5 * (x + x1)) :
-				(ad1_x - ad1_x1) / (x - x1);
-			ad1_x1 = ad1_x;
-			x1 = x;
-
-			memmove(y8 + 1, y8, m7); y8[0] = y;
-			double out = Lanczos_Half(y8[7], y8[6], y8[5], y8[4], y8[3], y8[2], y8[1], y8[0]);
-
-			x = Lanczos_Half(x8[7], x8[6], x8[5], x8[4], x8[3], x8[2], x8[1], x8[0]); 
-			illCondition = std::abs(x - x1) < ADAAConst::TOL;
-			ad1_x = nlFunc_AD1(x);
-
-			double y0 = illCondition ?
-				nlFunc(0.5 * (x + x1)) :
-				(ad1_x - ad1_x1) / (x - x1);
-			ad1_x1 = ad1_x;
-			x1 = x;
-
-			memmove(y8 + 1, y8, m7); y8[0] = y0;
-
-			return out;
-		}
-
-	protected:
-		virtual inline double nlFunc(double x) const noexcept { return func(x); }
-		virtual inline double nlFunc_AD1(double x) const noexcept { return func_AD1(x); }
-
-		static constexpr size_t A = 4;
-
-		double x8[8] = { 0.0, };
-		double y8[8] = { 0.0, };
-		
-		inline double kernel(double x)
-		{
-			if (fabs(x) < 1e-7)
-				return 1;
-			return A * sin(M_PI * x) * sin(M_PI * x / A) / (M_PI * M_PI * x * x);
-		}
-
-		// buffer = 0 1 2 3_4 5 6 7
-		// want   = 3.5
-		// i      = 0 1 2 3_4 5 6 7
-		// S(3.5) = b[0]*L( 3.5) + b[1]*L( 2.5) + b[2]*L( 1.5) + b[3]*L( 0.5)
-		//        + b[4]*L(-0.5) + b[5]*L(-1.5) + b[6]*L(-2.5) + b[7]*L(-3.5)
-		const double LH[8]   = { kernel( 3.5 ), kernel( 2.5 ), kernel( 1.5 ), kernel( 0.5 ),
-		                         kernel(-0.5 ), kernel(-1.5 ), kernel(-2.5 ), kernel(-3.5 ) };
-		/*
-		const double LH[8] = { 
-			-1.26608778212386683e-02,
-			5.99094833772628801e-02,
-			-1.66415231603508018e-01,
-			6.20383013240694559e-01,
-			6.20383013240694559e-01,
-			-1.66415231603508018e-01,
-			5.99094833772628801e-02,
-			-1.26608778212386683e-02 };
-		*/
-		
-		double Lanczos_Half(
-			double y0, double y1, double y2, double y3, 
-			double y4, double y5, double y6, double y7) const
-		{
-			return y0 * LH[0] + y1 * LH[1] + y2 * LH[2] + y3 * LH[3]
-				 + y4 * LH[4] + y5 * LH[5] + y6 * LH[6] + y7 * LH[7];
-		}
-
-		double CubicInterpolate(
+		inline double CubicInterpolate(
 			double y0, double y1,
 			double y2, double y3,
 			double mu = 0.5)
@@ -163,6 +59,359 @@ namespace yg331 {
 			return(a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
 		}
 
+		static constexpr size_t A = 16;
+
+		inline double kernel(double x)
+		{
+			if (fabs(x) < 1e-7)
+				return 1;
+			return A * sin(M_PI * x) * sin(M_PI * x / A) / (M_PI * M_PI * x * x);
+		}
+
+		/*
+		const double LQ_1[A * 2] = {
+			kernel( 15.25), kernel( 14.25), kernel( 13.25), kernel( 12.25),
+			kernel( 11.25), kernel( 10.25), kernel(  9.25), kernel(  8.25),
+			kernel(  7.25), kernel(  6.25), kernel(  5.25), kernel(  4.25),
+			kernel(  3.25), kernel(  2.25), kernel(  1.25), kernel(  0.25),
+			kernel( -0.75), kernel( -1.75), kernel( -2.75), kernel( -3.75),
+			kernel( -4.75), kernel( -5.75), kernel( -6.75), kernel( -7.75),
+			kernel( -8.75), kernel( -9.75), kernel(-10.75), kernel(-11.75),
+			kernel(-12.75), kernel(-13.75), kernel(-14.75), kernel(-15.75)
+		};
+		const double LQ_2[A * 2] = {
+			kernel( 15.50), kernel( 14.50), kernel( 13.50), kernel( 12.50),
+			kernel( 11.50), kernel( 10.50), kernel(  9.50), kernel(  8.50),
+			kernel(  7.50), kernel(  6.50), kernel(  5.50), kernel(  4.50),
+			kernel(  3.50), kernel(  2.50), kernel(  1.50), kernel(  0.50),
+			kernel( -0.50), kernel( -1.50), kernel( -2.50), kernel( -3.50),
+			kernel( -4.50), kernel( -5.50), kernel( -6.50), kernel( -7.50),
+			kernel( -8.50), kernel( -9.50), kernel(-10.50), kernel(-11.50),
+			kernel(-12.50), kernel(-13.50), kernel(-14.50), kernel(-15.50)
+		};
+		const double LQ_3[A * 2] = {
+			kernel( 15.75), kernel( 14.75), kernel( 13.75), kernel( 12.75),
+			kernel( 11.75), kernel( 10.75), kernel(  9.75), kernel(  8.75),
+			kernel(  7.75), kernel(  6.75), kernel(  5.75), kernel(  4.75),
+			kernel(  3.75), kernel(  2.75), kernel(  1.75), kernel(  0.75),
+			kernel( -0.25), kernel( -1.25), kernel( -2.25), kernel( -3.25),
+			kernel( -4.25), kernel( -5.25), kernel( -6.25), kernel( -7.25),
+			kernel( -8.25), kernel( -9.25), kernel(-10.25), kernel(-11.25),
+			kernel(-12.25), kernel(-13.25), kernel(-14.25), kernel(-15.25)
+		};
+		*/
+		const double LQ_0[A * 2] = {
+			kernel( 15.125), kernel( 14.125), kernel( 13.125), kernel( 12.125),
+			kernel( 11.125), kernel( 10.125), kernel(  9.125), kernel(  8.125),
+			kernel(  7.125), kernel(  6.125), kernel(  5.125), kernel(  4.125),
+			kernel(  3.125), kernel(  2.125), kernel(  1.125), kernel(  0.125),
+			kernel( -0.875), kernel( -1.875), kernel( -2.875), kernel( -3.875),
+			kernel( -4.875), kernel( -5.875), kernel( -6.875), kernel( -7.875),
+			kernel( -8.875), kernel( -9.875), kernel(-10.875), kernel(-11.875),
+			kernel(-12.875), kernel(-13.875), kernel(-14.875), kernel(-15.875)
+		};
+		const double LQ_1[A * 2] = {
+			kernel( 15.375), kernel( 14.375), kernel( 13.375), kernel( 12.375),
+			kernel( 11.375), kernel( 10.375), kernel(  9.375), kernel(  8.375),
+			kernel(  7.375), kernel(  6.375), kernel(  5.375), kernel(  4.375),
+			kernel(  3.375), kernel(  2.375), kernel(  1.375), kernel(  0.375),
+			kernel( -0.625), kernel( -1.625), kernel( -2.625), kernel( -3.625),
+			kernel( -4.625), kernel( -5.625), kernel( -6.625), kernel( -7.625),
+			kernel( -8.625), kernel( -9.625), kernel(-10.625), kernel(-11.625),
+			kernel(-12.625), kernel(-13.625), kernel(-14.625), kernel(-15.625)
+		};
+		const double LQ_2[A * 2] = {
+			kernel( 15.625), kernel( 14.625), kernel( 13.625), kernel( 12.625),
+			kernel( 11.625), kernel( 10.625), kernel(  9.625), kernel(  8.625),
+			kernel(  7.625), kernel(  6.625), kernel(  5.625), kernel(  4.625),
+			kernel(  3.625), kernel(  2.625), kernel(  1.625), kernel(  0.625),
+			kernel( -0.375), kernel( -1.375), kernel( -2.375), kernel( -3.375),
+			kernel( -4.375), kernel( -5.375), kernel( -6.375), kernel( -7.375),
+			kernel( -8.375), kernel( -9.375), kernel(-10.375), kernel(-11.375),
+			kernel(-12.375), kernel(-13.375), kernel(-14.375), kernel(-15.375)
+		};
+		const double LQ_3[A * 2] = {
+			kernel( 15.875), kernel( 14.875), kernel( 13.875), kernel( 12.875),
+			kernel( 11.875), kernel( 10.875), kernel(  9.875), kernel(  8.875),
+			kernel(  7.875), kernel(  6.875), kernel(  5.875), kernel(  4.875),
+			kernel(  3.875), kernel(  2.875), kernel(  1.875), kernel(  0.875),
+			kernel( -0.125), kernel( -1.125), kernel( -2.125), kernel( -3.125),
+			kernel( -4.125), kernel( -5.125), kernel( -6.125), kernel( -7.125),
+			kernel( -8.125), kernel( -9.125), kernel(-10.125), kernel(-11.125),
+			kernel(-12.125), kernel(-13.125), kernel(-14.125), kernel(-15.125)
+		};
+#define Lanczos_Q0(x) \
+		x[ 0] * LQ_0[ 0] + x[ 1] * LQ_0[ 1] + x[ 2] * LQ_0[ 2] + x[ 3] * LQ_0[ 3] + \
+		x[ 4] * LQ_0[ 4] + x[ 5] * LQ_0[ 5] + x[ 6] * LQ_0[ 6] + x[ 7] * LQ_0[ 7] + \
+		x[ 8] * LQ_0[ 8] + x[ 9] * LQ_0[ 9] + x[10] * LQ_0[10] + x[11] * LQ_0[11] + \
+		x[12] * LQ_0[12] + x[13] * LQ_0[13] + x[14] * LQ_0[14] + x[15] * LQ_0[15] + \
+		x[16] * LQ_0[16] + x[17] * LQ_0[17] + x[18] * LQ_0[18] + x[19] * LQ_0[19] + \
+		x[20] * LQ_0[20] + x[21] * LQ_0[21] + x[22] * LQ_0[22] + x[23] * LQ_0[23] + \
+		x[24] * LQ_0[24] + x[25] * LQ_0[25] + x[26] * LQ_0[26] + x[27] * LQ_0[27] + \
+		x[28] * LQ_0[28] + x[29] * LQ_0[29] + x[30] * LQ_0[30] + x[31] * LQ_0[31]
+#define Lanczos_Q1(x) \
+		x[ 0] * LQ_1[ 0] + x[ 1] * LQ_1[ 1] + x[ 2] * LQ_1[ 2] + x[ 3] * LQ_1[ 3] + \
+		x[ 4] * LQ_1[ 4] + x[ 5] * LQ_1[ 5] + x[ 6] * LQ_1[ 6] + x[ 7] * LQ_1[ 7] + \
+		x[ 8] * LQ_1[ 8] + x[ 9] * LQ_1[ 9] + x[10] * LQ_1[10] + x[11] * LQ_1[11] + \
+		x[12] * LQ_1[12] + x[13] * LQ_1[13] + x[14] * LQ_1[14] + x[15] * LQ_1[15] + \
+		x[16] * LQ_1[16] + x[17] * LQ_1[17] + x[18] * LQ_1[18] + x[19] * LQ_1[19] + \
+		x[20] * LQ_1[20] + x[21] * LQ_1[21] + x[22] * LQ_1[22] + x[23] * LQ_1[23] + \
+		x[24] * LQ_1[24] + x[25] * LQ_1[25] + x[26] * LQ_1[26] + x[27] * LQ_1[27] + \
+		x[28] * LQ_1[28] + x[29] * LQ_1[29] + x[30] * LQ_1[30] + x[31] * LQ_1[31]
+#define Lanczos_Q2(x) \
+		x[ 0] * LQ_2[ 0] + x[ 1] * LQ_2[ 1] + x[ 2] * LQ_2[ 2] + x[ 3] * LQ_2[ 3] + \
+		x[ 4] * LQ_2[ 4] + x[ 5] * LQ_2[ 5] + x[ 6] * LQ_2[ 6] + x[ 7] * LQ_2[ 7] + \
+		x[ 8] * LQ_2[ 8] + x[ 9] * LQ_2[ 9] + x[10] * LQ_2[10] + x[11] * LQ_2[11] + \
+		x[12] * LQ_2[12] + x[13] * LQ_2[13] + x[14] * LQ_2[14] + x[15] * LQ_2[15] + \
+		x[16] * LQ_2[16] + x[17] * LQ_2[17] + x[18] * LQ_2[18] + x[19] * LQ_2[19] + \
+		x[20] * LQ_2[20] + x[21] * LQ_2[21] + x[22] * LQ_2[22] + x[23] * LQ_2[23] + \
+		x[24] * LQ_2[24] + x[25] * LQ_2[25] + x[26] * LQ_2[26] + x[27] * LQ_2[27] + \
+		x[28] * LQ_2[28] + x[29] * LQ_2[29] + x[30] * LQ_2[30] + x[31] * LQ_2[31]
+#define Lanczos_Q3(x) \
+		x[ 0] * LQ_3[ 0] + x[ 1] * LQ_3[ 1] + x[ 2] * LQ_3[ 2] + x[ 3] * LQ_3[ 3] + \
+		x[ 4] * LQ_3[ 4] + x[ 5] * LQ_3[ 5] + x[ 6] * LQ_3[ 6] + x[ 7] * LQ_3[ 7] + \
+		x[ 8] * LQ_3[ 8] + x[ 9] * LQ_3[ 9] + x[10] * LQ_3[10] + x[11] * LQ_3[11] + \
+		x[12] * LQ_3[12] + x[13] * LQ_3[13] + x[14] * LQ_3[14] + x[15] * LQ_3[15] + \
+		x[16] * LQ_3[16] + x[17] * LQ_3[17] + x[18] * LQ_3[18] + x[19] * LQ_3[19] + \
+		x[20] * LQ_3[20] + x[21] * LQ_3[21] + x[22] * LQ_3[22] + x[23] * LQ_3[23] + \
+		x[24] * LQ_3[24] + x[25] * LQ_3[25] + x[26] * LQ_3[26] + x[27] * LQ_3[27] + \
+		x[28] * LQ_3[28] + x[29] * LQ_3[29] + x[30] * LQ_3[30] + x[31] * LQ_3[31]
+
+		inline double Ino(double x)
+		{
+			double d = 0, ds = 1, s = 1;
+			do
+			{
+				d += 2;
+				ds *= x * x / (d * d);
+				s += ds;
+			} while (ds > s * 1e-6);
+			return s;
+		}
+
+		void calcFilter(double Fs, double Fa, double Fb, int M, double Att, double* dest)
+		{
+			// Kaiser windowed FIR filter "DIGITAL SIGNAL PROCESSING, II" IEEE Press pp 123-126.
+
+			int Np = (M - 1) / 2;
+			double A[256] = { 0, };
+			double Alpha;
+			double Inoalpha;
+			//double H[maxTap] = { 0, };
+
+			A[0] = 2 * (Fb - Fa) / Fs;
+
+			for (int j = 1; j <= Np; j++)
+				A[j] = (sin(2.0 * j * M_PI * Fb / Fs) - sin(2.0 * j * M_PI * Fa / Fs)) / (j * M_PI);
+
+			if (Att < 21.0)
+				Alpha = 0;
+			else if (Att > 50.0)
+				Alpha = 0.1102 * (Att - 8.7);
+			else
+				Alpha = 0.5842 * pow((Att - 21), 0.4) + 0.07886 * (Att - 21);
+
+			Inoalpha = Ino(Alpha);
+
+			for (int j = 0; j <= Np; j++)
+				dest[Np + j] = A[j] * Ino(Alpha * sqrt(1.0 - ((double)(j * j) / (double)(Np * Np)))) / Inoalpha;
+
+			for (int j = 0; j < Np; j++)
+				dest[j] = dest[M - 1 - j];
+		}
+
+		typedef struct _Flt {
+			double coef alignas(16)[256] = { 0, };
+			double buff alignas(16)[256] = { 0, };
+		} Flt;
+
+		Flt dnSample_41;
+		Flt dnSample_42;
+	private:
+	};
+
+
+	namespace ADAAConst
+	{
+		constexpr double TOL = 1.0e-9;
+	}
+
+	/** Base class for 1st-order ADAA */
+	class ADAA1 : public StandardNL
+	{
+	public:
+		//ADAA1() = default;
+		static constexpr size_t tap1  = 59;
+		static constexpr size_t tap2  = 127;
+		static constexpr size_t htap1 = 29;
+		static constexpr size_t htap2 = 63;
+		ADAA1() { 
+			calcFilter( 96000.0, 0.0, 24000.0, tap1, 100.00, dnSample_41.coef);
+			calcFilter(192000.0, 0.0, 24000.0, tap2, 100.00, dnSample_42.coef);
+		}
+		virtual ~ADAA1() {}
+
+		void prepare() override
+		{
+			    x1 = 0.0;
+			ad1_x1 = 0.0;
+		}
+
+		inline double process(double x) noexcept override
+		{
+			// both x and y interpolation method take effect
+			// interpolation at ill condition is better with simple linear - less quantization noise
+			const size_t mm = sizeof(double) * ((A * 2) - 1);
+			double x_ = x;
+
+			/*
+			const size_t mm = sizeof(double) * (tap);
+			memmove(upSample_42.buff + 1, upSample_42.buff, mm);
+			upSample_42.buff[0] = x;
+
+			double _x3 = 0.0;
+			for (int i = 0; i < tap; i++) {
+				_x3 += upSample_42.buff[i] * upSample_42.coef[i];
+			}
+			x = _x3;
+			*/
+
+
+			memmove(xx + 1, xx, mm); xx[0] = x_;
+
+			x = Lanczos_Q3(xx);
+
+			bool illCondition = std::abs(x - x1) < ADAAConst::TOL;
+			double ad1_x = nlFunc_AD1(x);
+
+			double _y3 = illCondition ?
+				nlFunc(0.5 * (x + x1)) :
+				(ad1_x - ad1_x1) / (x - x1);
+			ad1_x1 = ad1_x;
+			x1 = x;
+
+			// memmove(yy + 1, yy, mm); yy[0] = _y3;
+			// double out = Lanczos_Q2(yy);
+
+			/*
+			memmove(upSample_42.buff + 1, upSample_42.buff, mm);
+			upSample_42.buff[0] = 0.0;
+
+			double _x2 = 0.0;
+			for (int i = 0; i < tap; i++) {
+				_x2 += upSample_42.buff[i] * upSample_42.coef[i];
+			}
+			x = _x2;
+			*/
+			
+			x = Lanczos_Q2(xx);
+			
+			illCondition = std::abs(x - x1) < ADAAConst::TOL;
+			ad1_x = nlFunc_AD1(x);
+
+			double _y2 = illCondition ?
+				nlFunc(0.5 * (x + x1)) :
+				(ad1_x - ad1_x1) / (x - x1);
+			ad1_x1 = ad1_x;
+			x1 = x;
+
+			//memmove(yy + 1, yy, mm); yy[0] = _y2;
+
+			/*
+			memmove(upSample_42.buff + 1, upSample_42.buff, mm);
+			upSample_42.buff[0] = 0.0;
+
+			double _x1 = 0.0;
+			for (int i = 0; i < tap; i++) {
+				_x1 += upSample_42.buff[i] * upSample_42.coef[i];
+			}
+			x = _x1;
+			*/
+			x = Lanczos_Q1(xx);
+			
+			illCondition = std::abs(x - x1) < ADAAConst::TOL;
+			ad1_x = nlFunc_AD1(x);
+
+			double _y1 = illCondition ?
+				nlFunc(0.5 * (x + x1)) :
+				(ad1_x - ad1_x1) / (x - x1);
+			ad1_x1 = ad1_x;
+			x1 = x;
+
+			//memmove(yy + 1, yy, mm); yy[0] = _y1;
+
+			/*
+			memmove(upSample_42.buff + 1, upSample_42.buff, mm);
+			upSample_42.buff[0] = 0.0;
+
+			double _x0 = 0.0;
+			for (int i = 0; i < tap; i++) {
+				_x0 += upSample_42.buff[i] * upSample_42.coef[i];
+			}
+			x = _x0;
+			*/
+
+			
+			x = Lanczos_Q0(xx);
+			
+			illCondition = std::abs(x - x1) < ADAAConst::TOL;
+			ad1_x = nlFunc_AD1(x);
+
+			double _y0 = illCondition ?
+				nlFunc(0.5 * (x + x1)) :
+				(ad1_x - ad1_x1) / (x - x1);
+			ad1_x1 = ad1_x;
+			x1 = x;
+
+			//memmove(yy + 1, yy, mm); yy[0] = _y0;
+			/*
+			const size_t mm1 = sizeof(double) * (tap1);
+			memmove(dnSample_41.buff + 2, dnSample_41.buff, mm1);
+			dnSample_41.buff[1] = _y3;
+			dnSample_41.buff[0] = _y2;
+
+			double out1 = dnSample_41.buff[htap1] * dnSample_41.coef[htap1];
+			for (int i = 0; i < htap1; i++) {
+				out1 += (dnSample_41.buff[i] + dnSample_41.buff[tap1 - 1 - i]) * dnSample_41.coef[i];
+			}
+
+			memmove(dnSample_41.buff + 2, dnSample_41.buff, mm1);
+			dnSample_41.buff[1] = _y1;
+			dnSample_41.buff[0] = _y0;
+
+			double out0 = dnSample_41.buff[htap1] * dnSample_41.coef[htap1];
+			for (int i = 0; i < htap1; i++) {
+				out0 += (dnSample_41.buff[i] + dnSample_41.buff[tap1 - 1 - i]) * dnSample_41.coef[i];
+			}
+
+			const size_t mm2 = sizeof(double) * (tap2);
+			memmove(dnSample_42.buff + 2, dnSample_42.buff, mm2);
+			dnSample_42.buff[1] = out1;
+			dnSample_42.buff[0] = out0;
+
+			double out = dnSample_42.buff[htap2] * dnSample_42.coef[htap2];
+			for (int i = 0; i < htap2; i++) {
+				out += (dnSample_42.buff[i] + dnSample_42.buff[tap2 - 1 - i]) * dnSample_42.coef[i];
+			}
+			*/
+			const size_t mm2 = sizeof(double) * (tap2);
+			memmove(dnSample_42.buff + 4, dnSample_42.buff, mm2);
+			dnSample_42.buff[3] = _y3;
+			dnSample_42.buff[2] = _y2;
+			dnSample_42.buff[1] = _y1;
+			dnSample_42.buff[0] = _y0;
+			double out = dnSample_42.buff[htap2] * dnSample_42.coef[htap2];
+			for (int i = 0; i < htap2; i++) {
+				out += (dnSample_42.buff[i] + dnSample_42.buff[tap2 - 1 - i]) * dnSample_42.coef[i]; // (dnSample_42.buff[i] + dnSample_42.buff[tap2 - 1 - i])
+			}
+			return out;
+		}
+
+	protected:
+		virtual inline double nlFunc    (double x) const noexcept { return func(x); }
+		virtual inline double nlFunc_AD1(double x) const noexcept { return func_AD1(x); }
+		double xx[A * 2] = { 0.0, };
+		double yy[A * 2] = { 0.0, };
 		double     x1 = 0.0;
 		double ad1_x1 = 0.0;
 	private:
@@ -656,7 +905,7 @@ namespace yg331 {
 		const int32 latency_Fir_x4 = 56;
 		const int32 latency_Fir_x8 = 60;
 
-		const int base_latency = 6;
+		const int base_latency = 31;
 		std::vector<std::unique_ptr<NLProcessor>> nlProc;
 	};
 } // namespace yg331
