@@ -75,22 +75,22 @@
 			"Curve": "2",
 			"Clip": "3",
 			"Output": "4",
-			"InVuPPML": "5",
-			"InVuPPMR": "6",
-			"OutVuPPML": "7",
-			"OutVuPPMR": "8",
-			"Meter": "9",
-			"OS": "10",
-			"Split": "11",
-			"Zoom": "12",
-			"Phase": "13",
-			"In": "14",
-			"Bypass": "15"
+			"OS": "5",
+			"Split": "6",
+			"Zoom": "7",
+			"Phase": "8",
+			"In": "9",
+			"Bypass": "10",
+			"InVuPPML": "11",
+			"InVuPPMR": "12",
+			"OutVuPPML": "13",
+			"OutVuPPMR": "14",
+			"Meter": "15"
 		},
 		"custom": {
 			"FocusDrawing": {},
 			"VST3Editor": {
-				"Path": "C:\\VST_make\\Kiriki_yg_Liszt\\generator\\InflatorPackage\\resource\\InflatorPackageeditor.uidesc"
+				"Path": "D:\\0. Production\\VST_Production\\Generator\\InflatorPackage\\resource\\InflatorPackageeditor.uidesc"
 			},
 			"UIGridController": {
 				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
@@ -98,15 +98,15 @@
 			},
 			"UIEditController": {
 				"EditViewScale": "0.5",
-				"EditorSize": "0, 0, 717, 598",
+				"EditorSize": "0, 0, 717, 719",
 				"EncodeBitmaps": "false",
-				"SplitViewSize_0_0": "0.7727272727272727070868540977244265377522",
-				"SplitViewSize_0_1": "0.1923076923076923183675290829341975040734",
-				"SplitViewSize_1_0": "0.4772727272727272929131459022755734622478",
-				"SplitViewSize_1_1": "0.5139860139860139565115559889818541705608",
+				"SplitViewSize_0_0": "0.6695526695526695659665961102291475981474",
+				"SplitViewSize_0_1": "0.3015873015873015705601289937476394698024",
+				"SplitViewSize_1_0": "0.4819624819624819811458849017071770504117",
+				"SplitViewSize_1_1": "0.5122655122655123127728415965975727885962",
 				"SplitViewSize_2_0": "0.5927475592747559751671815320150926709175",
 				"SplitViewSize_2_1": "0.4002789400278939924149312901135999709368",
-				"TabSwitchValue": "4",
+				"TabSwitchValue": "0",
 				"Version": "1",
 				"WriteRCFile": "false"
 			},
@@ -115,7 +115,7 @@
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
-				"SelectedRow": "9"
+				"SelectedRow": "14"
 			},
 			"UIGradientsDataSource": {
 				"SelectedRow": "1"
@@ -157,57 +157,6 @@
 							"size": "472, 800",
 							"transparent": "false",
 							"wants-focus": "false"
-						}
-					},
-					"COnOffButton": {
-						"attributes": {
-							"bitmap": "button_onoff",
-							"class": "COnOffButton",
-							"control-tag": "In",
-							"default-value": "1",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "27, 132",
-							"size": "86, 118",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"COnOffButton": {
-						"attributes": {
-							"bitmap": "button_onoff",
-							"class": "COnOffButton",
-							"control-tag": "Split",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "28, 214",
-							"size": "86, 118",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"COnOffButton": {
-						"attributes": {
-							"bitmap": "button_onoff",
-							"class": "COnOffButton",
-							"control-tag": "Clip",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "28, 298",
-							"size": "86, 118",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
 						}
 					},
 					"CSlider": {
@@ -274,157 +223,271 @@
 							"zoom-factor": "10"
 						}
 					},
-					"CAnimKnob": {
+					"CViewContainer": {
 						"attributes": {
-							"angle-range": "270",
-							"angle-start": "135",
-							"bitmap": "knob_red",
-							"class": "CAnimKnob",
-							"control-tag": "Effect",
-							"default-value": "0",
-							"height-of-one-image": "128",
-							"inverse-bitmap": "false",
-							"max-value": "1",
-							"min-value": "0",
+							"background-color": "~ TransparentCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "58, 459",
-							"size": "128, 128",
-							"sub-pixmaps": "63",
-							"transparent": "false",
-							"value-inset": "0",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1",
-							"zoom-factor": "1.5"
+							"origin": "17, 122",
+							"size": "107, 304",
+							"transparent": "true",
+							"uidesc-label": "Control Buttons",
+							"wants-focus": "false"
+						},
+						"children": {
+							"COnOffButton": {
+								"attributes": {
+									"bitmap": "button_onoff",
+									"class": "COnOffButton",
+									"control-tag": "In",
+									"default-value": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "10, 10",
+									"size": "86, 118",
+									"transparent": "false",
+									"uidesc-label": "InOut Button",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"COnOffButton": {
+								"attributes": {
+									"bitmap": "button_onoff",
+									"class": "COnOffButton",
+									"control-tag": "Split",
+									"default-value": "0",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "11, 92",
+									"size": "86, 118",
+									"transparent": "false",
+									"uidesc-label": "Split Button",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"COnOffButton": {
+								"attributes": {
+									"bitmap": "button_onoff",
+									"class": "COnOffButton",
+									"control-tag": "Clip",
+									"default-value": "0",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "11, 176",
+									"size": "86, 118",
+									"transparent": "false",
+									"uidesc-label": "Clip Button",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							}
 						}
 					},
-					"CAnimKnob": {
+					"CViewContainer": {
 						"attributes": {
-							"angle-range": "270",
-							"angle-start": "135",
-							"bitmap": "knob_green",
-							"class": "CAnimKnob",
-							"control-tag": "Curve",
-							"default-value": "0.5",
-							"height-of-one-image": "128",
-							"inverse-bitmap": "false",
-							"max-value": "1",
-							"min-value": "0",
+							"background-color": "~ TransparentCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
 							"mouse-enabled": "true",
 							"opacity": "1",
-							"origin": "59, 657",
-							"size": "128, 128",
-							"sub-pixmaps": "63",
-							"transparent": "false",
-							"value-inset": "0",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1",
-							"zoom-factor": "1.5"
+							"origin": "48, 449",
+							"size": "149, 346",
+							"transparent": "true",
+							"uidesc-label": "Control Knobs",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CAnimKnob": {
+								"attributes": {
+									"angle-range": "270",
+									"angle-start": "135",
+									"bitmap": "knob_red",
+									"class": "CAnimKnob",
+									"control-tag": "Effect",
+									"default-value": "0",
+									"height-of-one-image": "128",
+									"inverse-bitmap": "false",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "10, 10",
+									"size": "128, 128",
+									"sub-pixmaps": "63",
+									"transparent": "false",
+									"uidesc-label": "Effect Knob",
+									"value-inset": "0",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1",
+									"zoom-factor": "1.5"
+								}
+							},
+							"CAnimKnob": {
+								"attributes": {
+									"angle-range": "270",
+									"angle-start": "135",
+									"bitmap": "knob_green",
+									"class": "CAnimKnob",
+									"control-tag": "Curve",
+									"default-value": "0.5",
+									"height-of-one-image": "128",
+									"inverse-bitmap": "false",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "11, 208",
+									"size": "128, 128",
+									"sub-pixmaps": "63",
+									"transparent": "false",
+									"uidesc-label": "Curve Knob",
+									"value-inset": "0",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1",
+									"zoom-factor": "1.5"
+								}
+							}
 						}
 					},
-					"CVuMeter": {
+					"CViewContainer": {
 						"attributes": {
-							"bitmap": "LED_ON",
-							"class": "CVuMeter",
-							"control-tag": "InVuPPML",
-							"decrease-step-value": "0.1",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "false",
-							"num-led": "25",
-							"off-bitmap": "LED_OFF",
-							"opacity": "1",
-							"orientation": "vertical",
-							"origin": "275, 62",
-							"size": "20, 250",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CVuMeter": {
-						"attributes": {
-							"bitmap": "LED_ON",
-							"class": "CVuMeter",
-							"control-tag": "InVuPPMR",
-							"decrease-step-value": "0.1",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "false",
-							"num-led": "25",
-							"off-bitmap": "LED_OFF",
-							"opacity": "1",
-							"orientation": "vertical",
-							"origin": "303, 62",
-							"size": "20, 250",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CVuMeter": {
-						"attributes": {
-							"bitmap": "LED_ON",
-							"class": "CVuMeter",
-							"control-tag": "OutVuPPML",
-							"decrease-step-value": "0.1",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "false",
-							"num-led": "25",
-							"off-bitmap": "LED_OFF",
-							"opacity": "1",
-							"orientation": "vertical",
-							"origin": "382, 62",
-							"size": "20, 250",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CVuMeter": {
-						"attributes": {
-							"bitmap": "LED_ON",
-							"class": "CVuMeter",
-							"control-tag": "OutVuPPMR",
-							"decrease-step-value": "0.1",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "false",
-							"num-led": "25",
-							"off-bitmap": "LED_OFF",
-							"opacity": "1",
-							"orientation": "vertical",
-							"origin": "410, 62",
-							"size": "20, 250",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CVuMeter": {
-						"attributes": {
-							"bitmap": "LED_FX_ON",
-							"class": "CVuMeter",
-							"control-tag": "Meter",
-							"decrease-step-value": "0.1",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
+							"background-color": "~ TransparentCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
 							"mouse-enabled": "true",
-							"num-led": "25",
-							"off-bitmap": "LED_FX_OFF",
 							"opacity": "1",
-							"orientation": "vertical",
-							"origin": "342, 62",
-							"size": "20, 150",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
+							"origin": "265, 52",
+							"size": "175, 270",
+							"transparent": "true",
+							"uidesc-label": "VU Meters",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CVuMeter": {
+								"attributes": {
+									"bitmap": "LED_ON",
+									"class": "CVuMeter",
+									"control-tag": "InVuPPML",
+									"decrease-step-value": "0.1",
+									"default-value": "0",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"num-led": "25",
+									"off-bitmap": "LED_OFF",
+									"opacity": "1",
+									"orientation": "vertical",
+									"origin": "10, 10",
+									"size": "20, 250",
+									"sub-controller": "myVuMeterController",
+									"transparent": "false",
+									"uidesc-label": "Input L",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CVuMeter": {
+								"attributes": {
+									"bitmap": "LED_ON",
+									"class": "CVuMeter",
+									"control-tag": "InVuPPMR",
+									"decrease-step-value": "0.1",
+									"default-value": "0",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "false",
+									"num-led": "25",
+									"off-bitmap": "LED_OFF",
+									"opacity": "1",
+									"orientation": "vertical",
+									"origin": "38, 10",
+									"size": "20, 250",
+									"sub-controller": "myVuMeterController",
+									"transparent": "false",
+									"uidesc-label": "Input R",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CVuMeter": {
+								"attributes": {
+									"bitmap": "LED_ON",
+									"class": "CVuMeter",
+									"control-tag": "OutVuPPML",
+									"decrease-step-value": "0.1",
+									"default-value": "0",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "false",
+									"num-led": "25",
+									"off-bitmap": "LED_OFF",
+									"opacity": "1",
+									"orientation": "vertical",
+									"origin": "117, 10",
+									"size": "20, 250",
+									"sub-controller": "myVuMeterController",
+									"transparent": "false",
+									"uidesc-label": "Output L",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CVuMeter": {
+								"attributes": {
+									"bitmap": "LED_ON",
+									"class": "CVuMeter",
+									"control-tag": "OutVuPPMR",
+									"decrease-step-value": "0.1",
+									"default-value": "0",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "false",
+									"num-led": "25",
+									"off-bitmap": "LED_OFF",
+									"opacity": "1",
+									"orientation": "vertical",
+									"origin": "145, 10",
+									"size": "20, 250",
+									"sub-controller": "myVuMeterController",
+									"transparent": "false",
+									"uidesc-label": "Output R",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CVuMeter": {
+								"attributes": {
+									"bitmap": "LED_FX_ON",
+									"class": "CVuMeter",
+									"control-tag": "Meter",
+									"decrease-step-value": "0.1",
+									"default-value": "0",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"num-led": "25",
+									"off-bitmap": "LED_FX_OFF",
+									"opacity": "1",
+									"orientation": "vertical",
+									"origin": "77, 10",
+									"size": "20, 150",
+									"sub-controller": "myVuMeterController",
+									"transparent": "false",
+									"uidesc-label": "Diff",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							}
 						}
 					},
 					"CView": {
@@ -436,6 +499,7 @@
 							"origin": "234, 45",
 							"size": "235, 310",
 							"transparent": "false",
+							"uidesc-label": "Meterings Cover",
 							"wants-focus": "false"
 						}
 					},

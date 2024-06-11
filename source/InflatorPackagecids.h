@@ -9,13 +9,11 @@
 
 namespace yg331 {
 //------------------------------------------------------------------------
-static const Steinberg::FUID kInflatorPackageProcessorUID (0xA6B5CA9F, 0x4C4F5B93, 0x88F83777, 0x4504BD37);
+static const Steinberg::FUID kInflatorPackageProcessorUID  (0xA6B5CA9F, 0x4C4F5B93, 0x88F83777, 0x4504BD37);
 static const Steinberg::FUID kInflatorPackageControllerUID (0x8565C317, 0x780F5A1E, 0x8E35F396, 0xB6745FC7);
 
 #define InflatorPackageVST3Category "Fx"
 
-//------------------------------------------------------------------------
-} // namespace yg331
 
 enum {
 	kParamInput = 0,	// Input
@@ -23,75 +21,64 @@ enum {
 	kParamCurve,		// Curve
 	kParamClip,			// Clip
 	kParamOutput,		// Output
-	kParamInVuPPML,		// Input VuPPM
-	kParamInVuPPMR,
-	kParamOutVuPPML,	// Output VuPPM
-	kParamOutVuPPMR,
-	kParamMeter,
 	kParamOS,
 	kParamSplit,
 	kParamZoom,
 	kParamPhase,
 	kParamIn,		// ByPass
-	kParamBypass
+	kParamBypass,
+	kInVuPPML,	// Input VuPPM
+	kInVuPPMR,
+	kOutVuPPML,	// Output VuPPM
+	kOutVuPPMR,
+	kMeter,
 };
 
-#include <vector>
-namespace yg331 {
-	//------------------------------------------------------------------------
-	struct ZoomFactor {
-		const Steinberg::tchar* title;
-		double factor;
+typedef enum {
+	overSample_1x,
+	overSample_2x,
+	overSample_4x,
+	overSample_8x,
+	overSample_num = 3
+} overSample;
 
-		ZoomFactor(const Steinberg::tchar* title, double factor) : title(title), factor(factor) {}
-	};
-	typedef std::vector<ZoomFactor> ZoomFactorVector;
+typedef struct _SVF {
+	Steinberg::Vst::Sample64 C = 0.0;
+	Steinberg::Vst::Sample64 R = 0.0;
+	Steinberg::Vst::Sample64 I = 0.0;
+} SVF;
 
-	typedef enum {
-		overSample_1x,
-		overSample_2x,
-		overSample_4x,
-		overSample_8x,
-		overSample_num = 3
-	} overSample;
+typedef struct _BS {
+	SVF LP;
+	SVF HP;
+	Steinberg::Vst::Sample64 G  = 0.0;
+	Steinberg::Vst::Sample64 GR = 0.0;
+} Band_Split_t;
 
-	typedef struct _SVF {
-		Steinberg::Vst::Sample64 C = 0.0;
-		Steinberg::Vst::Sample64 R = 0.0;
-		Steinberg::Vst::Sample64 I = 0.0;
-	} SVF;
+static const Steinberg::Vst::ParamValue
+	init_Input     = 0.5,
+	init_Effect    = 0.0,
+	init_Curve     = 0.5,
+	init_Output    = 1.0,
+	init_VU        = 0.0,
+	init_Zoom      = 0.0 / 6.0;
 
-	typedef struct _BS {
-		SVF LP;
-		SVF HP;
-		Steinberg::Vst::Sample64 G  = 0.0;
-		Steinberg::Vst::Sample64 GR = 0.0;
-	} Band_Split_t;
+static const Steinberg::Vst::Sample64
+	init_curvepct  = init_Curve - 0.5,
+	init_curveA    = 1.5 + init_curvepct,
+	init_curveB    = -(init_curvepct + init_curvepct),
+	init_curveC    = init_curvepct - 0.5,
+	init_curveD    = 0.0625 - init_curvepct * 0.25 + (init_curvepct * init_curvepct) * 0.25;
 
-	static const Steinberg::Vst::ParamValue
-		init_Input     = 0.5,
-		init_Effect    = 0.0,
-		init_Curve     = 0.5,
-		init_Output    = 1.0,
-		init_VU        = 0.0,
-		init_Zoom      = 0.0 / 6.0;
+static const bool
+	init_Clip      = false,
+	init_Bypass    = false,
+	init_In        = true,
+	init_Split     = false,
+	init_Phase     = false; // Min phase
 
-	static const Steinberg::Vst::Sample64
-		init_curvepct  = init_Curve - 0.5,
-		init_curveA    = 1.5 + init_curvepct,
-		init_curveB    = -(init_curvepct + init_curvepct),
-		init_curveC    = init_curvepct - 0.5,
-		init_curveD    = 0.0625 - init_curvepct * 0.25 + (init_curvepct * init_curvepct) * 0.25;
-
-	static const bool
-		init_Clip      = false,
-		init_Bypass    = false,
-		init_In        = true,
-		init_Split     = false,
-		init_Phase     = false; // Min phase
-
-	static const overSample
-		init_OS        = overSample_1x;
+static const overSample
+	init_OS        = overSample_1x;
 
 	//------------------------------------------------------------------------
 } // namespace yg331

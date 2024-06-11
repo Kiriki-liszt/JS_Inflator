@@ -29,6 +29,7 @@ smtg_enable_vst3_sdk()
 smtg_add_vst3plugin(InflatorPackage
     source/version.h
     source/InflatorPackagecids.h
+    source/InflatorPackageDataexchange.h
     source/InflatorPackageprocessor.h
     source/InflatorPackageprocessor.cpp
     source/InflatorPackagecontroller.h
