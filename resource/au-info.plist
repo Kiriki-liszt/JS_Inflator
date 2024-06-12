@@ -6,19 +6,19 @@
 	<array>
 		<dict>
 			<key>description</key>
-			<string>InflatorPackage VST 3 to AUv2 Plug-in</string>
+			<string>JS Inflator VST 3 to AUv2 Plug-in</string>
 			<key>factoryFunction</key>
 			<string>AUWrapperFactory</string>
 			<key>manufacturer</key>
 			<string>Yg31</string>
 			<key>name</key>
-			<string>yg331: InflatorPackage</string>
+			<string>yg331: JS Inflator</string>
 			<key>subtype</key>
 			<string>yJSI</string>
 			<key>type</key>
 			<string>aufx</string>
 			<key>version</key>
-			<integer>67329</integer>
+			<integer>131072</integer>
 		</dict>
 	</array>
 	<key>AudioUnit SupportedNumChannels</key>

@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.14.0)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13 CACHE STRING "")
 
-
 if(SMTG_MAC)
     set(vst3sdk_SOURCE_DIR "/Users/yoon/VST_SDK/vst3sdk")
 elseif(SMTG_WIN)
@@ -12,13 +11,12 @@ if(NOT vst3sdk_SOURCE_DIR)
     message(FATAL_ERROR "Path to VST3 SDK is empty!")
 endif()
 
-
-project(InflatorPackage
+project(JS_Inflator
     # This is your plug-in version number. Change it here only.
     # Version number symbols usable in C++ can be found in
     # source/version.h and ${PROJECT_BINARY_DIR}/projectversion.h.
-    VERSION 1.7.1.0
-    DESCRIPTION "InflatorPackage VST 3 Plug-in"
+    VERSION 2.0.0.0 
+    DESCRIPTION "JS Inflator VST 3 Plug-in"
 )
 
 set(SMTG_VSTGUI_ROOT "${vst3sdk_SOURCE_DIR}")
@@ -26,21 +24,20 @@ set(SMTG_VSTGUI_ROOT "${vst3sdk_SOURCE_DIR}")
 add_subdirectory(${vst3sdk_SOURCE_DIR} ${PROJECT_BINARY_DIR}/vst3sdk)
 smtg_enable_vst3_sdk()
 
-smtg_add_vst3plugin(InflatorPackage
+smtg_add_vst3plugin(JS_Inflator
     source/version.h
-    source/InflatorPackagecids.h
-    source/InflatorPackageDataexchange.h
-    source/InflatorPackageprocessor.h
-    source/InflatorPackageprocessor.cpp
-    source/InflatorPackagecontroller.h
-    source/InflatorPackagecontroller.cpp
-    source/InflatorPackageentry.cpp
-    # ${vst3sdk_SOURCE_DIR}/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
+    source/JSIF_cids.h
+    source/JSIF_shared.h
+    source/JSIF_dataexchange.h
+    source/JSIF_processor.h
+    source/JSIF_processor.cpp
+    source/JSIF_controller.h
+    source/JSIF_controller.cpp
+    source/JSIF_entry.cpp
 )
 
 set(ORIGINAL_GUI 1)
 #set(TWARCH 1)
-
 
 if(ORIGINAL_GUI)
     add_compile_definitions(_ORIG)
@@ -51,13 +48,13 @@ endif()
 #- VSTGUI Wanted ----
 if(SMTG_ENABLE_VSTGUI_SUPPORT)
     if(ORIGINAL_GUI)
-    target_sources(InflatorPackage
+    target_sources(JS_Inflator
         PRIVATE
-            resource/InflatorPackageeditor.uidesc
+            resource/JSIF_editor.uidesc
     )
-    smtg_target_add_plugin_resources(InflatorPackage
+    smtg_target_add_plugin_resources(JS_Inflator
         RESOURCES
-            "resource/InflatorPackageeditor.uidesc"
+            "resource/JSIF_editor.uidesc"
             "resource/background.png"
             "resource/button_onoff.png"
             "resource/handle.png"
@@ -68,18 +65,15 @@ if(SMTG_ENABLE_VSTGUI_SUPPORT)
             "resource/LED_OFF.png"
             "resource/LED_FX_ON.png"
             "resource/LED_FX_OFF.png"
-            "resource/OS_text.png"
-            "resource/oversample_bg.png"
-            "resource/oversample_handle.png"
     )
     elseif(TWARCH)
-    target_sources(InflatorPackage
+    target_sources(JS_Inflator
         PRIVATE
-            resource/twarch/InflatorPackageeditor.uidesc
+            resource/twarch/JSIF_editor.uidesc
     )
-    smtg_target_add_plugin_resources(InflatorPackage
+    smtg_target_add_plugin_resources(JS_Inflator
         RESOURCES
-            "resource/twarch/InflatorPackageeditor.uidesc"
+            "resource/twarch/JSIF_editor.uidesc"
             "resource/twarch/background.png"
             "resource/twarch/btn_CLIP.png"
             "resource/twarch/btn_IN.png"
@@ -92,20 +86,20 @@ if(SMTG_ENABLE_VSTGUI_SUPPORT)
             "resource/twarch/meter_fx_on.png"
     )
     endif()
-    target_link_libraries(InflatorPackage
+    target_link_libraries(JS_Inflator
         PRIVATE
             vstgui_support
     )
 endif(SMTG_ENABLE_VSTGUI_SUPPORT)
 # -------------------
 
-smtg_target_add_plugin_snapshots (InflatorPackage
+smtg_target_add_plugin_snapshots (JS_Inflator
     RESOURCES
         resource/A6B5CA9F4C4F5B9388F837774504BD37_snapshot.png
         resource/A6B5CA9F4C4F5B9388F837774504BD37_snapshot_2.0x.png
 )
 
-target_link_libraries(InflatorPackage
+target_link_libraries(JS_Inflator
     PRIVATE
         sdk
 )
@@ -113,7 +107,7 @@ target_link_libraries(InflatorPackage
 set(SIMDE_PATH "${PROJECT_BINARY_DIR}/../libs/simde" CACHE STRING "Path to simde library source tree")
 add_library(simde INTERFACE)
 target_include_directories(simde INTERFACE ${SIMDE_PATH})
-target_link_libraries(InflatorPackage
+target_link_libraries(JS_Inflator
     PRIVATE 
         simde
 )
@@ -129,34 +123,33 @@ add_library(r8brain-free-src r8bbase.cpp)
     
 add_subdirectory(${R8B_PATH} ${PROJECT_BINARY_DIR}/r8brain-free-src-build EXCLUDE_FROM_ALL)
 include_directories(${R8B_PATH})
-target_link_libraries(InflatorPackage PUBLIC r8brain-free-src)
+target_link_libraries(JS_Inflator PUBLIC r8brain-free-src)
 smtg_target_setup_universal_binary(r8brain-free-src)
 
-smtg_target_configure_version_file(InflatorPackage)
+smtg_target_configure_version_file(JS_Inflator)
 
 if(SMTG_MAC)
-    smtg_target_set_bundle(InflatorPackage
-        BUNDLE_IDENTIFIER io.github.vst3.Inflator
+    smtg_target_set_bundle(JS_Inflator
+        BUNDLE_IDENTIFIER io.github.yg331.JS.Inflator
         COMPANY_NAME "yg331"
     )
-    smtg_target_set_debug_executable(InflatorPackage
+    smtg_target_set_debug_executable(JS_Inflator
         "/Applications/VST3PluginTestHost.app"
         "--pluginfolder;$(BUILT_PRODUCTS_DIR)"
     )
 elseif(SMTG_WIN)
-    target_sources(InflatorPackage PRIVATE 
+    target_sources(JS_Inflator PRIVATE 
         resource/win32resource.rc
     )
     if(MSVC)
-        set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT InflatorPackage)
+        set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT JS_Inflator)
 
-        smtg_target_set_debug_executable(InflatorPackage
+        smtg_target_set_debug_executable(JS_Inflator
             "$(ProgramW6432)/Steinberg/VST3PluginTestHost/VST3PluginTestHost.exe"
             "--pluginfolder \"$(OutDir)/\""
         )
     endif()
 endif(SMTG_MAC)
-
 
 if(SMTG_WIN)
     if(NOT MINGW)
@@ -166,9 +159,9 @@ endif(SMTG_WIN)
 
 # Add an AUv2 target
 if (SMTG_MAC AND XCODE AND SMTG_COREAUDIO_SDK_PATH)
-	smtg_target_add_auv2(InflatorPackage-au
-		BUNDLE_NAME InflatorPackage
-		BUNDLE_IDENTIFIER io.github.vst3.Inflator.audiounit
+	smtg_target_add_auv2(JS_Inflator-au
+		BUNDLE_NAME JS_Inflator
+		BUNDLE_IDENTIFIER io.github.yg331.JS.Inflator.audiounit
 		INFO_PLIST_TEMPLATE resource/au-info.plist
-		VST3_PLUGIN_TARGET InflatorPackage)
+		VST3_PLUGIN_TARGET JS_Inflator)
 endif(SMTG_MAC AND XCODE AND SMTG_COREAUDIO_SDK_PATH)

@@ -4,8 +4,8 @@ JS Inflator is a copy of Sonox Inflator.
 Runs in double precision 64-bit internal processing.  
 Also double precision input / output if supported.  
 
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot_orig.png"  width="200"/>  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshot_twarch.png"  width="400"/>
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/screenshot_orig.png"  width="200"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/screenshot_twarch.png"  width="400"/>
 
 Comes in two GUIs.
 The alternative GUI is made by Twarch.
@@ -30,7 +30,7 @@ Unzip Win.zip from latest release and copy to "C:\Program Files\Common Files\VST
 Unzip MacOS.zip from latest release and copy vst3 to "/Library/Audio/Plug-Ins/VST3" and component to "/Library/Audio/Plug-Ins/Components".  
 
 > If it doesn't go well, configure security options in console as  
->  
+> 
 > ``` console  
 > sudo xattr -r -d com.apple.quarantine /Library/Audio/Plug-Ins/VST3/InflatorPackage.vst3  
 > sudo xattr -r -d com.apple.quarantine /Library/Audio/Plug-Ins/Components/InflatorPackage.component
@@ -38,7 +38,7 @@ Unzip MacOS.zip from latest release and copy vst3 to "/Library/Audio/Plug-Ins/VS
 > sudo codesign --force --sign - /Library/Audio/Plug-Ins/VST3/InflatorPackage.vst3  
 > sudo codesign --force --sign - /Library/Audio/Plug-Ins/Components/InflatorPackage.component  
 > ```  
->  
+> 
 > tested by @jonasborneland [here](https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/issues/12#issuecomment-1616671177)
 
 This is my first attempt with VSTSDK & VSTGUI.  
@@ -47,12 +47,13 @@ Some codes might be inefficent...
 ## Licensing  
 
 > Q: I would like to share the source code of my VST 3 plug-in/host on GitHub or other such platform.  
+>
 > * You can choose the GPLv3 license and feel free to share your plug-ins/host's source code including or referencing the VST 3 SDK's sources on GitHub.  
-> * **You are allowed to provide a binary form of your plug-ins/host too, provided that you provide its source code as GPLv3 too.** 
+> * **You are allowed to provide a binary form of your plug-ins/host too, provided that you provide its source code as GPLv3 too.**
 > * Note that you have to follow the Steinberg VST usage guidelines.  
-> 
+>
 > <https://steinbergmedia.github.io/vst3_dev_portal/pages/FAQ/Licensing.html>  
- 
+
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/VST_Compatible_Logo_Steinberg_with_TM.png"  width="200"/>
 
 VSTSDK 3.7.9 used  
@@ -97,17 +98,17 @@ gain as multiplier of each samples.
 For normParam to gain, check ~process.cpp  
 
 ex)  
-| param 	| dB  	| gain 	|
-|-------	|-----	|------	|
-| 0.0   	| -12 	| 0.25 	|
-| 0.5   	| 0   	| 1    	|
-| 1.0   	| +12 	| 4    	|  
+| param  | dB   | gain  |
+|------- |----- |------ |
+| 0.0    | -12  | 0.25  |
+| 0.5    | 0    | 1     |
+| 1.0    | +12  | 4     |  
 
-| param 	| dB  	| gain 	|
-|-------	|-----	|------	|
-| 0.0   	| -12 	| 0.25 	|
-| 0.5   	| -6  	| 0.5  	|
-| 1.0   	| 0   	| 1    	|  
+| param  | dB   | gain  |
+|------- |----- |------ |
+| 0.0    | -12  | 0.25  |
+| 0.5    | -6   | 0.5   |
+| 1.0    | 0    | 1     |  
 
 * Resampling  
 
@@ -123,14 +124,14 @@ Filter choice is most critical, I think.
 HIIR code used Polyphase Filter, which is minimun phase filter.  
 Has some letency, has some phase issue, but both very low.  
 
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_freq.png"  width="400"/>  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_phase_RC.png"  width="400"/>  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_phase_JS.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/8x_freq.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/8x_phase_RC.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/8x_phase_JS.png"  width="400"/>  
 
 Compared to 31-tap filter, polyphase has more flat frequency and phase response.  
 
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_H_RC.png"  width="400"/>  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/resource/8x_H_JS.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/8x_H_RC.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/8x_H_JS.png"  width="400"/>  
 
 Meaning, HIIR is better at anti-alising.  
 
@@ -140,29 +141,29 @@ For more natural high frequency hearing I Implemented r8brain-free-src designed 
 Had some time with it trying understand how FIR works. I still don't know yet but it works.  
 About weird choices for x4 and x8 - these resamplers have asynchronous latencies so downsampling starts little before upsampling starts.  
 To fix it, I just changed Transition band for x4 and 24-bit for x8.  
-Now it is free of Phase issuses. 
+Now it is free of Phase issuses.
 
 * Comparisons  
 1x  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_1x.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_1x.png"  width="400"/>  
 
 2x Min-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_2x_Min.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_2x_Min.png"  width="400"/>  
 
 2x Lin-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_2x_Lin.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_2x_Lin.png"  width="400"/>  
 
 4x Min-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_4x_Min.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_4x_Min.png"  width="400"/>  
 
 4x Lin-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_4x_Lin.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_4x_Lin.png"  width="400"/>  
 
 8x Min-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_8x_Min.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_8x_Min.png"  width="400"/>  
 
 8x Lin-phase  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/380f6b668782e78d0526607e5c9d3586f8af04d0/screenshots/OS_8x_Lin.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_8x_Lin.png"  width="400"/>  
   
 * Latency Reporting  
 
@@ -171,11 +172,12 @@ Naive implementaiton could use 'sendTextMessage' and 'receiveText' pair.
 * Knob Modes
 
 Specifying knob modes at 'createView' in 'controller.cpp' makes knobs work in selected mode.  
+
 ``` c++
 setKnobMode(Steinberg::Vst::KnobModes::kLinearMode);
 ```
-[https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/v1.6.0/source/InflatorPackagecontroller.cpp#L339](https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/v1.6.0/source/InflatorPackagecontroller.cpp#L339)  
 
+[https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/v1.6.0/source/InflatorPackagecontroller.cpp#L339](https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/v1.6.0/source/InflatorPackagecontroller.cpp#L339)  
 
 ## references
 
@@ -192,9 +194,9 @@ Modified for my need: Fractional resampling, Interpolation parts are deleted.
 
 ## Todo
 
-- [ ] Preset save & import menu bar.  
-- [x] malloc/realloc/free to new/delete change. -> stick with it. 
-- [x] Oversampling options : Linear phase, Balanced.  
-- [x] GUI : resizing, and HDDPI.  
-- [ ] GUI : double click to enter value.
-- [x] soft bypass latency.  
+* [ ] Preset save & import menu bar.  
+* [x] malloc/realloc/free to new/delete change. -> stick with it.
+* [x] Oversampling options : Linear phase, Balanced.  
+* [x] GUI : resizing, and HDDPI.  
+* [ ] GUI : double click to enter value.
+* [x] soft bypass latency.  

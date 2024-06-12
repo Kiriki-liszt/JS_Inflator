@@ -4,7 +4,7 @@
 #define APSTUDIO_READONLY_SYMBOLS
 
 #ifdef _ORIG
-	InflatorPackageeditor.uidesc DATA "InflatorPackageeditor.uidesc"
+	JSIF_editor.uidesc		DATA "JSIF_editor.uidesc"
 	background.png			PNG "background.png"
 	handle.png				PNG "handle.png"
 	knob_red_.png			PNG "knob_red_.png"
@@ -15,11 +15,8 @@
 	LED_FX_OFF.png			PNG "LED_FX_OFF.png"
 	LED_FX_ON.png			PNG "LED_FX_ON.png"
 	LED_cover.png			PNG "LED_cover.png" 
-	OS_text.png				PNG	"OS_text.png"
-	oversample_bg.png		PNG "oversample_bg.png"
-	oversample_handle.png	PNG "oversample_handle.png"
 #elif _TWARCH
-	InflatorPackageeditor.uidesc DATA "twarch/InflatorPackageeditor.uidesc"
+	JSIF_editor.uidesc		DATA "twarch/JSIF_editor.uidesc"
 	background.png			PNG "twarch/background.png"
 	btn_IN.png				PNG "twarch/btn_IN.png"
 	btn_CLIP.png			PNG "twarch/btn_CLIP.png"
@@ -33,43 +30,42 @@
 #endif // _ORIG
 
 
-
 /////////////////////////////////////////////////////////////////////////////
 // Version
 /////////////////////////////////////////////////////////////////////////////
 VS_VERSION_INFO VERSIONINFO
-	FILEVERSION MAJOR_VERSION_INT, SUB_VERSION_INT, RELEASE_NUMBER_INT, BUILD_NUMBER_INT
-	PRODUCTVERSION MAJOR_VERSION_INT, SUB_VERSION_INT, RELEASE_NUMBER_INT, BUILD_NUMBER_INT
-	FILEFLAGSMASK 0x3fL
+ FILEVERSION MAJOR_VERSION_INT,SUB_VERSION_INT,RELEASE_NUMBER_INT,BUILD_NUMBER_INT
+ PRODUCTVERSION MAJOR_VERSION_INT,SUB_VERSION_INT,RELEASE_NUMBER_INT,BUILD_NUMBER_INT
+ FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
-	FILEFLAGS 0x1L
+ FILEFLAGS 0x1L
 #else
-	FILEFLAGS 0x0L
+ FILEFLAGS 0x0L
 #endif
-	FILEOS 0x40004L
-	FILETYPE 0x1L
-	FILESUBTYPE 0x0L
-	BEGIN
-		BLOCK "StringFileInfo"
-		BEGIN
-			BLOCK "040004e4"
-			BEGIN
-				VALUE "FileVersion", FULL_VERSION_STR"\0"
-				VALUE "ProductVersion", FULL_VERSION_STR"\0"
-				VALUE "OriginalFilename", stringOriginalFilename"\0"
-				VALUE "FileDescription", stringFileDescription"\0"
-				VALUE "InternalName", stringFileDescription"\0"
-				VALUE "ProductName", stringFileDescription"\0"
-				VALUE "CompanyName", stringCompanyName"\0"
-				VALUE "LegalCopyright", stringLegalCopyright"\0"
-				VALUE "LegalTrademarks", stringLegalTrademarks"\0"
-				//VALUE "PrivateBuild",     " \0"
-				//VALUE "SpecialBuild",     " \0"
-				//VALUE "Comments",         " \0"
-			END
-		END
-		BLOCK "VarFileInfo"
-		BEGIN
-			VALUE "Translation", 0x400, 1252
-		END
-	END
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040004e4"
+        BEGIN
+            VALUE "FileVersion",      FULL_VERSION_STR"\0"
+            VALUE "ProductVersion",   FULL_VERSION_STR"\0"
+            VALUE "OriginalFilename", stringOriginalFilename"\0"
+            VALUE "FileDescription",  stringFileDescription"\0"
+            VALUE "InternalName",     stringFileDescription"\0"
+            VALUE "ProductName",      stringFileDescription"\0"
+            VALUE "CompanyName",      stringCompanyName"\0"
+            VALUE "LegalCopyright",   stringLegalCopyright"\0"
+            VALUE "LegalTrademarks",  stringLegalTrademarks"\0"
+            //VALUE "PrivateBuild",     " \0"
+            //VALUE "SpecialBuild",     " \0"
+            //VALUE "Comments",         " \0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x400, 1252
+    END
+END
