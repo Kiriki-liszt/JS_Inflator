@@ -13,7 +13,7 @@ The alternative GUI is made by Twarch.
 ## Builds and Requirements  
 
 Windows - x64, SSE2  
-Mac - macos 10.13 ~ 14.2, SSE2 or NEON  
+Mac - macos 10.13 ~ 14.5, SSE2 or NEON  
 
 ## Project Compability  
 
@@ -21,16 +21,16 @@ Windows, Mac and Linux.
 
 ## How to use  
 
-1. Windows
+* Windows  
 
 Unzip Win.zip from latest release and copy to "C:\Program Files\Common Files\VST3".  
 
-2. MacOS(Intel tested, Apple Silicon not tested).  
+* MacOS  
 
 Unzip MacOS.zip from latest release and copy vst3 to "/Library/Audio/Plug-Ins/VST3" and component to "/Library/Audio/Plug-Ins/Components".  
 
 > If it doesn't go well, configure security options in console as  
-> 
+>
 > ``` console  
 > sudo xattr -r -d com.apple.quarantine /Library/Audio/Plug-Ins/VST3/InflatorPackage.vst3  
 > sudo xattr -r -d com.apple.quarantine /Library/Audio/Plug-Ins/Components/InflatorPackage.component
@@ -38,7 +38,7 @@ Unzip MacOS.zip from latest release and copy vst3 to "/Library/Audio/Plug-Ins/VS
 > sudo codesign --force --sign - /Library/Audio/Plug-Ins/VST3/InflatorPackage.vst3  
 > sudo codesign --force --sign - /Library/Audio/Plug-Ins/Components/InflatorPackage.component  
 > ```  
-> 
+>
 > tested by @jonasborneland [here](https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/issues/12#issuecomment-1616671177)
 
 This is my first attempt with VSTSDK & VSTGUI.  
@@ -64,16 +64,27 @@ Built as VST3, but compatible to VST2, too.
 ## Version logs
 
 v1.0.0: intial try.  
+
 v1.1.0: VuPPM meter change(mono -> stereo, continuous to discrete), but not complete!  
+
 v1.2.0: VuPPM meter corrected!  
+
 v1.2.1: Channel configuration corrected. probably a bug fix for crashing sometimes.  
+
 v1.3.0: Curve knob fixed!!! and 32FP dither by airwindows.  
+
 v1.4.0: Oversampling up to x8 now works! DPC works.  
+
 v1.5.0: Band Split added.  
+
 v1.5.1: macOS build added. Intel x86 & Apple silicon tested.  
+
 v1.6.0rc: FX meter(Effect Meter) is added. Original GUI is now on high definition.  
+
 v1.6.0rc1: Linear phase Oversampling is now added.  
+
 v1.6.0: Linear knob mode is now specified, and GUI size flinching fixed.  
+
 v1.7.0.beta + beta 2
 
 1. AUv2 build added. VSTSDK update to 3.7.9. Xcode 15.2, OSX 14.2 build.  
@@ -84,7 +95,12 @@ v1.7.0.beta + beta 2
 
 v1.7.0: Fir using Kaiser-Bessel window, label change from 'Lin' to 'Max'.  
 
-Now up to date with latest RC Inflator from ReaTeam/JSFX repository.  
+v2.0.0  
+
+* Rename 'InflatorPackage' into 'JS Inflator'.  
+* AUv2: Controller state was overwriting Processor state. Fixed.  
+* Ctrl-Z: VU meter was using parameter to send data to Controller, and it caued 'undo history' to be filled with meter changes. Fixed.  
+* Meters are now following envelope detector with time contants.  
 
 ## What I've learned
 
@@ -120,25 +136,10 @@ Generally, the process goes as:
 4. LP Filtering  
 5. reducing samples  
 
-Filter choice is most critical, I think.  
-HIIR code used Polyphase Filter, which is minimun phase filter.  
-Has some letency, has some phase issue, but both very low.  
-
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/8x_freq.png"  width="400"/>  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/8x_phase_RC.png"  width="400"/>  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/8x_phase_JS.png"  width="400"/>  
-
-Compared to 31-tap filter, polyphase has more flat frequency and phase response.  
-
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/8x_H_RC.png"  width="400"/>  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/8x_H_JS.png"  width="400"/>  
-
-Meaning, HIIR is better at anti-alising.  
-
 * Linear Phase  
-HIIR resampling is Min-phase resampler, meaning phase distortion at high freqs.  
-For more natural high frequency hearing I Implemented r8brain-free-src designed by Aleksey Vaneev of Voxengo.  
-Had some time with it trying understand how FIR works. I still don't know yet but it works.  
+
+HIIR resampling is Min-phase resampler, meaning phase disorder at high freqs.  
+For more natural high frequency hearing, Linear resampling such as r8brain-free-src designed by Aleksey Vaneev of Voxengo is recomanded.  
 About weird choices for x4 and x8 - these resamplers have asynchronous latencies so downsampling starts little before upsampling starts.  
 To fix it, I just changed Transition band for x4 and 24-bit for x8.  
 Now it is free of Phase issuses.
@@ -165,9 +166,10 @@ Now it is free of Phase issuses.
 8x Lin-phase  
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_8x_Lin.png"  width="400"/>  
   
-* Latency Reporting  
+* Latency change reporting  
 
-Naive implementaiton could use 'sendTextMessage' and 'receiveText' pair.  
+Restarting plugin should be from Contorller side.  
+One example would be using 'sendTextMessage' and 'receiveText' pair, so when Processor detects parameter change related to latency, it sends textMessage and Controller receives it and restarts.  
 
 * Knob Modes
 
@@ -178,6 +180,23 @@ setKnobMode(Steinberg::Vst::KnobModes::kLinearMode);
 ```
 
 [https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/v1.6.0/source/InflatorPackagecontroller.cpp#L339](https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/blob/v1.6.0/source/InflatorPackagecontroller.cpp#L339)  
+
+* How VSTSDK identifies each plugins  
+
+Is uses "Steinberg::FUID kProcessorUID" in cid header to identify plugin.  
+So, if ProcessorUID is kept same, host will see it as same plugin.  
+In example, project using v1.7.0 'InflatorPackage' will automatically replace it with v2.0.0 'JS Inflator', with same settings.  
+
+However, ParamIDs shuld be same as before while replacing old plugin with new one.  
+If else, one should use Vst::IRemapParamID introduced in VSTSDK v3.7.11.  
+
+* About AUv2  
+
+While using AUv2 wrapper of VSTSDK, one should save Controller state also.  
+IDK why, but in AUv2 wrapper overwrites values set from state to default UI values.  
+
+The version number in plist is converted from hex to decimal.  
+For example, v1.7.2 -> 0x010702 -> 67330.  
 
 ## references
 
