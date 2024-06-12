@@ -5,10 +5,10 @@
 	<key>AudioComponents</key>
 	<array>
 		<dict>
-			<key>factoryFunction</key>
-			<string>AUWrapperFactory</string>
 			<key>description</key>
 			<string>InflatorPackage VST 3 to AUv2 Plug-in</string>
+			<key>factoryFunction</key>
+			<string>AUWrapperFactory</string>
 			<key>manufacturer</key>
 			<string>Yg31</string>
 			<key>name</key>
@@ -18,27 +18,27 @@
 			<key>type</key>
 			<string>aufx</string>
 			<key>version</key>
-			<integer>0xFFFFFFFF</integer>
+			<integer>67329</integer>
 		</dict>
 	</array>
 	<key>AudioUnit SupportedNumChannels</key>
 	<array>
 		<dict>
-			<key>Outputs</key>
-			<string>2</string>
 			<key>Inputs</key>
+			<string>2</string>
+			<key>Outputs</key>
 			<string>2</string>
 		</dict>
 		<dict>
+			<key>Inputs</key>
+			<string>1</string>
 			<key>Outputs</key>
 			<string>0</string>
-			<key>Inputs</key>
-			<string>1</string>
 		</dict>
 		<dict>
-			<key>Outputs</key>
-			<string>1</string>
 			<key>Inputs</key>
+			<string>1</string>
+			<key>Outputs</key>
 			<string>1</string>
 		</dict>
 	</array>
@@ -48,15 +48,15 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>BNDL</string>
 	<key>CFBundleSignature</key>
 	<string>Yg31</string>
 	<key>CFBundleVersion</key>
-	<string>1.0</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 </dict>
 </plist>
