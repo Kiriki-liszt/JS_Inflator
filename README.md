@@ -23,26 +23,36 @@ Windows, Mac and Linux.
 
 * Windows  
 
-Unzip Win.zip from latest release and copy to "C:\Program Files\Common Files\VST3".  
+Unzip Windows version from latest Release and copy to "C:\Program Files\Common Files\VST3".  
 
 * MacOS  
 
-Unzip MacOS.zip from latest release and copy vst3 to "/Library/Audio/Plug-Ins/VST3" and component to "/Library/Audio/Plug-Ins/Components".  
+Unzip macOS version from latest Release and copy vst3 to "/Library/Audio/Plug-Ins/VST3" and component to "/Library/Audio/Plug-Ins/Components".  
 
 > If it doesn't go well, configure security options in console as  
 >
 > ``` console  
-> sudo xattr -r -d com.apple.quarantine /Library/Audio/Plug-Ins/VST3/InflatorPackage.vst3  
-> sudo xattr -r -d com.apple.quarantine /Library/Audio/Plug-Ins/Components/InflatorPackage.component
+> sudo xattr -r -d com.apple.quarantine /Library/Audio/Plug-Ins/VST3/JS_Inflator.vst3  
+> sudo xattr -r -d com.apple.quarantine /Library/Audio/Plug-Ins/Components/JS_Inflator.component
 >
-> sudo codesign --force --sign - /Library/Audio/Plug-Ins/VST3/InflatorPackage.vst3  
-> sudo codesign --force --sign - /Library/Audio/Plug-Ins/Components/InflatorPackage.component  
+> sudo codesign --force --sign - /Library/Audio/Plug-Ins/VST3/JS_Inflator.vst3  
+> sudo codesign --force --sign - /Library/Audio/Plug-Ins/Components/JS_Inflator.component  
 > ```  
 >
 > tested by @jonasborneland [here](https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/issues/12#issuecomment-1616671177)
 
-This is my first attempt with VSTSDK & VSTGUI.  
-Some codes might be inefficent...  
+* From v1.x.x to v2.x.x  
+
+Just delete old one and use new one!  
+Any DAW with steinberg standard will automatically replace old plugins while opeing project.  
+Settings are also transfered automatically.  
+
+Tested as working are;
+
+1. Windows Cubase 12, plugin v1.7.0 -> v2.0.0  
+2. macOS Cubase 12, plugin v1.7.0 -> v2.0.0  
+3. Windows Cubase 12, plugin v1.7.0 -> macOS Cubase 12, plugin v2.0.0  
+4. macOS Logic 10, plugin v1.7.0 -> v2.0.0  
 
 ## Licensing  
 
