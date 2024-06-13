@@ -1,4 +1,4 @@
-# JS_Inflator_to_VST2_VST3
+# JS Inflator
 
 JS Inflator is a copy of Sonox Inflator.  
 Runs in double precision 64-bit internal processing.  
