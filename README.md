@@ -49,10 +49,13 @@ Settings are also transfered automatically.
 
 Tested as working are;
 
-1. Windows Cubase 12, plugin v1.7.0 -> v2.0.0  
-2. macOS Cubase 12, plugin v1.7.0 -> v2.0.0  
-3. Windows Cubase 12, plugin v1.7.0 -> macOS Cubase 12, plugin v2.0.0  
-4. macOS Logic 10, plugin v1.7.0 -> v2.0.0  
+1. Cubase 12(Windows), plugin v1.7.0 -> v2.0.0  
+2. Cubase 12(macOS), plugin v1.7.0 -> v2.0.0  
+3. Cubase 12(Windows), plugin v1.7.0 -> Cubase 12(macOS), plugin v2.0.0  
+4. Logic 10, plugin v1.7.0 -> v2.0.0
+5. Ableton 12(Windows), plugin v1.7.0 -> v2.0.0
+6. Ableton 12(macOS), plugin v1.7.0 -> v2.0.0
+7. Ableton 12(Windows), plugin v1.7.0 -> Ableton 12(macOS), plugin v2.0.0  
 
 ## Licensing  
 
