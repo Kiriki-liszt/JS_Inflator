@@ -600,6 +600,7 @@
 							"orientation": "vertical",
 							"origin": "530, 247",
 							"size": "40, 392",
+							"sub-controller": "myVuMeterController",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
@@ -621,6 +622,7 @@
 							"orientation": "vertical",
 							"origin": "731, 247",
 							"size": "40, 392",
+							"sub-controller": "myVuMeterController",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
@@ -642,6 +644,7 @@
 							"orientation": "vertical",
 							"origin": "632, 249",
 							"size": "40, 392",
+							"sub-controller": "myVuMeterController",
 							"transparent": "false",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
