@@ -72,8 +72,6 @@ Tested as working are;
 VSTSDK 3.7.9 used  
 VSTGUI 4.12 used  
 
-Built as VST3, but compatible to VST2, too.  
-
 ## Version logs
 
 v1.0.0: intial try.  
