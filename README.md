@@ -47,6 +47,10 @@ Just delete old one and use new one!
 Any DAW with steinberg standard will automatically replace old plugins while opening project.  
 Settings are also transfered automatically.  
 
+Also, after plugin version change, do not open projects directly.  
+Please open a blank project first, and let DAW scan plugins and change from v1 to v2,
+and then we can safely open previous projects.  
+
 Tested as working are;
 
 1. Cubase 12(Windows), plugin v1.7.0 -> v2.0.0  
