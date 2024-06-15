@@ -261,27 +261,6 @@ namespace yg331 {
 		buff[0].resize(newSetup.maxSamplesPerBlock, 0.0);
 		buff[1].resize(newSetup.maxSamplesPerBlock, 0.0);
 
-		if (!dataExchange) {
-			auto configCallback = [this](
-				Vst::DataExchangeHandler::Config& config,
-				const Vst::ProcessSetup& setup
-				)
-				{
-					Vst::SpeakerArrangement arr;
-					getBusArrangement(Vst::BusDirections::kInput, 0, arr);
-					numChannels = static_cast<uint16_t> (Vst::SpeakerArr::getChannelCount(arr));
-					auto sampleSize = sizeof(float);
-
-					config.blockSize = (numChannels * sampleSize) + sizeof(DataBlock);
-					config.numBlocks = 2;
-					config.alignment = 16;
-					config.userContextID = 0;
-					return true;
-				};
-
-			dataExchange = std::make_unique<Vst::DataExchangeHandler>(this, configCallback);
-		}
-
 		//--- called before any processing ----
 		return AudioEffect::setupProcessing(newSetup);
 	}
@@ -307,10 +286,14 @@ namespace yg331 {
 	{
 		//--- called when the Plug-in is enable/disable (On/Off) -----
 
-		if (state)
-			dataExchange->onActivate(processSetup);
-		else
-			dataExchange->onDeactivate();
+		if (state) {
+			if (dataExchange)
+				dataExchange->onActivate(processSetup);
+		}
+		else {
+			if (dataExchange)
+				dataExchange->onDeactivate();
+		}
 
 		return AudioEffect::setActive(state);
 	}
