@@ -112,6 +112,8 @@ v2.0.0
 * Ctrl-Z: VU meter was using parameter to send data to Controller, and it caued 'undo history' to be filled with meter changes. Fixed.  
 * Meters are now following envelope detector with time contants.  
 
+v2.0.1: Fix - Crash for Ableton.  
+
 ## What I've learned
 
 * Volumefader  
