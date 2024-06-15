@@ -44,7 +44,7 @@ Unzip macOS version from latest Release and copy vst3 to "/Library/Audio/Plug-In
 * From v1.x.x to v2.x.x  
 
 Just delete old one and use new one!  
-Any DAW with steinberg standard will automatically replace old plugins while opeing project.  
+Any DAW with steinberg standard will automatically replace old plugins while opening project.  
 Settings are also transfered automatically.  
 
 Tested as working are;
