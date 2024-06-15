@@ -261,6 +261,27 @@ namespace yg331 {
 		buff[0].resize(newSetup.maxSamplesPerBlock, 0.0);
 		buff[1].resize(newSetup.maxSamplesPerBlock, 0.0);
 
+		if (!dataExchange) {
+			auto configCallback = [this](
+				Vst::DataExchangeHandler::Config& config,
+				const Vst::ProcessSetup& setup
+				)
+				{
+					Vst::SpeakerArrangement arr;
+					getBusArrangement(Vst::BusDirections::kInput, 0, arr);
+					numChannels = static_cast<uint16_t> (Vst::SpeakerArr::getChannelCount(arr));
+					auto sampleSize = sizeof(float);
+
+					config.blockSize = (numChannels * sampleSize) + sizeof(DataBlock);
+					config.numBlocks = 2;
+					config.alignment = 16;
+					config.userContextID = 0;
+					return true;
+				};
+
+			dataExchange = std::make_unique<Vst::DataExchangeHandler>(this, configCallback);
+		}
+
 		//--- called before any processing ----
 		return AudioEffect::setupProcessing(newSetup);
 	}
@@ -718,8 +739,6 @@ namespace yg331 {
 		curveC =   curvepct - 0.5; 
 		curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;	
 
-		Vst::Sample64 tmpIn  = 0.0; /*/ VuPPM /*/
-		Vst::Sample64 tmpOut = 0.0; /*/ VuPPM /*/
 		Meter = 0.0;
 		double t = 0.0;
 		for (int32 channel = 0; channel < numChannels; channel++)
@@ -847,7 +866,6 @@ namespace yg331 {
 				latency_q[channel].pop_front();
 				*buff_in = delayed;  buff_in++;
 				inputSample = (delayed * (1.0 - fEffect)) + (inputSample * fEffect);
-				Vst::Sample64 sam = *ptrIn;
 				t += std::abs(inputSample) - std::abs(delayed);
 				// Meter += 20.0 * (std::log10(std::abs(inputSample)) - std::log10(std::abs(delayed)));
 

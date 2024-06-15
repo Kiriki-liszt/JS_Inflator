@@ -10,13 +10,15 @@
 #include "public.sdk/source/vst/vstaudioeffect.h"
 
 #include <algorithm>
-#include <CDSPResampler.h>
 #include <cmath>
+#include <memory>
+#include <deque>
+
 #ifndef M_PI
 #define M_PI        3.14159265358979323846264338327950288   /* pi             */
 #endif
-#include <memory>
-#include <deque>
+
+#include <CDSPResampler.h>
 
 namespace yg331 {
 

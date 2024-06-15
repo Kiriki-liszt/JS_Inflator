@@ -28,7 +28,7 @@ namespace yg331 {
 		if (block.blockID != Steinberg::Vst::InvalidDataExchangeBlockID)
 			return reinterpret_cast<DataBlock*> (block.data);
 		return nullptr;
-	}
+	} 
 
 	//------------------------------------------------------------------------
 } // Steinberg::Tutorial
