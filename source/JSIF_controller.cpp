@@ -625,8 +625,8 @@ tresult JSIF_Controller::receiveText(const char* text)
 	{	
 		// Latency report
 		if (strcmp("OS\n", text)) {
-			FUnknownPtr<Vst::IComponentHandler>handler(componentHandler);
-			handler->restartComponent(Vst::kLatencyChanged);
+            getComponentHandler()->restartComponent(Vst::kLatencyChanged);
+            //FDebugPrint("[ FDebugPrint ] restartComponent\n");
 		}
 	}		
 	return kResultOk;

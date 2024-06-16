@@ -239,34 +239,14 @@ namespace yg331 {
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API JSIF_Processor::setupProcessing(Vst::ProcessSetup& newSetup)
 	{
-		Vst::SpeakerArrangement arr;
-		getBusArrangement(Vst::BusDirections::kInput, 0, arr);
-		numChannels = static_cast<uint16_t> (Vst::SpeakerArr::getChannelCount(arr));
-
-		for (int32 channel = 0; channel < numChannels; channel++)
-			Band_Split_set(&Band_Split[channel], 240.0, 2400.0, newSetup.sampleRate);
-
-		VuInput.setChannel(numChannels);
-		VuInput.setType(LevelEnvelopeFollower::Peak);
-		VuInput.setDecay(3.0);
-		VuInput.prepare(newSetup.sampleRate);
-		
-		VuOutput.setChannel(numChannels);
-		VuOutput.setType(LevelEnvelopeFollower::Peak);
-		VuOutput.setDecay(3.0);
-		VuOutput.prepare(newSetup.sampleRate);
-
-		fInputVu.resize(numChannels, 0.0);
-		fOutputVu.resize(numChannels, 0.0);
-		buff[0].resize(newSetup.maxSamplesPerBlock, 0.0);
-		buff[1].resize(newSetup.maxSamplesPerBlock, 0.0);
-
+        notSetupProcessing(newSetup);
 		//--- called before any processing ----
 		return AudioEffect::setupProcessing(newSetup);
 	}
 
 	uint32 PLUGIN_API JSIF_Processor::getLatencySamples()
 	{
+        //FDebugPrint("[ FDebugPrint ] getLatencySamples\n");
 		if (fParamPhase) {
 			if      (fParamOS == overSample_1x) return 0;
 			else if (fParamOS == overSample_2x) return latency_r8b_x2;
@@ -294,7 +274,7 @@ namespace yg331 {
 			if (dataExchange)
 				dataExchange->onDeactivate();
 		}
-
+        //FDebugPrint("[ FDebugPrint ] setActive - %s\n", state?"true":"false");
 		return AudioEffect::setActive(state);
 	}
 
@@ -319,6 +299,12 @@ namespace yg331 {
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API JSIF_Processor::process(Vst::ProcessData& data)
 	{		
+        if(!setupProcessing_checked)
+        {
+            notSetupProcessing(processSetup);
+        }
+        
+        
 		Vst::IParameterChanges* paramChanges = data.inputParameterChanges;
 
 		if (paramChanges)
@@ -347,9 +333,14 @@ namespace yg331 {
 						case kParamIn:     bIn         = (value > 0.5f); break;
 						case kParamZoom:   fParamZoom  = value;          break;
 						case kParamSplit:  bSplit      = (value > 0.5f); break;
-                        case kParamPhase:  fParamPhase = (value > 0.5f);       sendTextMessage("OS"); break;
-                        case kParamOS:     
+                        case kParamPhase:
+                                fParamPhase = (value > 0.5f);
+                                setupProcessing_checked = false; 
+                                sendTextMessage("OS");
+                                break;
+                        case kParamOS:
                                 fParamOS    = static_cast<overSample>(Steinberg::FromNormalized<ParamValue> (value, overSample_num));
+                                setupProcessing_checked = false;
                                 sendTextMessage("OS");
                                 break;
 						}

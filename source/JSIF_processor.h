@@ -275,6 +275,36 @@ protected:
 	void latencyBypass(SampleType** inputs, SampleType** outputs, Steinberg::int32 numChannels, Steinberg::Vst::SampleRate getSampleRate, long long sampleFrames);
 
 	Steinberg::Vst::Sample64 process_inflator(Steinberg::Vst::Sample64 inputSample);
+    
+    void notSetupProcessing(Steinberg::Vst::ProcessSetup& newSetup)
+    {
+        Steinberg::Vst::SpeakerArrangement arr;
+        getBusArrangement(Steinberg::Vst::BusDirections::kInput, 0, arr);
+        numChannels = static_cast<uint16_t> (Steinberg::Vst::SpeakerArr::getChannelCount(arr));
+
+        for (Steinberg::int32 channel = 0; channel < numChannels; channel++)
+            Band_Split_set(&Band_Split[channel], 240.0, 2400.0, newSetup.sampleRate);
+
+        VuInput.setChannel(numChannels);
+        VuInput.setType(LevelEnvelopeFollower::Peak);
+        VuInput.setDecay(3.0);
+        VuInput.prepare(newSetup.sampleRate);
+        
+        VuOutput.setChannel(numChannels);
+        VuOutput.setType(LevelEnvelopeFollower::Peak);
+        VuOutput.setDecay(3.0);
+        VuOutput.prepare(newSetup.sampleRate);
+
+        fInputVu.resize(numChannels, 0.0);
+        fOutputVu.resize(numChannels, 0.0);
+        buff[0].resize(newSetup.maxSamplesPerBlock, 0.0);
+        buff[1].resize(newSetup.maxSamplesPerBlock, 0.0);
+        
+        setupProcessing_checked = true;
+
+        //FDebugPrint("[ FDebugPrint ] setupProcessing\n");
+    };
+    Steinberg::TBool setupProcessing_checked = false;
 
 	inline void Band_Split_set(Band_Split_t* filter, Steinberg::Vst::ParamValue Fc_L, Steinberg::Vst::ParamValue Fc_H, Steinberg::Vst::SampleRate Fs) {
 		(*filter).LP.C = 0.5 * tan(M_PI * ((Fc_L / Fs) - 0.25)) + 0.5;
