@@ -188,6 +188,11 @@ Now it is free of Phase issuses.
 Restarting plugin should be from Contorller side.  
 One example would be using 'sendTextMessage' and 'receiveText' pair, so when Processor detects parameter change related to latency, it sends textMessage and Controller receives it and restarts.  
 
+However, In AUv2, the restartComponent should call setupProcess, but it does not...  
+Due to this, we should move any initializing into new custom function, and call it in setupProcess and process both, with checking if that new function is called.  
+
+[https://forums.steinberg.net/t/reporting-latency-change/201601/2](https://forums.steinberg.net/t/reporting-latency-change/201601/2)  
+
 * Knob Modes
 
 Specifying knob modes at 'createView' in 'controller.cpp' makes knobs work in selected mode.  
