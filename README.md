@@ -191,7 +191,9 @@ One example would be using 'sendTextMessage' and 'receiveText' pair, so when Pro
 However, In AUv2, the restartComponent should call setupProcess, but it does not...  
 Due to this, we should move any initializing into new custom function, and call it in setupProcess and process both, with checking if that new function is called.  
 
-[https://forums.steinberg.net/t/reporting-latency-change/201601/2](https://forums.steinberg.net/t/reporting-latency-change/201601/2)  
+[https://forums.steinberg.net/t/reporting-latency-change/201601](https://forums.steinberg.net/t/reporting-latency-change/201601)  
+[https://forums.steinberg.net/t/how-to-use-restartcomponent-and-which-flags-are-the-right-one-when-changing-all-characteristics-parameters-except-size/202031](https://forums.steinberg.net/t/how-to-use-restartcomponent-and-which-flags-are-the-right-one-when-changing-all-characteristics-parameters-except-size/202031)  
+[https://steinbergmedia.github.io/vst3_dev_portal/pages/Technical+Documentation/Workflow+Diagrams/Audio+Processor+Call+Sequence.html](https://steinbergmedia.github.io/vst3_dev_portal/pages/Technical+Documentation/Workflow+Diagrams/Audio+Processor+Call+Sequence.html)  
 
 * Knob Modes
 
