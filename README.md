@@ -182,7 +182,13 @@ Now it is free of Phase issuses.
 
 8x Lin-phase  
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_8x_Lin.png"  width="400"/>  
-  
+
+* SIMD optimization
+
+To my surprise, manual SSE2 SIMD optimization was slower then compiler's O3 maximum optimization.  
+The compiler's vectorization was more efficient than mine... 
+Anyone trying to do so, check and compare!  
+
 * Latency change reporting  
 
 Restarting plugin should be from Contorller side.  
