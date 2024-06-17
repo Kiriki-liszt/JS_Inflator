@@ -12,9 +12,6 @@
 #include "public.sdk/source/vst/vstaudioprocessoralgo.h"
 #include "public.sdk/source/vst/vsthelpers.h"
 
-//#define SIMDE_ENABLE_NATIVE_ALIASES
-//#include "simde/x86/sse2.h"
-
 using namespace Steinberg;
 
 namespace yg331 {

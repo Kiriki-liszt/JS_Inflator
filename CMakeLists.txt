@@ -104,14 +104,6 @@ target_link_libraries(JS_Inflator
         sdk
 )
 
-set(SIMDE_PATH "${PROJECT_BINARY_DIR}/../libs/simde" CACHE STRING "Path to simde library source tree")
-add_library(simde INTERFACE)
-target_include_directories(simde INTERFACE ${SIMDE_PATH})
-target_link_libraries(JS_Inflator
-    PRIVATE 
-        simde
-)
-
 set(R8B_PATH "${PROJECT_BINARY_DIR}/../libs/r8brain-free-src" CACHE STRING "Path to r8brain-free-src library source tree")
 
 file(WRITE "${R8B_PATH}/CMakeLists.txt"
