@@ -12,43 +12,8 @@
 #include "public.sdk/source/vst/vstaudioprocessoralgo.h"
 #include "public.sdk/source/vst/vsthelpers.h"
 
-#define SIMDE_ENABLE_NATIVE_ALIASES
-#include "simde/x86/sse2.h"
-
-
-#if defined( _WIN32 )
-    #include <windows.h>
-#else // defined( _WIN32 )
-    #include <pthread.h>
-#endif // defined( _WIN32 )
-
-#if defined( __SSE4_2__ ) || defined( __SSE4_1__ ) || \
-    defined( __SSSE3__ ) || defined( __SSE3__ ) || defined( __SSE2__ ) || \
-    defined( __x86_64__ ) || defined( __amd64 ) || defined( _M_X64 ) || \
-    defined( _M_AMD64 ) || ( defined( _M_IX86_FP ) && _M_IX86_FP == 2 )
-
-    #if defined( _MSC_VER )
-        #include <intrin.h>
-    #else // defined( _MSC_VER )
-        #include <emmintrin.h>
-    #endif // defined( _MSC_VER )
-
-    #define R8B_SSE2
-    #define R8B_SIMD_ISH
-
-#elif defined( __aarch64__ ) || defined( __arm64 )
-
-    #include <arm_neon.h>
-
-    #define R8B_NEON
-
-    #if !defined( __APPLE__ )
-        #define R8B_SIMD_ISH // Shuffled interpolation is inefficient on M1.
-    #endif // !defined( __APPLE__ )
-
-#endif // AArch64
-
-
+//#define SIMDE_ENABLE_NATIVE_ALIASES
+//#include "simde/x86/sse2.h"
 
 using namespace Steinberg;
 
@@ -130,6 +95,52 @@ namespace yg331 {
 			for (int i = 0; i < upTap_81; i++) upSample_81[channel].coef[i] *= 2.0;
 			for (int i = 0; i < upTap_82; i++) upSample_82[channel].coef[i] *= 2.0;
 			for (int i = 0; i < upTap_83; i++) upSample_83[channel].coef[i] *= 2.0;
+            
+            upSample_21[channel].TAP_SIZE = upTap_21;
+            upSample_41[channel].TAP_SIZE = upTap_41;
+            upSample_42[channel].TAP_SIZE = upTap_42;
+            upSample_81[channel].TAP_SIZE = upTap_81;
+            upSample_82[channel].TAP_SIZE = upTap_82;
+            upSample_83[channel].TAP_SIZE = upTap_83;
+            dnSample_21[channel].TAP_SIZE = dnTap_21;
+            dnSample_41[channel].TAP_SIZE = dnTap_41;
+            dnSample_42[channel].TAP_SIZE = dnTap_42;
+            dnSample_81[channel].TAP_SIZE = dnTap_81;
+            dnSample_82[channel].TAP_SIZE = dnTap_82;
+            dnSample_83[channel].TAP_SIZE = dnTap_83;
+
+            upSample_21[channel].TAP_HALF = upTap_21 / 2;
+            upSample_41[channel].TAP_HALF = upTap_41 / 2;
+            upSample_42[channel].TAP_HALF = upTap_42 / 2;
+            upSample_81[channel].TAP_HALF = upTap_81 / 2;
+            upSample_82[channel].TAP_HALF = upTap_82 / 2;
+            upSample_83[channel].TAP_HALF = upTap_83 / 2;
+            dnSample_21[channel].TAP_HALF = dnTap_21 / 2;
+            dnSample_41[channel].TAP_HALF = dnTap_41 / 2;
+            dnSample_42[channel].TAP_HALF = dnTap_42 / 2;
+            dnSample_81[channel].TAP_HALF = dnTap_81 / 2;
+            dnSample_82[channel].TAP_HALF = dnTap_82 / 2;
+            dnSample_83[channel].TAP_HALF = dnTap_83 / 2;
+
+            upSample_21[channel].TAP_HALF_HALF = upSample_21->TAP_HALF / 2;
+            upSample_41[channel].TAP_HALF_HALF = upSample_41->TAP_HALF / 2;
+            upSample_42[channel].TAP_HALF_HALF = upSample_42->TAP_HALF / 2;
+            upSample_81[channel].TAP_HALF_HALF = upSample_81->TAP_HALF / 2;
+            upSample_82[channel].TAP_HALF_HALF = upSample_82->TAP_HALF / 2;
+            upSample_83[channel].TAP_HALF_HALF = upSample_83->TAP_HALF / 2;
+            dnSample_21[channel].TAP_HALF_HALF = dnSample_21->TAP_HALF / 2;
+            dnSample_41[channel].TAP_HALF_HALF = dnSample_41->TAP_HALF / 2;
+            dnSample_42[channel].TAP_HALF_HALF = dnSample_42->TAP_HALF / 2;
+            dnSample_81[channel].TAP_HALF_HALF = dnSample_81->TAP_HALF / 2;
+            dnSample_82[channel].TAP_HALF_HALF = dnSample_82->TAP_HALF / 2;
+            dnSample_83[channel].TAP_HALF_HALF = dnSample_83->TAP_HALF / 2;
+
+            upSample_21[channel].TAP_CONDITON = upTap_21 % 4;
+            upSample_41[channel].TAP_CONDITON = upTap_41 % 4;
+            upSample_42[channel].TAP_CONDITON = upTap_42 % 4;
+            upSample_81[channel].TAP_CONDITON = upTap_81 % 4;
+            upSample_82[channel].TAP_CONDITON = upTap_82 % 4;
+            upSample_83[channel].TAP_CONDITON = upTap_83 % 4;
 		}
 
 		// latency_r8b_x2 = -1 + 2 * upSample_2x_Lin[0].getInLenBeforeOutPos(1) +1;
@@ -905,141 +916,109 @@ namespace yg331 {
 	}
 
 	/// Fir Linear Oversamplers
+void HB_upsample(Flt* filter, Vst::Sample64* out, int32 channel)
+{
+    // half-band
+    double acc_1 = 0.0;
+    double acc_2 = 0.0;
+    for (int coef = 0, buff = 0; coef < filter->TAP_HALF - 1; coef += 2, buff++)
+    {
+        acc_1 += filter[channel].coef[coef + 0] * (filter[channel].buff[buff + 0] + filter[channel].buff[filter->TAP_HALF - 1 - buff + 1]);
+        acc_2 += filter[channel].coef[coef + 1] * (filter[channel].buff[buff + 0] + filter[channel].buff[filter->TAP_HALF - 1 - buff - 0]);
+    }
+    if (filter->TAP_CONDITON == 1)
+    {
+        acc_1 += filter[channel].coef[filter->TAP_HALF] * filter[channel].buff[filter->TAP_HALF_HALF];
+    }
+    else if (filter->TAP_CONDITON == 3)
+    {
+        acc_1 += filter[channel].coef[filter->TAP_HALF - 1] * (filter[channel].buff[filter->TAP_HALF_HALF - 0] + filter[channel].buff[filter->TAP_HALF_HALF + 1]);
+        acc_2 += filter[channel].coef[filter->TAP_HALF + 0] *  filter[channel].buff[filter->TAP_HALF_HALF];
+    }
+    out[0] = acc_1;
+    out[1] = acc_2;
+}
+void HB_dnsample(Flt* filter, Vst::Sample64* out, int32 channel)
+{
+    // half-band
+    double acc = 0.0;
+    for (int i = 0; i < filter->TAP_HALF; i++)
+    {
+        acc += filter[channel].coef[i + 0] * (filter[channel].buff[2 + i + 0] + filter[channel].buff[2 + filter->TAP_SIZE - 1 - i + 0]);
+    }
+    acc += filter[channel].coef[filter->TAP_HALF] * filter[channel].buff[2 + filter->TAP_HALF];
+    *out = acc;
+}
 
 	// 1 in 2 out
 	void JSIF_Processor::Fir_x2_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
 	{
-		Vst::Sample64 inputSample = *in;
+        static constexpr size_t upTap_21_size = sizeof(double) * (upTap_21 - 1) / 2;
 
-		const size_t upTap_21_size = sizeof(double) * (upTap_21 - 1) / 2;
-		memmove(upSample_21[channel].buff + 1, upSample_21[channel].buff, upTap_21_size);
-		upSample_21[channel].buff[0] = inputSample;
-		__m128d _acc_a = _mm_setzero_pd();
-		for (int i = 0, j = 0; i < upTap_21; i += 4, j += 2) {
-			__m128d coef_a = _mm_load_pd(&upSample_21[channel].coef[i]);
-			__m128d coef_b = _mm_load_pd(&upSample_21[channel].coef[i + 2]);
-			__m128d buff_a = _mm_load_pd(&upSample_21[channel].buff[j]);
-			__m128d _mul_a = _mm_mul_pd(coef_a, _mm_shuffle_pd(buff_a, buff_a, 0)); 
-			__m128d _mul_b = _mm_mul_pd(coef_b, _mm_shuffle_pd(buff_a, buff_a, 3)); 
-			        _acc_a = _mm_add_pd(_acc_a, _mul_a);
-			        _acc_a = _mm_add_pd(_acc_a, _mul_b);
-		}
-		_mm_store_pd(out, _acc_a);
+        memmove(upSample_21[channel].buff + 1, upSample_21[channel].buff, upTap_21_size);
+        upSample_21[channel].buff[0] = *in;
+        HB_upsample(upSample_21, out, channel);
+        
+        return;
 	}
 	// 1 in 4 out
 	void JSIF_Processor::Fir_x4_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
 	{
-		Vst::Sample64 inputSample = *in;
+        const size_t  upTap_41_size = sizeof(double) * (upTap_41 - 1) / 2;
+        memmove(upSample_41[channel].buff + 1, upSample_41[channel].buff, upTap_41_size);
+        upSample_41[channel].buff[0] = *in;
 
-		const size_t  upTap_41_size = sizeof(double) * (upTap_41 - 1)/2;
-		memmove(upSample_41[channel].buff + 1, upSample_41[channel].buff, upTap_41_size);
-		upSample_41[channel].buff[0] = inputSample;
-		__m128d _acc_in = _mm_setzero_pd();
-		for (int i = 0, j = 0; i < upTap_41; i += 4, j += 2) {
-			__m128d coef_a = _mm_load_pd(&upSample_41[channel].coef[i]);
-			__m128d coef_b = _mm_load_pd(&upSample_41[channel].coef[i+2]);
-			__m128d buff = _mm_load_pd(&upSample_41[channel].buff[j]);
-			__m128d _mul_a = _mm_mul_pd(coef_a, _mm_shuffle_pd(buff, buff, 0));
-			__m128d _mul_b = _mm_mul_pd(coef_b, _mm_shuffle_pd(buff, buff, 3));
-			_acc_in = _mm_add_pd(_acc_in, _mul_a);
-			_acc_in = _mm_add_pd(_acc_in, _mul_b);
-		}
+        Vst::Sample64 inter[2];
+        HB_upsample(upSample_41, inter, channel);
 
-		const size_t upTap_42_size = sizeof(double) * (upTap_42);
-		memmove(upSample_42[channel].buff + 4, upSample_42[channel].buff, upTap_42_size);
-		_mm_storel_pd(upSample_42[channel].buff + 3, _acc_in);
-		_mm_storel_pd(upSample_42[channel].buff + 2, _acc_in);
-		_mm_storeh_pd(upSample_42[channel].buff + 1, _acc_in);
-		_mm_storeh_pd(upSample_42[channel].buff    , _acc_in);
-		__m128d _acc_in_a = _mm_setzero_pd();
-		__m128d _acc_in_b = _mm_setzero_pd();
-		for (int i = 0; i < upTap_42; i += 2) {
-			__m128d coef_a = _mm_load_pd(&upSample_42[channel].coef[i    ]);
-			__m128d buff_a = _mm_load_pd(&upSample_42[channel].buff[i + 2]);
-			//__m128d coef_b = _mm_load_pd(&upSample_42[channel].coef[i    ]);
-			__m128d buff_b = _mm_load_pd(&upSample_42[channel].buff[i    ]);
-			__m128d _mul_a = _mm_mul_pd(coef_a, buff_a);
-			__m128d _mul_b = _mm_mul_pd(coef_a, buff_b);
-			     _acc_in_a = _mm_add_pd(_acc_in_a, _mul_a);
-			     _acc_in_b = _mm_add_pd(_acc_in_b, _mul_b);
-		}
-		_mm_store_pd(out, _acc_in_a);
-		_mm_store_pd(out + 2, _acc_in_b);
+        const size_t upTap_42_size = sizeof(double) * (upTap_42 - 1) / 2;
+        memmove(upSample_42[channel].buff + 1, upSample_42[channel].buff, upTap_42_size);
+        upSample_42[channel].buff[0] = inter[0];
+        HB_upsample(upSample_42, &out[0], channel);
+
+        memmove(upSample_42[channel].buff + 1, upSample_42[channel].buff, upTap_42_size);
+        upSample_42[channel].buff[0] = inter[1];
+        HB_upsample(upSample_42, &out[2], channel);
+            
+        return;
 	}
 	// 1 in 8 out
 	void JSIF_Processor::Fir_x8_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
 	{
 		Vst::Sample64 inputSample = *in;
 
+        Vst::Sample64 inter_81[2];
 		const size_t upTap_81_size = sizeof(double) * (upTap_81 - 1) / 2;
 		memmove(upSample_81[channel].buff + 1, upSample_81[channel].buff, upTap_81_size);
-		upSample_81[channel].buff[0] = inputSample;
-		__m128d _acc_in_1 = _mm_setzero_pd();
-		for (int i = 0, j = 0; i < upTap_81; i += 4, j += 2) {
-			__m128d coef_1 = _mm_load_pd(&upSample_81[channel].coef[i]);
-			__m128d coef_2 = _mm_load_pd(&upSample_81[channel].coef[i+2]);
-			__m128d buff_1 = _mm_load_pd(&upSample_81[channel].buff[j]);
-			__m128d _mul_1 = _mm_mul_pd(coef_1, _mm_shuffle_pd(buff_1, buff_1, 0));
-			__m128d _mul_2 = _mm_mul_pd(coef_2, _mm_shuffle_pd(buff_1, buff_1, 3));
-			     _acc_in_1 = _mm_add_pd(_acc_in_1, _mul_1);
-			     _acc_in_1 = _mm_add_pd(_acc_in_1, _mul_2);
-		}
+		upSample_81[channel].buff[0] = *in;
+        HB_upsample(upSample_81, inter_81, channel);
+        
+        Vst::Sample64 inter_82[4];
+        const size_t upTap_82_size = sizeof(double) * (upTap_82 - 1) / 2;
+        memmove(upSample_82[channel].buff + 1, upSample_82[channel].buff, upTap_82_size);
+        upSample_82[channel].buff[0] = inter_81[0];
+        HB_upsample(upSample_82, &inter_82[0], channel);
 
-		const size_t upTap_82_size = sizeof(double) * (upTap_82);
-		memmove(upSample_82[channel].buff + 4, upSample_82[channel].buff, upTap_82_size);
-		_mm_storel_pd(&upSample_82[channel].buff[3], _acc_in_1);
-		_mm_storel_pd(&upSample_82[channel].buff[2], _acc_in_1);
-		_mm_storeh_pd(&upSample_82[channel].buff[1], _acc_in_1);
-		_mm_storeh_pd(&upSample_82[channel].buff[0], _acc_in_1);
-		__m128d _acc_in_2a = _mm_setzero_pd();
-		__m128d _acc_in_2b = _mm_setzero_pd();
-		for (int i = 0; i < upTap_82; i += 2) {
-			__m128d coef_2a = _mm_load_pd(&upSample_82[channel].coef[i    ]);
-			__m128d buff_2a = _mm_load_pd(&upSample_82[channel].buff[i + 2]);
-			//__m128d coef_2b = _mm_load_pd(&upSample_82[channel].coef[i    ]);
-			__m128d buff_2b = _mm_load_pd(&upSample_82[channel].buff[i    ]);
-			__m128d _mul_2a = _mm_mul_pd(coef_2a, buff_2a);
-			__m128d _mul_2b = _mm_mul_pd(coef_2a, buff_2b);
-			     _acc_in_2a = _mm_add_pd(_acc_in_2a, _mul_2a);
-			     _acc_in_2b = _mm_add_pd(_acc_in_2b, _mul_2b);
-		}
-
-		const size_t upTap_83_size = sizeof(double) * (upTap_83);
-		memmove(upSample_83[channel].buff + 8, upSample_83[channel].buff, upTap_83_size);
-		_mm_storel_pd(&upSample_83[channel].buff[7], _acc_in_2a);
-		_mm_storel_pd(&upSample_83[channel].buff[6], _acc_in_2a);
-		_mm_storeh_pd(&upSample_83[channel].buff[5], _acc_in_2a);
-		_mm_storeh_pd(&upSample_83[channel].buff[4], _acc_in_2a);
-		_mm_storel_pd(&upSample_83[channel].buff[3], _acc_in_2b);
-		_mm_storel_pd(&upSample_83[channel].buff[2], _acc_in_2b);
-		_mm_storeh_pd(&upSample_83[channel].buff[1], _acc_in_2b);
-		_mm_storeh_pd(&upSample_83[channel].buff[0], _acc_in_2b);
-		__m128d _acc_in_3a = _mm_setzero_pd();
-		__m128d _acc_in_3b = _mm_setzero_pd();
-		__m128d _acc_in_3c = _mm_setzero_pd();
-		__m128d _acc_in_3d = _mm_setzero_pd();
-		for (int i = 0; i < upTap_83; i += 2) { // make_8(upTap_83) == sizeof_buff > upTap_83 + 6
-			__m128d coef_3a = _mm_load_pd(&upSample_83[channel].coef[i    ]);
-			__m128d buff_3a = _mm_load_pd(&upSample_83[channel].buff[i + 6]);
-			//__m128d coef_3b = _mm_load_pd(&upSample_83[channel].coef[i    ]);
-			__m128d buff_3b = _mm_load_pd(&upSample_83[channel].buff[i + 4]);
-			//__m128d coef_3c = _mm_load_pd(&upSample_83[channel].coef[i    ]);
-			__m128d buff_3c = _mm_load_pd(&upSample_83[channel].buff[i + 2]);
-			//__m128d coef_3d = _mm_load_pd(&upSample_83[channel].coef[i    ]);
-			__m128d buff_3d = _mm_load_pd(&upSample_83[channel].buff[i    ]);
-			__m128d _mul_3a = _mm_mul_pd(coef_3a, buff_3a);
-			__m128d _mul_3b = _mm_mul_pd(coef_3a, buff_3b);
-			__m128d _mul_3c = _mm_mul_pd(coef_3a, buff_3c);
-			__m128d _mul_3d = _mm_mul_pd(coef_3a, buff_3d);
-			     _acc_in_3a = _mm_add_pd(_acc_in_3a, _mul_3a);
-			     _acc_in_3b = _mm_add_pd(_acc_in_3b, _mul_3b);
-			     _acc_in_3c = _mm_add_pd(_acc_in_3c, _mul_3c);
-			     _acc_in_3d = _mm_add_pd(_acc_in_3d, _mul_3d);
-		}
-		_mm_store_pd(out    , _acc_in_3a);
-		_mm_store_pd(out + 2, _acc_in_3b);
-		_mm_store_pd(out + 4, _acc_in_3c);
-		_mm_store_pd(out + 6, _acc_in_3d);
+        memmove(upSample_82[channel].buff + 1, upSample_82[channel].buff, upTap_82_size);
+        upSample_82[channel].buff[0] = inter_81[1];
+        HB_upsample(upSample_82, &inter_82[2], channel);
+        
+		const size_t upTap_83_size = sizeof(double) * (upTap_83 - 1) / 2;
+		memmove(upSample_83[channel].buff + 1, upSample_83[channel].buff, upTap_83_size);
+        upSample_83[channel].buff[0] = inter_82[0];
+        HB_upsample(upSample_83, &out[0], channel);
+        
+        memmove(upSample_83[channel].buff + 1, upSample_83[channel].buff, upTap_83_size);
+        upSample_83[channel].buff[0] = inter_82[0];
+        HB_upsample(upSample_83, &out[2], channel);
+        
+        memmove(upSample_83[channel].buff + 1, upSample_83[channel].buff, upTap_83_size);
+        upSample_83[channel].buff[0] = inter_82[0];
+        HB_upsample(upSample_83, &out[4], channel);
+                
+        memmove(upSample_83[channel].buff + 1, upSample_83[channel].buff, upTap_83_size);
+        upSample_83[channel].buff[0] = inter_82[0];
+        HB_upsample(upSample_83, &out[6], channel);
 	}
 
 
@@ -1051,188 +1030,73 @@ namespace yg331 {
         dnSample_21[channel].buff[2] = in[0];
         dnSample_21[channel].buff[1] = in[1];
 
-        enum {
-            a0b0, // 00(2)
-            a1b0, // 01(2) == loadr
-            a0b1, // 10(2)
-            a1b1  // 11(2)
-        };
-        static constexpr int TAP_HALF = dnTap_21 / 2;
-        static constexpr int TAP_CONDITON = dnTap_21 % 4;
+        HB_dnsample(dnSample_21, out, channel);
 
-        double acc_a[2] = { 0,0 };
-
-#if defined( R8B_SSE2 )
-
-        __m128d _acc_a = _mm_setzero_pd();
-        for (int i = 0; i < TAP_HALF - 1; i += 2) {
-            __m128d coef_a = _mm_load_pd(&dnSample_21[channel].coef[i]);
-            __m128d buff_a = _mm_load_pd(&dnSample_21[channel].buff[2 + i]);
-            __m128d buff_ = _mm_loadu_pd(&dnSample_21[channel].buff[2 + dnTap_21 - 1 - i - 1]); // may be unaligned
-            __m128d buff_b = _mm_shuffle_pd(buff_, buff_, a1b0);  // == loadr
-            __m128d _mul_a = _mm_mul_pd(coef_a, _mm_add_pd(buff_a, buff_b));
-            _acc_a = _mm_add_pd(_acc_a, _mul_a);
-        }
-        _mm_store_pd(acc_a, _acc_a);
-
-#elif defined( R8B_NEON )
-
-        float64x2_t _acc_a = vdupq_n_f64(0.0); // == set
-        for (int i = 0; i < TAP_HALF - 1; i += 2) {
-            float64x2_t coef_a = vld1q_f64(&dnSample_21[channel].coef[i]);
-            float64x2_t buff_a = vld1q_f64(&dnSample_21[channel].buff[2 + i]);
-            float64x2_t buff_ =  vld1q_f64(&dnSample_21[channel].buff[2 + dnTap_21 - 1 - i - 1]); // may be unaligned
-            float64x2_t buff_b = vextq_f64(buff_, buff_, a1b0);  // == loadr
-            float64x2_t _mul_a = vmulq_f64(coef_a, vaddq_f64(buff_a, buff_b));
-            _acc_a = vaddq_f64(_acc_a, _mul_a);
-        }
-        vst1q_f64(acc_a, _acc_a);
-        
-        // FDebugBreak("Should not be accesed, it will stop build");
-
-#else // SIMD
-
-        FDebugBreak("Should not be accesed, it will stop build");
-
-#endif // SIMD
-        
-#if defined(SIMDE_X86_SSE2_NATIVE)
-        FDebugBreak("Should not be accesed, it will stop build");
-#elif defined(SIMDE_ARM_NEON_A64V8_NATIVE)
-    FDebugBreak("Should not be accesed, it will stop build");
-#endif
-            
-        double acc = acc_a[0] + acc_a[1];
-        if (TAP_CONDITON == 1)
-        {
-            acc += dnSample_21[channel].coef[TAP_HALF] * dnSample_21[channel].buff[2 + TAP_HALF];
-        }
-        else if (TAP_CONDITON == 3)
-        {
-            acc += dnSample_21[channel].coef[TAP_HALF - 1] * (dnSample_21[channel].buff[2 + TAP_HALF - 1] + dnSample_21[channel].buff[2 + TAP_HALF + 1]);
-            acc += dnSample_21[channel].coef[TAP_HALF - 0] *  dnSample_21[channel].buff[2 + TAP_HALF];
-        }
-        *out = acc;
         return;
 	}
 	// 4 in 1 out
 	void JSIF_Processor::Fir_x4_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
 	{
-		double inter_42[4];
-		double inter_21[2];
+        Vst::Sample64 inter[2];
+        const size_t dnTap_42_size = sizeof(double) * (dnTap_42-2);
+        memmove(dnSample_42[channel].buff + 3, dnSample_42[channel].buff + 1, dnTap_42_size);
+        dnSample_42[channel].buff[2] = in[0];
+        dnSample_42[channel].buff[1] = in[1];
+        HB_dnsample(dnSample_42, &inter[0], channel);
 
-		const size_t dnTap_42_size = sizeof(double) * (dnTap_42);
-		memmove(dnSample_42[channel].buff + 4, dnSample_42[channel].buff, dnTap_42_size);
-		dnSample_42[channel].buff[4] = in[0]; // buff[3]
-		dnSample_42[channel].buff[3] = in[1];
-		dnSample_42[channel].buff[2] = in[2];
-		dnSample_42[channel].buff[1] = in[3];
-		__m128d _acc_out_a = _mm_setzero_pd();
-		__m128d _acc_out_b = _mm_setzero_pd();
-		for (int i = 0; i < dnTap_42; i += 2) { // tt >= dnTap_42+3
-			__m128d coef_a = _mm_load_pd(&dnSample_42[channel].coef[i    ]);
-			__m128d buff_a = _mm_load_pd(&dnSample_42[channel].buff[i + 4]); 
-			//__m128d coef_b = _mm_load_pd(&dnSample_42[channel].coef[i    ]);
-			__m128d buff_b = _mm_load_pd(&dnSample_42[channel].buff[i + 2]);
-			__m128d _mul_a = _mm_mul_pd(coef_a, buff_a);
-			__m128d _mul_b = _mm_mul_pd(coef_a, buff_b);
-			    _acc_out_a = _mm_add_pd(_acc_out_a, _mul_a);
-			    _acc_out_b = _mm_add_pd(_acc_out_b, _mul_b);
-		}
-		_mm_store_pd(inter_42    , _acc_out_a);
-		_mm_store_pd(inter_42 + 2, _acc_out_b);
+        memmove(dnSample_42[channel].buff + 3, dnSample_42[channel].buff + 1, dnTap_42_size);
+        dnSample_42[channel].buff[2] = in[2];
+        dnSample_42[channel].buff[1] = in[3];
+        HB_dnsample(dnSample_42, &inter[1], channel);
 
-		const size_t dnTap_41_size = sizeof(double) * (dnTap_41);
-		memmove(dnSample_41[channel].buff + 3, dnSample_41[channel].buff + 1, dnTap_41_size);
-		dnSample_41[channel].buff[2] = inter_42[0] + inter_42[1];
-		dnSample_41[channel].buff[1] = inter_42[2] + inter_42[3];
-		__m128d _acc_out = _mm_setzero_pd();
-		for (int i = 0; i < dnTap_41; i += 2) {
-			__m128d coef = _mm_load_pd(&dnSample_41[channel].coef[i    ]);
-			__m128d buff = _mm_load_pd(&dnSample_41[channel].buff[i + 2]);
-			__m128d _mul = _mm_mul_pd(coef, buff);
-			    _acc_out = _mm_add_pd(_acc_out, _mul);
-		}
-		_mm_store_pd(inter_21, _acc_out);
-		*out = inter_21[0] + inter_21[1];
+        const size_t dnTap_41_size = sizeof(double) * (dnTap_41-2);
+        memmove(dnSample_41[channel].buff + 3, dnSample_41[channel].buff + 1, dnTap_41_size);
+        dnSample_41[channel].buff[2] = inter[0];
+        dnSample_41[channel].buff[1] = inter[1];
+        HB_dnsample(dnSample_41, out, channel);
 	}
 	// 8 in 1 out
 	void JSIF_Processor::Fir_x8_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
 	{
-		double inter_84[8];
-		double inter_42[4];
-		double inter_21[2];
-		const size_t dnTap_83_size = sizeof(double) * (dnTap_83);
-		memmove(dnSample_83[channel].buff + 9, dnSample_83[channel].buff + 1, dnTap_83_size);
-		dnSample_83[channel].buff[8] = in[0];
-		dnSample_83[channel].buff[7] = in[1];
-		dnSample_83[channel].buff[6] = in[2];
-		dnSample_83[channel].buff[5] = in[3];
-		dnSample_83[channel].buff[4] = in[4];
-		dnSample_83[channel].buff[3] = in[5];
-		dnSample_83[channel].buff[2] = in[6];
-		dnSample_83[channel].buff[1] = in[7];
-		__m128d _acc_out_3a = _mm_setzero_pd();
-		__m128d _acc_out_3b = _mm_setzero_pd();
-		__m128d _acc_out_3c = _mm_setzero_pd();
-		__m128d _acc_out_3d = _mm_setzero_pd();
-		for (int i = 0; i < dnTap_83; i += 2) {
-			__m128d coef_3a = _mm_load_pd(&dnSample_83[channel].coef[i    ]);
-			__m128d buff_3a = _mm_load_pd(&dnSample_83[channel].buff[i + 8]); 
-			//__m128d coef_3b = _mm_load_pd(&dnSample_83[channel].coef[i    ]);
-			__m128d buff_3b = _mm_load_pd(&dnSample_83[channel].buff[i + 6]);
-			//__m128d coef_3c = _mm_load_pd(&dnSample_83[channel].coef[i    ]);
-			__m128d buff_3c = _mm_load_pd(&dnSample_83[channel].buff[i + 4]);
-			//__m128d coef_3d = _mm_load_pd(&dnSample_83[channel].coef[i    ]);
-			__m128d buff_3d = _mm_load_pd(&dnSample_83[channel].buff[i + 2]);
-			__m128d _mul_3a = _mm_mul_pd(coef_3a, buff_3a);
-			__m128d _mul_3b = _mm_mul_pd(coef_3a, buff_3b);
-			__m128d _mul_3c = _mm_mul_pd(coef_3a, buff_3c);
-			__m128d _mul_3d = _mm_mul_pd(coef_3a, buff_3d);
-			    _acc_out_3a = _mm_add_pd(_acc_out_3a, _mul_3a);
-			    _acc_out_3b = _mm_add_pd(_acc_out_3b, _mul_3b);
-			    _acc_out_3c = _mm_add_pd(_acc_out_3c, _mul_3c);
-			    _acc_out_3d = _mm_add_pd(_acc_out_3d, _mul_3d);
-		}
-		_mm_store_pd(inter_84    , _acc_out_3a);
-		_mm_store_pd(inter_84 + 2, _acc_out_3b);
-		_mm_store_pd(inter_84 + 4, _acc_out_3c);
-		_mm_store_pd(inter_84 + 6, _acc_out_3d);
+        Vst::Sample64 inter_83[4];
+		const size_t dnTap_83_size = sizeof(double) * (dnTap_83-2);
+		memmove(dnSample_83[channel].buff + 3, dnSample_83[channel].buff + 1, dnTap_83_size);
+		dnSample_83[channel].buff[2] = in[0];
+		dnSample_83[channel].buff[1] = in[1];
+        HB_dnsample(dnSample_83, &inter_83[0], channel);
+        
+        memmove(dnSample_83[channel].buff + 3, dnSample_83[channel].buff + 1, dnTap_83_size);
+        dnSample_83[channel].buff[2] = in[2];
+        dnSample_83[channel].buff[1] = in[3];
+        HB_dnsample(dnSample_83, &inter_83[1], channel);
+        
+        memmove(dnSample_83[channel].buff + 3, dnSample_83[channel].buff + 1, dnTap_83_size);
+        dnSample_83[channel].buff[2] = in[4];
+        dnSample_83[channel].buff[1] = in[5];
+        HB_dnsample(dnSample_83, &inter_83[2], channel);
+        
+        memmove(dnSample_83[channel].buff + 3, dnSample_83[channel].buff + 1, dnTap_83_size);
+        dnSample_83[channel].buff[2] = in[6];
+        dnSample_83[channel].buff[1] = in[7];
+        HB_dnsample(dnSample_83, &inter_83[3], channel);
+        
+        Vst::Sample64 inter_82[2];
+		const size_t dnTap_82_size = sizeof(double) * (dnTap_82-2);
+        memmove(dnSample_82[channel].buff + 3, dnSample_82[channel].buff + 1, dnTap_82_size);
+        dnSample_82[channel].buff[2] = inter_83[0];
+        dnSample_82[channel].buff[1] = inter_83[1];
+        HB_dnsample(dnSample_82, &inter_82[0], channel);
 
-		const size_t dnTap_82_size = sizeof(double) * (dnTap_82);
-		memmove(dnSample_82[channel].buff + 5, dnSample_82[channel].buff + 1, dnTap_82_size);
-		dnSample_82[channel].buff[4] = inter_84[0] + inter_84[1];
-		dnSample_82[channel].buff[3] = inter_84[2] + inter_84[3];
-		dnSample_82[channel].buff[2] = inter_84[4] + inter_84[5];
-		dnSample_82[channel].buff[1] = inter_84[6] + inter_84[7];
-		__m128d _acc_out_2a = _mm_setzero_pd();
-		__m128d _acc_out_2b = _mm_setzero_pd();
-		for (int i = 0; i < dnTap_82; i += 2) { 
-			__m128d coef_2a = _mm_load_pd(&dnSample_82[channel].coef[i    ]);
-			__m128d buff_2a = _mm_load_pd(&dnSample_82[channel].buff[i + 4]); 
-			//__m128d coef_2b = _mm_load_pd(&dnSample_82[channel].coef[i    ]);
-			__m128d buff_2b = _mm_load_pd(&dnSample_82[channel].buff[i + 2]);
-			__m128d _mul_2a = _mm_mul_pd(coef_2a, buff_2a);
-			__m128d _mul_2b = _mm_mul_pd(coef_2a, buff_2b);
-			    _acc_out_2a = _mm_add_pd(_acc_out_2a, _mul_2a);
-			    _acc_out_2b = _mm_add_pd(_acc_out_2b, _mul_2b);
-		}
-		_mm_store_pd(inter_42    , _acc_out_2a);
-		_mm_store_pd(inter_42 + 2, _acc_out_2b);
+        memmove(dnSample_82[channel].buff + 3, dnSample_82[channel].buff + 1, dnTap_82_size);
+        dnSample_82[channel].buff[2] = inter_83[2];
+        dnSample_82[channel].buff[1] = inter_83[3];
+        HB_dnsample(dnSample_82, &inter_82[1], channel);
 
-		const size_t dnTap_81_size = sizeof(double) * (dnTap_81);
-		memmove(dnSample_81[channel].buff + 2, dnSample_81[channel].buff, dnTap_81_size);
-		dnSample_81[channel].buff[2] = inter_42[0] + inter_42[1];
-		dnSample_81[channel].buff[1] = inter_42[2] + inter_42[3];
-		__m128d _acc_out = _mm_setzero_pd();
-		for (int i = 0; i < dnTap_81; i += 2) {
-			__m128d coef = _mm_load_pd(&dnSample_81[channel].coef[i    ]);
-			__m128d buff = _mm_load_pd(&dnSample_81[channel].buff[i + 2]);
-			__m128d _mul = _mm_mul_pd(coef, buff);
-			    _acc_out = _mm_add_pd(_acc_out, _mul);
-		}
-		_mm_store_pd(inter_21, _acc_out);
-		*out = inter_21[0] + inter_21[1];
+		const size_t dnTap_81_size = sizeof(double) * (dnTap_81-2);
+        memmove(dnSample_81[channel].buff + 3, dnSample_81[channel].buff + 1, dnTap_81_size);
+        dnSample_81[channel].buff[2] = inter_82[0];
+        dnSample_81[channel].buff[1] = inter_82[1];
+        HB_dnsample(dnSample_81, out, channel);
 	}
 
 } // namespace yg331

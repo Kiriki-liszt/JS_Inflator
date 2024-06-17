@@ -77,6 +77,10 @@ public:
 typedef struct _Flt {
 	double coef alignas(16)[maxTap] = { 0, };
 	double buff alignas(16)[maxTap] = { 0, };
+    int TAP_SIZE = 0;
+    int TAP_HALF = 0;
+    int TAP_HALF_HALF = 0;
+    int TAP_CONDITON = 0;
 } Flt;
 
 class Decibels
