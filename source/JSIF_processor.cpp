@@ -15,6 +15,41 @@
 #define SIMDE_ENABLE_NATIVE_ALIASES
 #include "simde/x86/sse2.h"
 
+
+#if defined( _WIN32 )
+    #include <windows.h>
+#else // defined( _WIN32 )
+    #include <pthread.h>
+#endif // defined( _WIN32 )
+
+#if defined( __SSE4_2__ ) || defined( __SSE4_1__ ) || \
+    defined( __SSSE3__ ) || defined( __SSE3__ ) || defined( __SSE2__ ) || \
+    defined( __x86_64__ ) || defined( __amd64 ) || defined( _M_X64 ) || \
+    defined( _M_AMD64 ) || ( defined( _M_IX86_FP ) && _M_IX86_FP == 2 )
+
+    #if defined( _MSC_VER )
+        #include <intrin.h>
+    #else // defined( _MSC_VER )
+        #include <emmintrin.h>
+    #endif // defined( _MSC_VER )
+
+    #define R8B_SSE2
+    #define R8B_SIMD_ISH
+
+#elif defined( __aarch64__ ) || defined( __arm64 )
+
+    #include <arm_neon.h>
+
+    #define R8B_NEON
+
+    #if !defined( __APPLE__ )
+        #define R8B_SIMD_ISH // Shuffled interpolation is inefficient on M1.
+    #endif // !defined( __APPLE__ )
+
+#endif // AArch64
+
+
+
 using namespace Steinberg;
 
 namespace yg331 {
@@ -1011,22 +1046,74 @@ namespace yg331 {
 	// 2 in 1 out
 	void JSIF_Processor::Fir_x2_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
 	{
-		double inter_21[2];
+        const size_t dnTap_21_size = sizeof(double) * (dnTap_21 - 2);
+        memmove(dnSample_21[channel].buff + 3, dnSample_21[channel].buff + 1, dnTap_21_size);
+        dnSample_21[channel].buff[2] = in[0];
+        dnSample_21[channel].buff[1] = in[1];
 
-		const size_t dnTap_21_size = sizeof(double) * (dnTap_21 - 2);
-		memmove(dnSample_21[channel].buff + 3, dnSample_21[channel].buff + 1, dnTap_21_size);
-		dnSample_21[channel].buff[2] = in[0];
-		dnSample_21[channel].buff[1] = in[1];
-		__m128d _acc_out = _mm_setzero_pd();
-		for (int i = 0; i < dnTap_21; i += 2) {
-			__m128d coef = _mm_load_pd(&dnSample_21[channel].coef[i    ]);
-			__m128d buff = _mm_load_pd(&dnSample_21[channel].buff[i + 2]);
-			__m128d _mul = _mm_mul_pd(coef, buff);
-			    _acc_out = _mm_add_pd(_acc_out, _mul);
-		}
-		_mm_store_pd(inter_21, _acc_out);
-		*out = inter_21[0] + inter_21[1];
-		return;
+        enum {
+            a0b0, // 00(2)
+            a1b0, // 01(2) == loadr
+            a0b1, // 10(2)
+            a1b1  // 11(2)
+        };
+        static constexpr int TAP_HALF = dnTap_21 / 2;
+        static constexpr int TAP_CONDITON = dnTap_21 % 4;
+
+        double acc_a[2] = { 0,0 };
+
+#if defined( R8B_SSE2 )
+
+        __m128d _acc_a = _mm_setzero_pd();
+        for (int i = 0; i < TAP_HALF - 1; i += 2) {
+            __m128d coef_a = _mm_load_pd(&dnSample_21[channel].coef[i]);
+            __m128d buff_a = _mm_load_pd(&dnSample_21[channel].buff[2 + i]);
+            __m128d buff_ = _mm_loadu_pd(&dnSample_21[channel].buff[2 + dnTap_21 - 1 - i - 1]); // may be unaligned
+            __m128d buff_b = _mm_shuffle_pd(buff_, buff_, a1b0);  // == loadr
+            __m128d _mul_a = _mm_mul_pd(coef_a, _mm_add_pd(buff_a, buff_b));
+            _acc_a = _mm_add_pd(_acc_a, _mul_a);
+        }
+        _mm_store_pd(acc_a, _acc_a);
+
+#elif defined( R8B_NEON )
+
+        float64x2_t _acc_a = vdupq_n_f64(0.0); // == set
+        for (int i = 0; i < TAP_HALF - 1; i += 2) {
+            float64x2_t coef_a = vld1q_f64(&dnSample_21[channel].coef[i]);
+            float64x2_t buff_a = vld1q_f64(&dnSample_21[channel].buff[2 + i]);
+            float64x2_t buff_ =  vld1q_f64(&dnSample_21[channel].buff[2 + dnTap_21 - 1 - i - 1]); // may be unaligned
+            float64x2_t buff_b = vextq_f64(buff_, buff_, a1b0);  // == loadr
+            float64x2_t _mul_a = vmulq_f64(coef_a, vaddq_f64(buff_a, buff_b));
+            _acc_a = vaddq_f64(_acc_a, _mul_a);
+        }
+        vst1q_f64(acc_a, _acc_a);
+        
+        // FDebugBreak("Should not be accesed, it will stop build");
+
+#else // SIMD
+
+        FDebugBreak("Should not be accesed, it will stop build");
+
+#endif // SIMD
+        
+#if defined(SIMDE_X86_SSE2_NATIVE)
+        FDebugBreak("Should not be accesed, it will stop build");
+#elif defined(SIMDE_ARM_NEON_A64V8_NATIVE)
+    FDebugBreak("Should not be accesed, it will stop build");
+#endif
+            
+        double acc = acc_a[0] + acc_a[1];
+        if (TAP_CONDITON == 1)
+        {
+            acc += dnSample_21[channel].coef[TAP_HALF] * dnSample_21[channel].buff[2 + TAP_HALF];
+        }
+        else if (TAP_CONDITON == 3)
+        {
+            acc += dnSample_21[channel].coef[TAP_HALF - 1] * (dnSample_21[channel].buff[2 + TAP_HALF - 1] + dnSample_21[channel].buff[2 + TAP_HALF + 1]);
+            acc += dnSample_21[channel].coef[TAP_HALF - 0] *  dnSample_21[channel].buff[2 + TAP_HALF];
+        }
+        *out = acc;
+        return;
 	}
 	// 4 in 1 out
 	void JSIF_Processor::Fir_x4_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
