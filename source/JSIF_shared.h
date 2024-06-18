@@ -23,7 +23,8 @@ typedef struct _BS {
 	SVF HP;
 	Steinberg::Vst::Sample64 G = 0.0;
 	Steinberg::Vst::Sample64 GR = 0.0;
-} Band_Split_t;
+	Steinberg::Vst::SampleRate SR = 0.0;
+} Band_Split;
 
 static const Steinberg::Vst::ParamValue
 init_Input = 0.5,

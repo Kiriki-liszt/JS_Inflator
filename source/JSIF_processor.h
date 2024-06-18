@@ -80,7 +80,8 @@ typedef struct _Flt {
     int TAP_SIZE = 0;
     int TAP_HALF = 0;
     int TAP_HALF_HALF = 0;
-    int TAP_CONDITON = 0;
+    int TAP_CONDITION = 0;
+	int START = 0;
 } Flt;
 
 class Decibels
@@ -268,49 +269,25 @@ public:
 
 protected:
 
+	using ParamValue = Steinberg::Vst::ParamValue;
+	using Sample64 = Steinberg::Vst::Sample64;
+	using SampleRate = Steinberg::Vst::SampleRate;
+	using int32 = Steinberg::int32;
+
 	float VuPPMconvert(float plainValue);
 
 	template <typename SampleType>
-	void processVuPPM_In(SampleType** inputs, Steinberg::int32 numChannels, Steinberg::int32 sampleFrames);
+	void processVuPPM_In(SampleType** inputs, int32 numChannels, int32 sampleFrames);
 
 	template <typename SampleType>
-	void processAudio(SampleType** inputs, SampleType** outputs, Steinberg::int32 numChannels, Steinberg::Vst::SampleRate getSampleRate, long long sampleFrames);
+	void processAudio(SampleType** inputs, SampleType** outputs, int32 numChannels, SampleRate getSampleRate, int32 sampleFrames);
 	template <typename SampleType>
-	void latencyBypass(SampleType** inputs, SampleType** outputs, Steinberg::int32 numChannels, Steinberg::Vst::SampleRate getSampleRate, long long sampleFrames);
+	void latencyBypass(SampleType** inputs, SampleType** outputs, int32 numChannels, SampleRate getSampleRate, int32 sampleFrames);
 
-	Steinberg::Vst::Sample64 process_inflator(Steinberg::Vst::Sample64 inputSample);
-    
-    void notSetupProcessing(Steinberg::Vst::ProcessSetup& newSetup)
-    {
-        Steinberg::Vst::SpeakerArrangement arr;
-        getBusArrangement(Steinberg::Vst::BusDirections::kInput, 0, arr);
-        numChannels = static_cast<uint16_t> (Steinberg::Vst::SpeakerArr::getChannelCount(arr));
+	Sample64 process_inflator(Sample64 inputSample);
 
-        for (Steinberg::int32 channel = 0; channel < numChannels; channel++)
-            Band_Split_set(&Band_Split[channel], 240.0, 2400.0, newSetup.sampleRate);
-
-        VuInput.setChannel(numChannels);
-        VuInput.setType(LevelEnvelopeFollower::Peak);
-        VuInput.setDecay(3.0);
-        VuInput.prepare(newSetup.sampleRate);
-        
-        VuOutput.setChannel(numChannels);
-        VuOutput.setType(LevelEnvelopeFollower::Peak);
-        VuOutput.setDecay(3.0);
-        VuOutput.prepare(newSetup.sampleRate);
-
-        fInputVu.resize(numChannels, 0.0);
-        fOutputVu.resize(numChannels, 0.0);
-        buff[0].resize(newSetup.maxSamplesPerBlock, 0.0);
-        buff[1].resize(newSetup.maxSamplesPerBlock, 0.0);
-        
-        setupProcessing_checked = true;
-
-        //FDebugPrint("[ FDebugPrint ] setupProcessing\n");
-    };
-    Steinberg::TBool setupProcessing_checked = false;
-
-	inline void Band_Split_set(Band_Split_t* filter, Steinberg::Vst::ParamValue Fc_L, Steinberg::Vst::ParamValue Fc_H, Steinberg::Vst::SampleRate Fs) {
+	inline void Band_Split_set(Band_Split* filter, ParamValue Fc_L, ParamValue Fc_H, SampleRate Fs) {
+		(*filter).SR = Fs;
 		(*filter).LP.C = 0.5 * tan(M_PI * ((Fc_L / Fs) - 0.25)) + 0.5;
 		(*filter).LP.R = 0.0;
 		(*filter).LP.I = 0.0;
@@ -323,9 +300,6 @@ protected:
 	};
 
 	std::deque<double> latency_q[2];
-
-	using ParamValue = Steinberg::Vst::ParamValue;
-	using Sample64   = Steinberg::Vst::Sample64;
 	
 	// Plugin controls ------------------------------------------------------------------
 	ParamValue fInput;
@@ -346,68 +320,72 @@ protected:
 	Sample64   curveB;
 	Sample64   curveC;
 	Sample64   curveD;
-	Band_Split_t    Band_Split[2];
-	overSample      fParamOS, fParamOSOld;
+	std::vector<Band_Split> Band_Split;
+	overSample fParamOS;
 
 	// VU metering ----------------------------------------------------------------
 	LevelEnvelopeFollower VuInput, VuOutput;
 
-	static constexpr double init_meter = -std::numeric_limits<double>::infinity();
+	static SMTG_CONSTEXPR ParamValue init_meter = -std::numeric_limits<double>::infinity();
 	ParamValue Meter = init_meter;
-	std::vector<ParamValue> buff[2];
+	std::vector<std::vector<ParamValue>> buff;
+	std::vector<ParamValue*> buff_head;
 	std::vector<ParamValue> fInputVu;
 	std::vector<ParamValue> fOutputVu;
-	ParamValue fMeterVu;
+	ParamValue fMeterVu = init_meter;
 
 	// Oversamplers ------------------------------------------------------------------
-	r8b::CDSPResampler24	upSample_2x_Lin[2];
-	r8b::CDSPResampler24	upSample_4x_Lin[2];
-	r8b::CDSPResampler24	upSample_8x_Lin[2];
-	r8b::CDSPResampler24	dnSample_2x_Lin[2];
-	r8b::CDSPResampler24	dnSample_4x_Lin[2];
-	r8b::CDSPResampler24	dnSample_8x_Lin[2];
+	std::vector<r8b::CDSPResampler24*> upSample_2x_Lin;
+	std::vector<r8b::CDSPResampler24*> upSample_4x_Lin;
+	std::vector<r8b::CDSPResampler24*> upSample_8x_Lin;
+	std::vector<r8b::CDSPResampler24*> dnSample_2x_Lin;
+	std::vector<r8b::CDSPResampler24*> dnSample_4x_Lin;
+	std::vector<r8b::CDSPResampler24*> dnSample_8x_Lin;
 
-	Flt upSample_21[2];
-	Flt upSample_41[2];
-	Flt upSample_42[2];
-	Flt upSample_81[2];
-	Flt upSample_82[2];
-	Flt upSample_83[2];
+	std::vector<Flt> upSample_21;
+	std::vector<Flt> upSample_41;
+	std::vector<Flt> upSample_42;
+	std::vector<Flt> upSample_81;
+	std::vector<Flt> upSample_82;
+	std::vector<Flt> upSample_83;
 
-	Flt dnSample_21[2];
-	Flt dnSample_41[2];
-	Flt dnSample_42[2];
-	Flt dnSample_81[2];
-	Flt dnSample_82[2];
-	Flt dnSample_83[2];
+	std::vector<Flt> dnSample_21;
+	std::vector<Flt> dnSample_41;
+	std::vector<Flt> dnSample_42;
+	std::vector<Flt> dnSample_81;
+	std::vector<Flt> dnSample_82;
+	std::vector<Flt> dnSample_83;
 
-	static constexpr Steinberg::int32 upTap_21 = 85;
-	static constexpr Steinberg::int32 upTap_41 = 83;
-	static constexpr Steinberg::int32 upTap_42 = 31;
-	static constexpr Steinberg::int32 upTap_81 = 87;
-	static constexpr Steinberg::int32 upTap_82 = 33;
-	static constexpr Steinberg::int32 upTap_83 = 21;
+	static SMTG_CONSTEXPR int32 upTap_21 = 85;
+	static SMTG_CONSTEXPR int32 upTap_41 = 83;
+	static SMTG_CONSTEXPR int32 upTap_42 = 31;
+	static SMTG_CONSTEXPR int32 upTap_81 = 87;
+	static SMTG_CONSTEXPR int32 upTap_82 = 33;
+	static SMTG_CONSTEXPR int32 upTap_83 = 21;
 
-	static constexpr Steinberg::int32 dnTap_21 = 113;
-	static constexpr Steinberg::int32 dnTap_41 = 113;
-	static constexpr Steinberg::int32 dnTap_42 = 31;
-	static constexpr Steinberg::int32 dnTap_81 = 113;
-	static constexpr Steinberg::int32 dnTap_82 = 33;
-	static constexpr Steinberg::int32 dnTap_83 = 21;
+	static SMTG_CONSTEXPR int32 dnTap_21 = 113;
+	static SMTG_CONSTEXPR int32 dnTap_41 = 113;
+	static SMTG_CONSTEXPR int32 dnTap_42 = 31;
+	static SMTG_CONSTEXPR int32 dnTap_81 = 113;
+	static SMTG_CONSTEXPR int32 dnTap_82 = 33;
+	static SMTG_CONSTEXPR int32 dnTap_83 = 21;
 
-	void Fir_x2_up(Sample64* in, Sample64* out, Steinberg::int32 channel);
-	void Fir_x2_dn(Sample64* in, Sample64* out, Steinberg::int32 channel);
-	void Fir_x4_up(Sample64* in, Sample64* out, Steinberg::int32 channel);
-	void Fir_x4_dn(Sample64* in, Sample64* out, Steinberg::int32 channel);
-	void Fir_x8_up(Sample64* in, Sample64* out, Steinberg::int32 channel);
-	void Fir_x8_dn(Sample64* in, Sample64* out, Steinberg::int32 channel);
+	// latency_r8b_x2 = -1 + 2 * upSample_2x_Lin[0].getInLenBeforeOutPos(1) +1;
+	// latency_r8b_x4 = -1 + 2 * upSample_4x_Lin[0].getInLenBeforeOutPos(1);
+	// latency_r8b_x8 = -1 + 2 * upSample_8x_Lin[0].getInLenBeforeOutPos(1);
+	static SMTG_CONSTEXPR int32 latency_r8b_x2 = 3388;
+	static SMTG_CONSTEXPR int32 latency_r8b_x4 = 3431;
+	static SMTG_CONSTEXPR int32 latency_r8b_x8 = 3465;
+	static SMTG_CONSTEXPR int32 latency_Fir_x2 = 49;
+	static SMTG_CONSTEXPR int32 latency_Fir_x4 = 56;
+	static SMTG_CONSTEXPR int32 latency_Fir_x8 = 60;
 
-	static constexpr Steinberg::int32 latency_r8b_x2 = 3388;
-	static constexpr Steinberg::int32 latency_r8b_x4 = 3431;
-	static constexpr Steinberg::int32 latency_r8b_x8 = 3465;
-	static constexpr Steinberg::int32 latency_Fir_x2 = 49;
-	static constexpr Steinberg::int32 latency_Fir_x4 = 56;
-	static constexpr Steinberg::int32 latency_Fir_x8 = 60;
+	void Fir_x2_up(Sample64* in, Sample64* out, int32 channel);
+	void Fir_x2_dn(Sample64* in, Sample64* out, int32 channel);
+	void Fir_x4_up(Sample64* in, Sample64* out, int32 channel);
+	void Fir_x4_dn(Sample64* in, Sample64* out, int32 channel);
+	void Fir_x8_up(Sample64* in, Sample64* out, int32 channel);
+	void Fir_x8_dn(Sample64* in, Sample64* out, int32 channel);
 
 	// data exchange
 	void acquireNewExchangeBlock();
