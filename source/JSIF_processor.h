@@ -143,7 +143,7 @@ public:
 	{
 		sampleRate = fs;
 
-		double attackTimeInSeconds = 0.1 * DecayInSeconds;
+		double attackTimeInSeconds = 0.01 * DecayInSeconds;
 		alphaAttack = exp(-1.0 / (sampleRate * attackTimeInSeconds)); 
 
 		double releaseTimeInSeconds = DecayInSeconds; 

@@ -18,7 +18,7 @@
 			<key>type</key>
 			<string>aufx</string>
 			<key>version</key>
-			<integer>131073</integer>
+			<integer>131074</integer>
 		</dict>
 	</array>
 	<key>AudioUnit SupportedNumChannels</key>

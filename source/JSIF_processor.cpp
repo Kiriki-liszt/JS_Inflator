@@ -517,6 +517,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 
 			fMeterVu = 0.4 * log10(std::abs(Meter));
 			fMeterVu *= fEffect;
+			fMeterVu *= bIn;
 			// FDebugPrint("Meter = %f \n", fMeterVu);
 		}
 
