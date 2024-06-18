@@ -684,7 +684,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 	}
 
 
-	inline Vst::Sample64 JSIF_Processor::process_inflator(Vst::Sample64 inputSample) 
+	Vst::Sample64 JSIF_Processor::process_inflator(Vst::Sample64 inputSample)
 	{
 		// Vst::Sample64 drySample = inputSample;
 		Vst::Sample64 sign;
@@ -951,7 +951,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 	}
 
 	/// Fir Linear Oversamplers
-	inline void HB_upsample(Flt* filter, Vst::Sample64* out)
+	void JSIF_Processor::HB_upsample(Flt* filter, Vst::Sample64* out)
 	{
 		// half-band
 		double acc = 0.0;
@@ -976,7 +976,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		out[0] = acc_1;
 		out[1] = acc_2;
 	}
-	inline void HB_dnsample(Flt* filter, Vst::Sample64* out)
+	void JSIF_Processor::HB_dnsample(Flt* filter, Vst::Sample64* out)
 	{
 		// half-band
 		double acc = 0.0;
@@ -1006,7 +1006,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		static constexpr size_t  upTap_41_size = sizeof(double) * (upTap_41 - 1) / 2;
         memmove(upSample_41[channel].buff + 1, upSample_41[channel].buff, upTap_41_size);
         upSample_41[channel].buff[0] = *in;
-        HB_upsample(&upSample_41[channel], inter_41);
+        HB_upsample(&upSample_41[channel], &inter_41[0]);
 
 		static constexpr size_t upTap_42_size = sizeof(double) * (upTap_42 - 1) / 2;
         memmove(upSample_42[channel].buff + 1, upSample_42[channel].buff, upTap_42_size);
@@ -1026,7 +1026,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		static constexpr size_t upTap_81_size = sizeof(double) * (upTap_81 - 1) / 2;
 		memmove(upSample_81[channel].buff + 1, upSample_81[channel].buff, upTap_81_size);
 		upSample_81[channel].buff[0] = *in;
-        HB_upsample(&upSample_81[channel], inter_81);
+        HB_upsample(&upSample_81[channel], &inter_81[0]);
         
         Vst::Sample64 inter_82[4];
 		static constexpr size_t upTap_82_size = sizeof(double) * (upTap_82 - 1) / 2;

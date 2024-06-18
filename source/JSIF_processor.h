@@ -269,10 +269,13 @@ public:
 
 protected:
 
+    using SampleRate = Steinberg::Vst::SampleRate;
 	using ParamValue = Steinberg::Vst::ParamValue;
 	using Sample64 = Steinberg::Vst::Sample64;
-	using SampleRate = Steinberg::Vst::SampleRate;
 	using int32 = Steinberg::int32;
+    
+    void HB_upsample(Flt* filter, Sample64* out);
+    void HB_dnsample(Flt* filter, Sample64* out);
 
 	float VuPPMconvert(float plainValue);
 

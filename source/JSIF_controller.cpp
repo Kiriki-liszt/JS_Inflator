@@ -27,23 +27,23 @@ namespace VSTGUI {
 		myVuMeterFactory() { UIViewFactory::registerViewCreator(*this); }
 
 		//return an unique name here
-		IdStringPtr getViewName() const override { return "My Vu Meter"; }
+		IdStringPtr getViewName() const SMTG_OVERRIDE { return "My Vu Meter"; }
 
 		//return the name here from where your custom view inherites.
 		//	Your view automatically supports the attributes from it.
-		IdStringPtr getBaseViewName() const override { return UIViewCreator::kCControl; }
+		IdStringPtr getBaseViewName() const SMTG_OVERRIDE { return UIViewCreator::kCControl; }
 
 		//create your view here.
 		//	Note you don't need to apply attributes here as
 		//	the apply method will be called with this new view
-		CView* create(const UIAttributes& attributes, const IUIDescription* description) const override
+		CView* create(const UIAttributes& attributes, const IUIDescription* description) const SMTG_OVERRIDE
 		{
 			return new MyVuMeter(CRect(0,0,100,20), 2);
 		}
 		bool apply(
 			CView* view,
 			const UIAttributes& attributes,
-			const IUIDescription* description) const
+			const IUIDescription* description) const SMTG_OVERRIDE
 		{
 			auto* vuMeter = dynamic_cast<MyVuMeter*> (view);
 
@@ -63,7 +63,7 @@ namespace VSTGUI {
 			return true;
 		}
 
-		bool getAttributeNames(StringList& attributeNames) const
+		bool getAttributeNames(StringList& attributeNames) const SMTG_OVERRIDE
 		{
 			attributeNames.emplace_back(UIViewCreator::kAttrOrientation);
 			attributeNames.emplace_back(kAttrVuOnColor);
@@ -71,7 +71,7 @@ namespace VSTGUI {
 			return true;
 		}
 
-		AttrType getAttributeType(const std::string& attributeName) const
+		AttrType getAttributeType(const std::string& attributeName) const SMTG_OVERRIDE
 		{
 			if (attributeName == UIViewCreator::kAttrOrientation)
 				return kListType;
@@ -87,7 +87,7 @@ namespace VSTGUI {
 			CView* view,
 			const string& attributeName,
 			string& stringValue,
-			const IUIDescription* desc) const
+			const IUIDescription* desc) const SMTG_OVERRIDE
 		{
 			auto* vuMeter = dynamic_cast<MyVuMeter*> (view);
 
@@ -118,7 +118,7 @@ namespace VSTGUI {
 		//------------------------------------------------------------------------
 		bool getPossibleListValues(
 			const string& attributeName,
-			ConstStringPtrList& values) const
+			ConstStringPtrList& values) const SMTG_OVERRIDE
 		{
 			if (attributeName == UIViewCreator::kAttrOrientation)
 			{
