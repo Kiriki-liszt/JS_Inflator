@@ -531,41 +531,14 @@ else if (filter[channel].TAP_CONDITION == 3) \
 
 		if (auto block = toDataBlock(currentExchangeBlock))
 		{
-			int fps = block->sampleRate / 30;
-			auto numSamples = static_cast<uint32> (data.numSamples);
-			while (numSamples > 0)
-			{
-				uint32 numSamplesFreeInBlock = block->sampleRate - block->numSamples;
-				uint32 numSamplesToCopy = std::min<uint32>(numSamplesFreeInBlock, numSamples);
-				numSamplesToCopy = std::min<uint32>(numSamplesToCopy, fps);
-
-				/*
-				for (auto channel = 0; channel < input.numChannels; ++channel)
-				{
-					auto blockChannelData = &block->samples[0] + block->numSamples;
-					auto inputChannel = input.channelBuffers32[channel] + (data.numSamples - numSamples);
-					memcpy(blockChannelData, inputChannel, numSamplesToCopy * sizeof(float));
-				}
-				*/
-				block->numSamples += numSamplesToCopy;
-
-				if (block->numSamples >= fps) // 1sec
-				{
-					block->inL = (fInputVu.size() > 0) ? fInputVu[0] : 0.0;
-					block->inR = (fInputVu.size() > 1) ? fInputVu[1] : 0.0;
-					block->outL = (fOutputVu.size() > 0) ? fOutputVu[0] : 0.0;
-					block->outR = (fOutputVu.size() > 1) ? fOutputVu[1] : 0.0;
-					block->gR = fMeterVu;
-					// FDebugPrint("%f | %f \n", block->inL, block->outL);
-					dataExchange->sendCurrentBlock();
-					acquireNewExchangeBlock();
-					block = toDataBlock(currentExchangeBlock);
-					if (block == nullptr)
-						break;
-				}
-
-				numSamples -= numSamplesToCopy;
-			}
+			block->inL = (numChannels > 0) ? fInputVu[0] : 0.0;
+			block->inR = (numChannels > 1) ? fInputVu[1] : ((numChannels > 0) ? fInputVu[0] : 0.0);
+			block->outL = (numChannels > 0) ? fOutputVu[0] : 0.0;
+			block->outR = (numChannels > 1) ? fOutputVu[1] : ((numChannels > 0) ? fOutputVu[0] : 0.0);
+			block->gR = fMeterVu;
+			// FDebugPrint("%f | %f \n", block->inL, block->outL);
+			dataExchange->sendCurrentBlock();
+			acquireNewExchangeBlock();
 		}
 
 		return kResultOk;
