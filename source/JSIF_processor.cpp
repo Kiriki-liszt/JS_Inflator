@@ -23,18 +23,18 @@ namespace yg331 {
 		fOutput(init_Output),
 		fEffect(init_Effect),
 		fCurve(init_Curve),
-		curvepct(init_curvepct),
-		curveA(init_curveA),
-		curveB(init_curveB),
-		curveC(init_curveC),
-		curveD(init_curveD),
-		bBypass(init_Bypass),
-		bIn(init_In),
-		bSplit(init_Split),
-		bClip(init_Clip),
-		fParamOS(init_OS),
-		fParamZoom(init_Zoom),
-		fParamPhase(init_Phase)
+        fParamZoom(init_Zoom),
+        fParamPhase(init_Phase),
+        bBypass(init_Bypass),
+        bIn(init_In),
+        bClip(init_Clip),
+        bSplit(init_Split),
+        curvepct(init_curvepct),
+        curveA(init_curveA),
+        curveB(init_curveB),
+        curveC(init_curveC),
+        curveD(init_curveD),
+        fParamOS(init_OS)
 	{
 		//--- set the wanted controller for our processor
 		setControllerClass(kJSIF_ControllerUID);
@@ -263,6 +263,20 @@ namespace yg331 {
 
 		for (int channel = 0; channel < numChannels; channel++) 
 		{
+            memset(upSample_21[channel].coef, 0, sizeof(upSample_21[channel].coef));
+            memset(upSample_41[channel].coef, 0, sizeof(upSample_41[channel].coef));
+            memset(upSample_42[channel].coef, 0, sizeof(upSample_42[channel].coef));
+            memset(upSample_81[channel].coef, 0, sizeof(upSample_81[channel].coef));
+            memset(upSample_82[channel].coef, 0, sizeof(upSample_82[channel].coef));
+            memset(upSample_83[channel].coef, 0, sizeof(upSample_83[channel].coef));
+            
+            memset(dnSample_21[channel].coef, 0, sizeof(dnSample_21[channel].coef));
+            memset(dnSample_41[channel].coef, 0, sizeof(dnSample_41[channel].coef));
+            memset(dnSample_42[channel].coef, 0, sizeof(dnSample_42[channel].coef));
+            memset(dnSample_81[channel].coef, 0, sizeof(dnSample_81[channel].coef));
+            memset(dnSample_82[channel].coef, 0, sizeof(dnSample_82[channel].coef));
+            memset(dnSample_83[channel].coef, 0, sizeof(dnSample_83[channel].coef));
+            
 			// Strictly HALF_BAND
 			Kaiser::calcFilter(96000.0,  0.0, 24000.0, upTap_21, 100.0, upSample_21[channel].coef); //
 			Kaiser::calcFilter(96000.0,  0.0, 24000.0, upTap_41, 100.0, upSample_41[channel].coef); //
@@ -850,8 +864,8 @@ else if (filter[channel].TAP_CONDITION == 3) \
 
 				Vst::Sample64 drySample = inputSample;
 
-				double up_x[8];
-				double up_y[8];
+                double up_x[8] = {0.0, };
+                double up_y[8] = {0.0, };
 
 				// Upsampling
 				if              (fParamOS == overSample_1x) up_x[0] = inputSample;
@@ -924,7 +938,9 @@ else if (filter[channel].TAP_CONDITION == 3) \
 				delayed = latency_q[channel].front();
 				latency_q[channel].pop_front();
 				*buff_in = delayed;  buff_in++;
+                
 				inputSample = (delayed * (1.0 - fEffect)) + (inputSample * fEffect);
+                
 				t += std::abs(inputSample) - std::abs(delayed);
 				// Meter += 20.0 * (std::log10(std::abs(inputSample)) - std::log10(std::abs(delayed)));
 
@@ -953,28 +969,28 @@ else if (filter[channel].TAP_CONDITION == 3) \
 	/// Fir Linear Oversamplers
 	void JSIF_Processor::HB_upsample(Flt* filter, Vst::Sample64* out)
 	{
-		// half-band
-		double acc = 0.0;
-		for (int coef = filter->START, buff = 0; coef < filter->TAP_HALF; coef += 2, buff++)
-		{
-			acc += filter->coef[coef] * (filter->buff[buff] + filter->buff[filter->TAP_HALF - buff - filter->START]);
-		}
+        // half-band
+        double acc = 0.0;
+        for (int coef = filter->START, buff = 0; coef < filter->TAP_HALF; coef += 2, buff++)
+        {
+        acc += filter->coef[coef] * (filter->buff[buff] + filter->buff[filter->TAP_HALF - buff - filter->START]);
+        }
 
-		double acc_1 = 0.0;
-		double acc_2 = 0.0;
-		if (filter->TAP_CONDITION == 1)
-		{
-			acc_1 = filter->coef[filter->TAP_HALF] * filter->buff[filter->TAP_HALF_HALF];
-			acc_2 = acc;
-		}
-		else if (filter->TAP_CONDITION == 3)
-		{
-			acc_1 = acc;
-			acc_2 = filter->coef[filter->TAP_HALF] *  filter->buff[filter->TAP_HALF_HALF];
-		}
+        double acc_1 = 0.0;
+        double acc_2 = 0.0;
+        if (filter->TAP_CONDITION == 1)
+        {
+        acc_1 = filter->coef[filter->TAP_HALF] * filter->buff[filter->TAP_HALF_HALF];
+        acc_2 = acc;
+        }
+        else if (filter->TAP_CONDITION == 3)
+        {
+        acc_1 = acc;
+        acc_2 = filter->coef[filter->TAP_HALF] *  filter->buff[filter->TAP_HALF_HALF];
+        }
 
-		out[0] = acc_1;
-		out[1] = acc_2;
+        *(out  ) = acc_1;
+        *(out+1) = acc_2;
 	}
 	void JSIF_Processor::HB_dnsample(Flt* filter, Vst::Sample64* out)
 	{
@@ -1000,14 +1016,14 @@ else if (filter[channel].TAP_CONDITION == 3) \
         return;
 	}
 	// 1 in 4 out
-	void JSIF_Processor::Fir_x4_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
-	{
+    void JSIF_Processor::Fir_x4_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
+    {
 		Vst::Sample64 inter_41[2];
 		static constexpr size_t  upTap_41_size = sizeof(double) * (upTap_41 - 1) / 2;
         memmove(upSample_41[channel].buff + 1, upSample_41[channel].buff, upTap_41_size);
         upSample_41[channel].buff[0] = *in;
         HB_upsample(&upSample_41[channel], &inter_41[0]);
-
+        
 		static constexpr size_t upTap_42_size = sizeof(double) * (upTap_42 - 1) / 2;
         memmove(upSample_42[channel].buff + 1, upSample_42[channel].buff, upTap_42_size);
         upSample_42[channel].buff[0] = inter_41[0];
@@ -1016,9 +1032,9 @@ else if (filter[channel].TAP_CONDITION == 3) \
         memmove(upSample_42[channel].buff + 1, upSample_42[channel].buff, upTap_42_size);
         upSample_42[channel].buff[0] = inter_41[1];
         HB_upsample(&upSample_42[channel], &out[2]);
-            
+        
         return;
-	}
+    }
 	// 1 in 8 out
 	void JSIF_Processor::Fir_x8_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
 	{
@@ -1071,10 +1087,10 @@ else if (filter[channel].TAP_CONDITION == 3) \
         return;
 	}
 	// 4 in 1 out
-	void JSIF_Processor::Fir_x4_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
-	{
+    void JSIF_Processor::Fir_x4_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
+    {
         Vst::Sample64 inter_42[2];
-		static constexpr size_t dnTap_42_size = sizeof(double) * (dnTap_42 - 2);
+        static constexpr size_t dnTap_42_size = sizeof(double) * (dnTap_42 - 2);
         memmove(dnSample_42[channel].buff + 3, dnSample_42[channel].buff + 1, dnTap_42_size);
         dnSample_42[channel].buff[2] = in[0];
         dnSample_42[channel].buff[1] = in[1];
@@ -1091,8 +1107,8 @@ else if (filter[channel].TAP_CONDITION == 3) \
         dnSample_41[channel].buff[1] = inter_42[1];
         HB_dnsample(&dnSample_41[channel], out);
 
-		return;
-	}
+        return;
+    }
 	// 8 in 1 out
 	void JSIF_Processor::Fir_x8_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
 	{

@@ -36,7 +36,7 @@ public:
 			s += ds;
 		} while (ds > s * 1e-6);
 		return s;
-	};
+    }
 
 	static void calcFilter(double Fs, double Fa, double Fb, int M, double Att, double* dest)
 	{
@@ -63,14 +63,14 @@ public:
 
 		for (int j = 0; j <= Np; j++)
 		{
-			dest[Np + j] = A[j] * Ino(Alpha * std::sqrt(1.0 - ((double)(j * j) / (double)(Np * Np)))) / Inoalpha;
+			dest[Np + j] = A[j] * Ino(Alpha * std::sqrt(1.0 - (static_cast<double>(j * j) / static_cast<double>(Np * Np)))) / Inoalpha;
 		}
 		for (int j = 0; j < Np; j++)
 		{
 			dest[j] = dest[M - 1 - j];
 		}
 
-	};
+    }
 };
 
 // Buffers ------------------------------------------------------------------
@@ -137,7 +137,7 @@ public:
 	void setDecay(double val)
 	{
 		DecayInSeconds = val;
-	};
+    }
 
 	void prepare(const double& fs)
 	{
@@ -151,7 +151,7 @@ public:
 
 		for (auto& s : state)
 			s = Decibels::gainToDecibels(0.0);
-	};
+    }
 
 	template <typename SampleType>
 	void update(SampleType** channelData, int numChannels, int numSamples)
@@ -176,7 +176,7 @@ public:
 				
 			}
 		} 
-	};
+    }
 	
 	double getEnv(int channel) {
 		if (channel < 0) return 0.0;
@@ -184,7 +184,7 @@ public:
 
 		if (type == Peak) return Decibels::decibelsToGain(state[channel]);
 		else return std::sqrt(Decibels::decibelsToGain(state[channel]));
-	};
+    }
 
 private:
 	double sampleRate = 0.0;
