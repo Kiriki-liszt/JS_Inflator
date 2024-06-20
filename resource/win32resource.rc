@@ -3,31 +3,29 @@
 
 #define APSTUDIO_READONLY_SYMBOLS
 
-#ifdef _ORIG
-	JSIF_editor.uidesc		DATA "JSIF_editor.uidesc"
-	background.png			PNG "background.png"
-	handle.png				PNG "handle.png"
-	knob_red_.png			PNG "knob_red_.png"
-	knob_green_.png			PNG "knob_green_.png"
-	button_onoff.png		PNG "button_onoff.png"
-	LED_OFF.png				PNG "LED_OFF.png"
-	LED_ON.png				PNG "LED_ON.png"
-	LED_FX_OFF.png			PNG "LED_FX_OFF.png"
-	LED_FX_ON.png			PNG "LED_FX_ON.png"
-	LED_cover.png			PNG "LED_cover.png" 
-#elif _TWARCH
-	JSIF_editor.uidesc		DATA "twarch/JSIF_editor.uidesc"
-	background.png			PNG "twarch/background.png"
-	btn_IN.png				PNG "twarch/btn_IN.png"
-	btn_CLIP.png			PNG "twarch/btn_CLIP.png"
-	btn_SPLIT.png			PNG "twarch/btn_SPLIT.png"
-	handle.png				PNG "twarch/handle.png"
-	meter_off.png			PNG "twarch/meter_off.png"
-	meter_on.png			PNG "twarch/meter_on.png"
-	meter_fx_on.png			PNG "twarch/meter_fx_on.png"
-	knob_yellow_.png		PNG "twarch/knob_yellow_.png"
-	knob_red_.png			PNG "twarch/knob_red_.png"
-#endif // _ORIG
+JSIF_editor.uidesc  		DATA "JSIF_editor.uidesc"
+
+orig_background.png			PNG "orig_background.png"
+orig_handle.png				PNG "orig_handle.png"
+orig_knob_red_.png			PNG "orig_knob_red_.png"
+orig_knob_green_.png		PNG "orig_knob_green_.png"
+orig_button_onoff.png		PNG "orig_button_onoff.png"
+orig_LED_OFF.png			PNG "orig_LED_OFF.png"
+orig_LED_ON.png				PNG "orig_LED_ON.png"
+orig_LED_FX_OFF.png			PNG "orig_LED_FX_OFF.png"
+orig_LED_FX_ON.png			PNG "orig_LED_FX_ON.png"
+orig_LED_cover.png			PNG "orig_LED_cover.png"
+
+twarch_background.png		PNG "twarch/twarch_background.png"
+twarch_btn_IN.png			PNG "twarch/twarch_btn_IN.png"
+twarch_btn_CLIP.png			PNG "twarch/twarch_btn_CLIP.png"
+twarch_btn_SPLIT.png		PNG "twarch/twarch_btn_SPLIT.png"
+twarch_handle.png			PNG "twarch/twarch_handle.png"
+twarch_meter_off.png		PNG "twarch/twarch_meter_off.png"
+twarch_meter_on.png			PNG "twarch/twarch_meter_on.png"
+twarch_meter_fx_on.png		PNG "twarch/twarch_meter_fx_on.png"
+twarch_knob_yellow_.png		PNG "twarch/twarch_knob_yellow_.png"
+twarch_knob_red_.png		PNG "twarch/twarch_knob_red_.png"
 
 
 /////////////////////////////////////////////////////////////////////////////

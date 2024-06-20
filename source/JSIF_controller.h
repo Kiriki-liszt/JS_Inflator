@@ -9,6 +9,10 @@
 
 #include "public.sdk/source/vst/vsteditcontroller.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
+#include "vstgui/plugin-bindings/vst3groupcontroller.h"
+#include "vstgui/uidescription/delegationcontroller.h"
+
+#include "base/source/fobject.h"
 
 namespace VSTGUI {
 	//------------------------------------------------------------------------
@@ -150,6 +154,18 @@ namespace VSTGUI {
 
 namespace yg331 {
 
+class GUIEditor : public VSTGUI::VST3Editor
+{
+public:
+	using UTF8StringPtr = VSTGUI::UTF8StringPtr;
+	using EditController = Steinberg::Vst::EditController;
+
+	GUIEditor(EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile) : VSTGUI::VST3Editor(controller, templateName, xmlFile)
+	{}
+
+	Steinberg::tresult PLUGIN_API canResize() override;
+};
+
 //------------------------------------------------------------------------
 // VuMeterController
 //------------------------------------------------------------------------
@@ -278,8 +294,8 @@ public:
 	Steinberg::tresult PLUGIN_API notify(Steinberg::Vst::IMessage* message) SMTG_OVERRIDE;
 	Steinberg::tresult PLUGIN_API receiveText(const char* text) SMTG_OVERRIDE;
 	void PLUGIN_API update(Steinberg::FUnknown* changedUnknown, Steinberg::int32 message) SMTG_OVERRIDE;
-	void editorAttached(Steinberg::Vst::EditorView* editor) SMTG_OVERRIDE;
-	void editorRemoved (Steinberg::Vst::EditorView* editor) SMTG_OVERRIDE;
+	void editorAttached(Steinberg::Vst::EditorView* editor) SMTG_OVERRIDE; ///< called from EditorView if it was attached to a parent
+	void editorRemoved (Steinberg::Vst::EditorView* editor) SMTG_OVERRIDE; ///< called from EditorView if it was removed from a parent
 
 
 	//---from VST3EditorDelegate-----------
@@ -297,16 +313,7 @@ public:
 		closed. */
 	VSTGUI::IController* createSubController (VSTGUI::UTF8StringPtr name, 
 	                                          const VSTGUI::IUIDescription* description,
-	                                          VSTGUI::VST3Editor* editor) SMTG_OVERRIDE
-	{
-		if (VSTGUI::UTF8StringView(name) == "myVuMeterController")
-		{
-			auto* controller = new UIVuMeterController(this);
-			addUIVuMeterController(controller);
-			return controller;
-		}
-		return nullptr;
-	};
+	                                          VSTGUI::VST3Editor* editor) SMTG_OVERRIDE;
 
 	// IDataExchangeReceiver
 	void PLUGIN_API queueOpened (Steinberg::Vst::DataExchangeUserContextID userContextID,
@@ -318,7 +325,41 @@ public:
 		                                          Steinberg::Vst::DataExchangeBlock* blocks,
 		                                          Steinberg::TBool onBackgroundThread) SMTG_OVERRIDE;
 
-	
+	//------------------------------------------------------------------------
+	Steinberg::Vst::Parameter* getParameterObject(Steinberg::Vst::ParamID tag) SMTG_OVERRIDE
+	{
+		Steinberg::Vst::Parameter* param = EditController::getParameterObject(tag);
+		if (param == 0)
+		{
+			param = uiParameters.getParameter(tag);
+		}
+		return param;
+	}
+
+	// make sure that our UI only parameters doesn't call the following three EditController methods: beginEdit, endEdit, performEdit
+	//------------------------------------------------------------------------
+	Steinberg::tresult beginEdit(Steinberg::Vst::ParamID tag) SMTG_OVERRIDE
+	{
+		if (EditController::getParameterObject(tag))
+			return EditController::beginEdit(tag);
+		return Steinberg::kResultFalse;
+	}
+
+	//------------------------------------------------------------------------
+	Steinberg::tresult performEdit(Steinberg::Vst::ParamID tag, Steinberg::Vst::ParamValue valueNormalized) SMTG_OVERRIDE
+	{
+		if (EditController::getParameterObject(tag))
+			return EditController::performEdit(tag, valueNormalized);
+		return Steinberg::kResultFalse;
+	}
+
+	//------------------------------------------------------------------------
+	Steinberg::tresult endEdit(Steinberg::Vst::ParamID tag) SMTG_OVERRIDE
+	{
+		if (EditController::getParameterObject(tag))
+			return EditController::endEdit(tag);
+		return Steinberg::kResultFalse;
+	}
 
 	//---Internal functions-------
 	void addUIVuMeterController(UIVuMeterController* controller)
@@ -341,12 +382,16 @@ public:
 
 	//------------------------------------------------------------------------
 private:
+	// UI only parameter list
+	Steinberg::Vst::ParameterContainer uiParameters;
+
 	// editor list
 	typedef std::vector<Steinberg::Vst::EditorView*> EditorVector;
 	EditorVector editors;
 
 	// zoom title-value struct
-	struct ZoomFactor {
+	struct ZoomFactor 
+	{
 		const Steinberg::tchar* title;
 		double factor;
 
@@ -374,6 +419,8 @@ private:
     Steinberg::Vst::ParamValue stateZoom   = 0.0;
     Steinberg::Vst::ParamValue statePhase  = 0.0;
     Steinberg::int32           stateBypass = 0;
+
+	Steinberg::Vst::ParamValue stateGUI    = 0.0;
 };
 	
 } // namespace yg331

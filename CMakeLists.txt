@@ -36,18 +36,10 @@ smtg_add_vst3plugin(JS_Inflator
     source/JSIF_entry.cpp
 )
 
-set(ORIGINAL_GUI 1)
-#set(TWARCH 1)
-
-if(ORIGINAL_GUI)
-    add_compile_definitions(_ORIG)
-elseif(TWARCH)
-    add_compile_definitions(_TWARCH)
-endif()
+add_compile_definitions(_ORIG)
 
 #- VSTGUI Wanted ----
 if(SMTG_ENABLE_VSTGUI_SUPPORT)
-    if(ORIGINAL_GUI)
     target_sources(JS_Inflator
         PRIVATE
             resource/JSIF_editor.uidesc
@@ -55,37 +47,33 @@ if(SMTG_ENABLE_VSTGUI_SUPPORT)
     smtg_target_add_plugin_resources(JS_Inflator
         RESOURCES
             "resource/JSIF_editor.uidesc"
-            "resource/background.png"
-            "resource/button_onoff.png"
-            "resource/handle.png"
-            "resource/knob_green_.png"
-            "resource/knob_red_.png"
-            "resource/LED_cover.png"
-            "resource/LED_ON.png"
-            "resource/LED_OFF.png"
-            "resource/LED_FX_ON.png"
-            "resource/LED_FX_OFF.png"
-    )
-    elseif(TWARCH)
-    target_sources(JS_Inflator
-        PRIVATE
-            resource/twarch/JSIF_editor.uidesc
     )
     smtg_target_add_plugin_resources(JS_Inflator
         RESOURCES
-            "resource/twarch/JSIF_editor.uidesc"
-            "resource/twarch/background.png"
-            "resource/twarch/btn_CLIP.png"
-            "resource/twarch/btn_IN.png"
-            "resource/twarch/btn_SPLIT.png"
-            "resource/twarch/handle.png"
-            "resource/twarch/knob_red_.png"
-            "resource/twarch/knob_yellow_.png"
-            "resource/twarch/meter_off.png"
-            "resource/twarch/meter_on.png"
-            "resource/twarch/meter_fx_on.png"
+            "resource/orig_background.png"
+            "resource/orig_button_onoff.png"
+            "resource/orig_handle.png"
+            "resource/orig_knob_green_.png"
+            "resource/orig_knob_red_.png"
+            "resource/orig_LED_cover.png"
+            "resource/orig_LED_ON.png"
+            "resource/orig_LED_OFF.png"
+            "resource/orig_LED_FX_ON.png"
+            "resource/orig_LED_FX_OFF.png"
     )
-    endif()
+    smtg_target_add_plugin_resources(JS_Inflator
+        RESOURCES
+            "resource/twarch/twarch_background.png"
+            "resource/twarch/twarch_btn_CLIP.png"
+            "resource/twarch/twarch_btn_IN.png"
+            "resource/twarch/twarch_btn_SPLIT.png"
+            "resource/twarch/twarch_handle.png"
+            "resource/twarch/twarch_knob_red_.png"
+            "resource/twarch/twarch_knob_yellow_.png"
+            "resource/twarch/twarch_meter_off.png"
+            "resource/twarch/twarch_meter_on.png"
+            "resource/twarch/twarch_meter_fx_on.png"
+    )
     target_link_libraries(JS_Inflator
         PRIVATE
             vstgui_support

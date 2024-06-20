@@ -134,8 +134,10 @@ namespace VSTGUI {
 } // namespace VSTGUI
 
 namespace yg331 {
-
-
+Steinberg::tresult PLUGIN_API GUIEditor::canResize()
+	{
+		return Steinberg::kResultFalse;
+	}
 //------------------------------------------------------------------------
 // VuMeterController
 //------------------------------------------------------------------------
@@ -366,7 +368,7 @@ tresult PLUGIN_API JSIF_Controller::initialize(FUnknown* context)
 	tag = kParamClip;
 	stepCount = 1;
 	defaultVal = init_Clip ? 1 : 0;
-	flags = Vst::ParameterInfo::kCanAutomate;
+	flags = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsList;
 	parameters.addParameter(STR16("Clip"), nullptr, stepCount, defaultVal, flags, tag);
 
 	Vst::StringListParameter* OS = new Vst::StringListParameter(STR("OS"), kParamOS);
@@ -375,14 +377,46 @@ tresult PLUGIN_API JSIF_Controller::initialize(FUnknown* context)
 	OS->appendString(STR("x4"));
 	OS->appendString(STR("x8")); // stepCount is automzed!
 	OS->setNormalized(OS->toNormalized(0));
-	OS->addDependent(this);
+	// OS->addDependent(this);
 	parameters.addParameter(OS);
 
 	tag = kParamSplit;
 	stepCount = 1;
 	defaultVal = init_Split ? 1 : 0;
-	flags = Vst::ParameterInfo::kCanAutomate;
+	flags = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsList;
 	parameters.addParameter(STR16("Split"), nullptr, stepCount, defaultVal, flags, tag);
+
+	Vst::StringListParameter* Phase = new Vst::StringListParameter(STR("Phase"), kParamPhase);
+	Phase->appendString(STR("Min"));
+	Phase->appendString(STR("Max")); // stepCount is automzed!
+	defaultVal = init_Phase ? 1 : 0;
+	Phase->setNormalized(Phase->toNormalized(defaultVal));
+	// Phase->addDependent(this);
+	parameters.addParameter(Phase);
+
+	tag = kParamIn;
+	stepCount = 1;
+	defaultVal = init_In ? 1 : 0;
+	flags = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsList;
+	parameters.addParameter(STR16("In"), nullptr, stepCount, defaultVal, flags, tag);
+
+	tag = kParamBypass;
+	stepCount = 1;
+	defaultVal = init_Bypass ? 1 : 0;
+	flags = Vst::ParameterInfo::kIsBypass;
+	parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
+
+	// GUI only parameter
+	/*
+	flags = Vst::ParameterInfo::kIsList;
+	Vst::StringListParameter* guiSwitch = new Vst::StringListParameter(STR("GuiSwitch"), kGuiSwitch, nullptr, flags );
+	guiSwitch->appendString(STR("Original"));
+	guiSwitch->appendString(STR("Twarch"));
+	defaultVal = 0;
+	guiSwitch->setNormalized(guiSwitch->toNormalized(defaultVal));
+	guiSwitch->addDependent(this);
+	parameters.addParameter(guiSwitch);
+	*/
 
 	if (zoomFactors.empty())
 	{
@@ -402,28 +436,17 @@ tresult PLUGIN_API JSIF_Controller::initialize(FUnknown* context)
 	}
 	zoomParameter->setNormalized(zoomParameter->toNormalized(0));
 	zoomParameter->addDependent(this);
+	zoomParameter->deferUpdate();
 	parameters.addParameter(zoomParameter);
 
-
-	Vst::StringListParameter* Phase = new Vst::StringListParameter(STR("Phase"), kParamPhase);
-	Phase->appendString(STR("Min"));
-	Phase->appendString(STR("Max")); // stepCount is automzed!
-	defaultVal = init_Phase ? 1 : 0;
-	Phase->setNormalized(Phase->toNormalized(defaultVal));
-	Phase->addDependent(this);
-	parameters.addParameter(Phase);
-
-	tag = kParamIn;
-	stepCount = 1;
-	defaultVal = init_In ? 1 : 0;
-	flags = Vst::ParameterInfo::kCanAutomate;
-	parameters.addParameter(STR16("In"), nullptr, stepCount, defaultVal, flags, tag);
-
-	tag = kParamBypass;
-	stepCount = 1;
-	defaultVal = init_Bypass ? 1 : 0;
-	flags = Vst::ParameterInfo::kIsBypass;
-	parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
+	Vst::StringListParameter* GuiSwitch = new Vst::StringListParameter(STR("kGuiSwitch"), kGuiSwitch);
+	GuiSwitch->appendString(STR("Original"));
+	GuiSwitch->appendString(STR("Twarch")); // stepCount is automzed!
+	defaultVal = stateGUI == 0.0 ? 0 : 1;
+	GuiSwitch->setNormalized(Phase->toNormalized(defaultVal));
+	GuiSwitch->addDependent(this);
+	GuiSwitch->deferUpdate();
+	parameters.addParameter(GuiSwitch);
 
 	return result;
 }
@@ -432,7 +455,8 @@ tresult PLUGIN_API JSIF_Controller::initialize(FUnknown* context)
 tresult PLUGIN_API JSIF_Controller::terminate()
 {
 	// Here the Plug-in will be de-instantiated, last possibility to remove some memory!
-
+	getParameterObject(kParamZoom)->removeDependent(this);
+	getParameterObject(kGuiSwitch)->removeDependent(this);
 	//---do not forget to call parent ------
 	return EditControllerEx1::terminate();
 }
@@ -520,6 +544,7 @@ tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
     int32           savedSplit  = 0;
     Vst::ParamValue savedZoom   = 0.0;
     Vst::ParamValue savedPhase  = 0.0;
+    Vst::ParamValue savedGUI    = 0.0;
     //int32           savedBypass = 0;
 
     if (streamer.readDouble(savedInput)  == false) return kResultFalse;
@@ -532,6 +557,7 @@ tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
     if (streamer.readInt32 (savedSplit)  == false) return kResultFalse;
     if (streamer.readDouble(savedZoom)   == false) return kResultFalse;
     if (streamer.readDouble(savedPhase)  == false) return kResultFalse;
+    if (streamer.readDouble(savedGUI)    == false) return kResultFalse;
     //if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
 
     setParamNormalized(kParamInput,  savedInput);
@@ -544,6 +570,7 @@ tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
     setParamNormalized(kParamSplit,  savedSplit  ? 1 : 0);
     setParamNormalized(kParamZoom,   savedZoom);
     setParamNormalized(kParamPhase,  savedPhase);
+    setParamNormalized(kGuiSwitch,   savedGUI);
     //setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
 
     stateInput  = savedInput;
@@ -556,6 +583,7 @@ tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
     stateSplit  = savedSplit;
     stateZoom   = savedZoom;
     statePhase  = savedPhase;
+	stateGUI    = savedGUI;
     //stateBypass = savedBypass;
     
 	return kResultTrue;
@@ -580,6 +608,7 @@ tresult PLUGIN_API JSIF_Controller::getState(IBStream* state)
     stateSplit  = getParamNormalized (kParamSplit);
     stateZoom   = getParamNormalized (kParamZoom);
     statePhase  = getParamNormalized (kParamPhase);
+	stateGUI    = getParamNormalized (kGuiSwitch);
     
     streamer.writeDouble(stateInput);
     streamer.writeDouble(stateEffect);
@@ -591,6 +620,7 @@ tresult PLUGIN_API JSIF_Controller::getState(IBStream* state)
     streamer.writeInt32(stateSplit ? 1 : 0);
     streamer.writeDouble(stateZoom);
     streamer.writeDouble(statePhase);
+    streamer.writeDouble(stateGUI);
     //streamer.writeInt32(stateBypass ? 1 : 0);
 
 	return kResultTrue;
@@ -602,19 +632,36 @@ IPlugView* PLUGIN_API JSIF_Controller::createView(FIDString name)
 	// Here the Host wants to open your editor (if you have one)
 	if (FIDStringsEqual(name, Vst::ViewType::kEditor))
 	{
+		GUIEditor* view;
 		// create your editor here and return a IPlugView ptr of it
-		auto* view = new VSTGUI::VST3Editor(this, "view", "JSIF_editor.uidesc");
+		if (stateGUI == 0.0) 
+			view = new GUIEditor(this, "Original", "JSIF_editor.uidesc");
+		else 
+			view = new GUIEditor(this, "Twarch", "JSIF_editor.uidesc");
 
 		view->setZoomFactor(0.5);
+		view->setIdleRate(1.0/60.0);
+
 		setKnobMode(Steinberg::Vst::KnobModes::kLinearMode);
 
 		return view;
-
 	}
 	return nullptr;
 }
 
-
+VSTGUI::IController* JSIF_Controller::createSubController(
+	VSTGUI::UTF8StringPtr name,
+	const VSTGUI::IUIDescription* description,
+	VSTGUI::VST3Editor* editor) 
+{
+	if (VSTGUI::UTF8StringView(name) == "myVuMeterController")
+	{
+		auto* controller = new UIVuMeterController(this);
+		addUIVuMeterController(controller);
+		return controller;
+	}
+	return nullptr;
+};
 
 
 //------------------------------------------------------------------------
@@ -640,7 +687,7 @@ void PLUGIN_API JSIF_Controller::update(FUnknown* changedUnknown, int32 message)
 	// GUI Resizing
 	// check 'zoomtest' code at
 	// https://github.com/steinbergmedia/vstgui/tree/vstgui4_10/vstgui/tests/uidescription%20vst3/source
-		
+
 	Vst::Parameter* param = FCast<Vst::Parameter>(changedUnknown);
 	if (!param)
 		return;
@@ -657,6 +704,30 @@ void PLUGIN_API JSIF_Controller::update(FUnknown* changedUnknown, int32 message)
 			VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(*it);
 			if (editor)
 				editor->setZoomFactor(zoomFactors[index].factor);
+		}
+	}
+	if (param->getInfo().id == kGuiSwitch)
+	{
+		Vst::ParamValue index = param->getNormalized();
+		if (index != stateGUI) {
+			stateGUI = index;
+			for (EditorVector::const_iterator it = editors.begin(), end = editors.end(); it != end; ++it)
+			{
+				/*
+				* at CPluginView
+				tresult PLUGIN_API canResize() SMTG_OVERRIDE { return kResultFalse; }
+				tresult PLUGIN_API checkSizeConstraint(ViewRect* rect) SMTG_OVERRIDE
+				{
+					return kResultFalse;
+				}
+				*/
+				VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(*it);
+				if (editor) {
+					if (index == 0.0) editor->exchangeView("Original");
+					else if (index == 1.0) editor->exchangeView("Twarch");
+				}
+				
+			}
 		}
 	}
 }

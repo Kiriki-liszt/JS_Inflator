@@ -29,7 +29,8 @@ enum {
     kParamZoom,
     kParamPhase,
     kParamIn,        // ByPass
-    kParamBypass
+    kParamBypass,
+    kGuiSwitch = 1000
 };
 //------------------------------------------------------------------------
 } // namespace yg331
