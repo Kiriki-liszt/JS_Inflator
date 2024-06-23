@@ -8,12 +8,17 @@ Also double precision input / output if supported.
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/screenshot_twarch.png"  width="400"/>
 
 Comes in two GUIs.
-The alternative GUI is made by Twarch.
+The alternative GUI is made by Twarch.  
+
+## Known Issues  
+
+In Apple macOS M-series native, oversampling over x4 are not working.  
+It works well in Rosetta.  
 
 ## Builds and Requirements  
 
-Windows - x64, SSE2  
-Mac - macos 10.13 ~ 14.5, SSE2 or NEON  
+Windows - x64  
+Mac - macos 10.13 ~ 14.5  
 
 ## Project Compability  
 
@@ -118,6 +123,7 @@ v2.0.0
 * Meters are now following envelope detector with time contants.  
 
 v2.0.1: Fix for Crash for Ableton, and fix for VU meter in Twarch GUI.  
+v2.0.2: Two GUIs are now integrated to one plugin.  
 
 ## What I've learned
 
@@ -163,7 +169,7 @@ Now it is free of Phase issuses.
 
 * Comparisons  
 1x  
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_1x.png"  width="400"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_1x_Min.png"  width="400"/>  
 
 2x Min-phase  
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/OS_2x_Min.png"  width="400"/>  
