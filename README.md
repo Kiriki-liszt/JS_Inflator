@@ -4,7 +4,7 @@ JS Inflator is a copy of Sonox Inflator.
 Runs in double precision 64-bit internal processing.  
 Also double precision input / output if supported.  
 
-<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/screenshot_both.png"  width="1280"/>  
+<img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/screenshot_both.png"  width="600"/>  
 
 Comes in two GUIs.
 The alternative GUI is made by Twarch.  
