@@ -329,7 +329,7 @@ protected:
 	// VU metering ----------------------------------------------------------------
 	LevelEnvelopeFollower VuInput, VuOutput;
 
-	static SMTG_CONSTEXPR ParamValue init_meter = -std::numeric_limits<double>::infinity();
+	static SMTG_CONSTEXPR ParamValue init_meter = 0.0;
 	ParamValue Meter = init_meter;
 	std::vector<std::vector<ParamValue>> buff;
 	std::vector<ParamValue*> buff_head;

@@ -471,6 +471,10 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		Vst::SampleRate SampleRate = processSetup.sampleRate;
 		int32 numChannels = data.inputs[0].numChannels;
 
+		// init VuMeters
+		for (auto& loop : fInputVu) loop = init_meter;
+		for (auto& loop : fOutputVu) loop = init_meter;
+		fMeterVu = init_meter;
 
 		//---check if silence---------------
 		// check if all channel are silent then process silent
@@ -489,57 +493,55 @@ else if (filter[channel].TAP_CONDITION == 3) \
 					memset(out[channel], 0, sampleFramesSize);
 				}
 			}
-			return kResultOk;
+			// Even Silence, we should process VU meter and send data. 
+			// return kResultOk;
 		}
-
-		data.outputs[0].silenceFlags = data.inputs[0].silenceFlags;
-
-		for (auto& loop : fInputVu ) loop = init_meter;
-		for (auto& loop : fOutputVu) loop = init_meter;
-		fMeterVu = init_meter;
-		
-
-		//---in bypass mode outputs should be like inputs-----
-		if (bBypass)
+		else
 		{
-			if (data.symbolicSampleSize == Vst::kSample32)
+			data.outputs[0].silenceFlags = data.inputs[0].silenceFlags;
+
+			//---in bypass mode outputs should be like inputs-----
+			if (bBypass)
 			{
-				latencyBypass<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, numChannels, SampleRate, data.numSamples);
+				if (data.symbolicSampleSize == Vst::kSample32)
+				{
+					latencyBypass<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, numChannels, SampleRate, data.numSamples);
+				}
+				else if (data.symbolicSampleSize == Vst::kSample64)
+				{
+					latencyBypass<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, numChannels, SampleRate, data.numSamples);
+				}
+
+				fMeterVu = 0.0;
 			}
-			else if (data.symbolicSampleSize == Vst::kSample64) 
-			{
-				latencyBypass<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, numChannels, SampleRate, data.numSamples);
+			else {
+				if (data.symbolicSampleSize == Vst::kSample32)
+				{
+					processAudio<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, numChannels, SampleRate, data.numSamples);
+				}
+				else if (data.symbolicSampleSize == Vst::kSample64)
+				{
+					processAudio<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, numChannels, SampleRate, data.numSamples);
+				}
+
+				long div = data.numSamples;
+
+				Meter /= (double)div;
+				Meter /= (double)numChannels;
+				Meter *= 1000.0;
+
+				fMeterVu = 0.4 * log10(std::abs(Meter));
+				fMeterVu *= fEffect;
+				fMeterVu *= bIn;
+				// FDebugPrint("Meter = %f \n", fMeterVu);
 			}
 
-			fMeterVu = 0.0;
+			double monoIn = 0.0;
+			for (auto& loop : fInputVu) { loop = VuPPMconvert(loop);  monoIn += loop; }
+			for (auto& loop : fOutputVu) loop = VuPPMconvert(loop);
+			monoIn /= (double)numChannels;
+			fMeterVu *= monoIn;
 		}
-		else {
-			if (data.symbolicSampleSize == Vst::kSample32) 
-			{
-				processAudio<Vst::Sample32>((Vst::Sample32**)in, (Vst::Sample32**)out, numChannels, SampleRate, data.numSamples);
-			}
-			else if (data.symbolicSampleSize == Vst::kSample64)
-			{
-				processAudio<Vst::Sample64>((Vst::Sample64**)in, (Vst::Sample64**)out, numChannels, SampleRate, data.numSamples);
-			}
-
-			long div = data.numSamples;
-
-			Meter /= (double)div;
-			Meter /= (double)numChannels;
-			Meter *= 1000.0;
-
-			fMeterVu = 0.4 * log10(std::abs(Meter));
-			fMeterVu *= fEffect;
-			fMeterVu *= bIn;
-			// FDebugPrint("Meter = %f \n", fMeterVu);
-		}
-
-        double monoIn = 0.0;
-        for (auto& loop : fInputVu) {loop = VuPPMconvert(loop);  monoIn += loop;}
-		for (auto& loop : fOutputVu) loop = VuPPMconvert(loop);
-        monoIn /= (double)numChannels;
-        fMeterVu *= monoIn;
         
 		if (currentExchangeBlock.blockID == Vst::InvalidDataExchangeBlockID)
 			acquireNewExchangeBlock();
