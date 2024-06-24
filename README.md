@@ -123,6 +123,7 @@ v2.0.0
 
 v2.0.1: Fix for Crash for Ableton, and fix for VU meter in Twarch GUI.  
 v2.0.2: Two GUIs are now integrated to one plugin.  
+v2.0.2.1: GUI recall state corrected.  
 
 ## What I've learned
 
