@@ -388,6 +388,7 @@ private:
 	// editor list
 	typedef std::vector<Steinberg::Vst::EditorView*> EditorVector;
 	EditorVector editors;
+	Steinberg::Vst::EditorView* mainView = nullptr;
 
 	// zoom title-value struct
 	struct ZoomFactor 

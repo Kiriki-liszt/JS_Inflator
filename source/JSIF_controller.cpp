@@ -436,7 +436,7 @@ tresult PLUGIN_API JSIF_Controller::initialize(FUnknown* context)
 	}
 	zoomParameter->setNormalized(zoomParameter->toNormalized(0));
 	zoomParameter->addDependent(this);
-	zoomParameter->deferUpdate();
+	// zoomParameter->deferUpdate();
 	parameters.addParameter(zoomParameter);
 
 	Vst::StringListParameter* GuiSwitch = new Vst::StringListParameter(STR("kGuiSwitch"), kGuiSwitch);
@@ -445,7 +445,7 @@ tresult PLUGIN_API JSIF_Controller::initialize(FUnknown* context)
 	defaultVal = stateGUI == 0.0 ? 0 : 1;
 	GuiSwitch->setNormalized(Phase->toNormalized(defaultVal));
 	GuiSwitch->addDependent(this);
-	GuiSwitch->deferUpdate();
+	// GuiSwitch->deferUpdate();
 	parameters.addParameter(GuiSwitch);
 
 	return result;
@@ -526,8 +526,12 @@ tresult PLUGIN_API JSIF_Controller::setComponentState(IBStream* state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
 {
-	// loading UI only state
+	// Loading UI state independently
 
+	// In case of Bitwig, createView is called before setState. 
+	// So saved GUI type state is not correctly reproduced. 
+	// Also, Editors are added while GUI is opening -> so have to manually save created base view and call exchangeView. 
+	
 	// Here you get the state of the controller
     if (!state)
         return kResultFalse;
@@ -557,7 +561,8 @@ tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
     if (streamer.readInt32 (savedSplit)  == false) return kResultFalse;
     if (streamer.readDouble(savedZoom)   == false) return kResultFalse;
     if (streamer.readDouble(savedPhase)  == false) return kResultFalse;
-    if (streamer.readDouble(savedGUI)    == false) return kResultFalse;
+	// added after version update, have to init state
+	if (streamer.readDouble(savedGUI) == false) savedGUI = 0.0; // return kResultFalse;
     //if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
 
     setParamNormalized(kParamInput,  savedInput);
@@ -572,6 +577,15 @@ tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
     setParamNormalized(kParamPhase,  savedPhase);
     setParamNormalized(kGuiSwitch,   savedGUI);
     //setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
+
+	if(mainView)
+	{
+		VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(mainView);
+		if (editor) {
+			if      (savedGUI == 0.0) editor->exchangeView("Original");
+			else if (savedGUI == 1.0) editor->exchangeView("Twarch");
+		}
+	}
 
     stateInput  = savedInput;
     stateEffect = savedEffect;
@@ -644,6 +658,8 @@ IPlugView* PLUGIN_API JSIF_Controller::createView(FIDString name)
 
 		setKnobMode(Steinberg::Vst::KnobModes::kLinearMode);
 
+		mainView = dynamic_cast<Steinberg::Vst::EditorView*>(view);
+
 		return view;
 	}
 	return nullptr;
@@ -714,16 +730,15 @@ void PLUGIN_API JSIF_Controller::update(FUnknown* changedUnknown, int32 message)
 			for (EditorVector::const_iterator it = editors.begin(), end = editors.end(); it != end; ++it)
 			{
 				/*
-				* at CPluginView
-				tresult PLUGIN_API canResize() SMTG_OVERRIDE { return kResultFalse; }
-				tresult PLUGIN_API checkSizeConstraint(ViewRect* rect) SMTG_OVERRIDE
-				{
-					return kResultFalse;
-				}
+				// CPluginView
+				tresult PLUGIN_API canResize() SMTG_OVERRIDE 
+					{ return kResultFalse; }
+				tresult PLUGIN_API checkSizeConstraint(ViewRect* rect) SMTG_OVERRIDE 
+					{ return kResultFalse; }
 				*/
 				VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(*it);
 				if (editor) {
-					if (index == 0.0) editor->exchangeView("Original");
+					if      (index == 0.0) editor->exchangeView("Original");
 					else if (index == 1.0) editor->exchangeView("Twarch");
 				}
 				

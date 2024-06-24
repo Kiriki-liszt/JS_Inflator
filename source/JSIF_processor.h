@@ -398,3 +398,6 @@ protected:
 };
 //------------------------------------------------------------------------
 } // namespace yg331
+
+// C:\Program Files\Steinberg\VST3PluginTestHost\VST3PluginTestHost.exe
+// --pluginfolder "$(OutDir)/"
