@@ -219,11 +219,11 @@ setKnobMode(Steinberg::Vst::KnobModes::kLinearMode);
 
 * How VSTSDK identifies each plugins  
 
-Is uses "Steinberg::FUID kProcessorUID" in cid header to identify plugin.  
+It uses "Steinberg::FUID kProcessorUID" in cid header to identify plugin.  
 So, if ProcessorUID is kept same, host will see it as same plugin.  
 In example, project using v1.7.0 'InflatorPackage' will automatically replace it with v2.0.0 'JS Inflator', with same settings.  
 
-However, ParamIDs shuld be same as before while replacing old plugin with new one.  
+However, ParamIDs should be same as before while replacing old plugin with new one.  
 If else, one should use Vst::IRemapParamID introduced in VSTSDK v3.7.11.  
 
 * About AUv2  
