@@ -4,8 +4,8 @@ JS Inflator is a copy of Sonox Inflator.
 Runs in double precision 64-bit internal processing.  
 Also double precision input / output if supported.  
 
-[![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/kiriki-liszt/JS_Inflator/total?style=flat-square&label=Download%20latest%20Release)
-](https://github.com/Kiriki-liszt/JS_Inflator/releases/latest)  
+[![GitHub Release](https://img.shields.io/github/v/release/kiriki-liszt/JS_Inflator?style=flat-square&label=Get%20latest%20Release)](https://github.com/Kiriki-liszt/JS_Inflator/releases/latest)
+[![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/kiriki-liszt/JS_Inflator/total?style=flat-square&label=total%20downloads&color=blue)](https://github.com/Kiriki-liszt/JS_Inflator/releases/latest)  
 
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/screenshot_both.png"  width="600"/>  
 
