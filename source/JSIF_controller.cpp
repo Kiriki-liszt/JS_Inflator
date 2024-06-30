@@ -551,53 +551,32 @@ tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
     Vst::ParamValue savedGUI    = 0.0;
     //int32           savedBypass = 0;
 
-    if (streamer.readDouble(savedInput)  == false) return kResultFalse;
-    if (streamer.readDouble(savedEffect) == false) return kResultFalse;
-    if (streamer.readDouble(savedCurve)  == false) return kResultFalse;
-    if (streamer.readDouble(savedOutput) == false) return kResultFalse;
-    if (streamer.readDouble(savedOS)     == false) return kResultFalse;
-    if (streamer.readInt32 (savedClip)   == false) return kResultFalse;
-    if (streamer.readInt32 (savedIn)     == false) return kResultFalse;
-    if (streamer.readInt32 (savedSplit)  == false) return kResultFalse;
-    if (streamer.readDouble(savedZoom)   == false) return kResultFalse;
-    if (streamer.readDouble(savedPhase)  == false) return kResultFalse;
-	// added after version update, have to init state
-	if (streamer.readDouble(savedGUI) == false) savedGUI = 0.0; // return kResultFalse;
-    //if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
-
-    setParamNormalized(kParamInput,  savedInput);
-    setParamNormalized(kParamEffect, savedEffect);
-    setParamNormalized(kParamCurve,  savedCurve);
-    setParamNormalized(kParamOutput, savedOutput);
-    setParamNormalized(kParamOS,     savedOS);
-    setParamNormalized(kParamClip,   savedClip   ? 1 : 0);
-    setParamNormalized(kParamIn,     savedIn     ? 1 : 0);
-    setParamNormalized(kParamSplit,  savedSplit  ? 1 : 0);
-    setParamNormalized(kParamZoom,   savedZoom);
-    setParamNormalized(kParamPhase,  savedPhase);
-    setParamNormalized(kGuiSwitch,   savedGUI);
-    //setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
-
-	if(mainView)
+	if (streamer.readDouble(savedInput)  == true) { setParamNormalized(kParamInput,  savedInput);         stateInput  = savedInput;  }
+    if (streamer.readDouble(savedEffect) == true) { setParamNormalized(kParamEffect, savedEffect);        stateEffect = savedEffect; }
+    if (streamer.readDouble(savedCurve)  == true) { setParamNormalized(kParamCurve,  savedCurve);         stateCurve  = savedCurve;  }
+    if (streamer.readDouble(savedOutput) == true) { setParamNormalized(kParamOutput, savedOutput);        stateOutput = savedOutput; }
+    if (streamer.readDouble(savedOS)     == true) { setParamNormalized(kParamOS,     savedOS);            stateOS     = savedOS;     }
+    if (streamer.readInt32 (savedClip)   == true) { setParamNormalized(kParamClip,   savedClip  ? 1 : 0); stateClip   = savedClip;   }
+    if (streamer.readInt32 (savedIn)     == true) { setParamNormalized(kParamIn,     savedIn    ? 1 : 0); stateIn     = savedIn;     }
+    if (streamer.readInt32 (savedSplit)  == true) { setParamNormalized(kParamSplit,  savedSplit ? 1 : 0); stateSplit  = savedSplit;  }
+    if (streamer.readDouble(savedZoom)   == true) { setParamNormalized(kParamZoom,   savedZoom);          stateZoom   = savedZoom;   }
+    if (streamer.readDouble(savedPhase)  == true) { setParamNormalized(kParamPhase,  savedPhase);         statePhase  = savedPhase;  }
+	if (streamer.readDouble(savedGUI)    == true) 
 	{
-		VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(mainView);
-		if (editor) {
-			if      (savedGUI == 0.0) editor->exchangeView("Original");
-			else if (savedGUI == 1.0) editor->exchangeView("Twarch");
+		setParamNormalized(kGuiSwitch, savedGUI);
+		if (mainView)
+		{
+			VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(mainView);
+			if (editor) {
+				if (savedGUI == 0.0) editor->exchangeView("Original");
+				else if (savedGUI == 1.0) editor->exchangeView("Twarch");
+			}
 		}
+		stateGUI = savedGUI;
 	}
 
-    stateInput  = savedInput;
-    stateEffect = savedEffect;
-    stateCurve  = savedCurve;
-    stateOutput = savedOutput;
-    stateOS     = savedOS;
-    stateClip   = savedClip;
-    stateIn     = savedIn;
-    stateSplit  = savedSplit;
-    stateZoom   = savedZoom;
-    statePhase  = savedPhase;
-	stateGUI    = savedGUI;
+    //if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
+    //setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
     //stateBypass = savedBypass;
     
 	return kResultTrue;
