@@ -15,7 +15,7 @@ project(JS_Inflator
     # This is your plug-in version number. Change it here only.
     # Version number symbols usable in C++ can be found in
     # source/version.h and ${PROJECT_BINARY_DIR}/projectversion.h.
-    VERSION 2.0.2.1
+    VERSION 2.0.2.2
     DESCRIPTION "JS Inflator VST 3 Plug-in"
 )
 
@@ -35,8 +35,6 @@ smtg_add_vst3plugin(JS_Inflator
     source/JSIF_controller.cpp
     source/JSIF_entry.cpp
 )
-
-add_compile_definitions(_ORIG)
 
 #- VSTGUI Wanted ----
 if(SMTG_ENABLE_VSTGUI_SUPPORT)

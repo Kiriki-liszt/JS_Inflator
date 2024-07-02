@@ -526,9 +526,9 @@ tresult PLUGIN_API JSIF_Controller::setComponentState(IBStream* state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
 {
-	// Loading UI state independently
+	// Loading UI state independently <- reload because of AUv2 overwrites GUI parameters to default AFTER setComponentState. 
 
-	// In case of Bitwig, createView is called before setState. 
+	// Moreover, in case of Bitwig, createView is called before setState. 
 	// So saved GUI type state is not correctly reproduced. 
 	// Also, Editors are added while GUI is opening -> so have to manually save created base view and call exchangeView. 
 	
@@ -568,7 +568,7 @@ tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
 		{
 			VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(mainView);
 			if (editor) {
-				if (savedGUI == 0.0) editor->exchangeView("Original");
+				if      (savedGUI == 0.0) editor->exchangeView("Original");
 				else if (savedGUI == 1.0) editor->exchangeView("Twarch");
 			}
 		}
