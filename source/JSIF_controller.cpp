@@ -16,207 +16,166 @@
 
 using namespace Steinberg;
 
-static const std::string kAttrVuOnColor = "vu-on-color";
+static const std::string kAttrVuOnColor  = "vu-on-color";
 static const std::string kAttrVuOffColor = "vu-off-color";
 
 namespace VSTGUI {
-	class myVuMeterFactory : public ViewCreatorAdapter
-	{
-	public:
-		//register this class with the view factory
-		myVuMeterFactory() { UIViewFactory::registerViewCreator(*this); }
+class myVuMeterFactory : public ViewCreatorAdapter
+{
+public:
+    //register this class with the view factory
+    myVuMeterFactory() { UIViewFactory::registerViewCreator(*this); }
 
-		//return an unique name here
-		IdStringPtr getViewName() const SMTG_OVERRIDE { return "My Vu Meter"; }
+    //return an unique name here
+    IdStringPtr getViewName() const SMTG_OVERRIDE { return "My Vu Meter"; }
 
-		//return the name here from where your custom view inherites.
-		//	Your view automatically supports the attributes from it.
-		IdStringPtr getBaseViewName() const SMTG_OVERRIDE { return UIViewCreator::kCControl; }
+    //return the name here from where your custom view inherites.
+    //	Your view automatically supports the attributes from it.
+    IdStringPtr getBaseViewName() const SMTG_OVERRIDE { return UIViewCreator::kCControl; }
 
-		//create your view here.
-		//	Note you don't need to apply attributes here as
-		//	the apply method will be called with this new view
-		CView* create(const UIAttributes& attributes, const IUIDescription* description) const SMTG_OVERRIDE
-		{
-			return new MyVuMeter(CRect(0,0,100,20), 2);
-		}
-		bool apply(
-			CView* view,
-			const UIAttributes& attributes,
-			const IUIDescription* description) const SMTG_OVERRIDE
-		{
-			auto* vuMeter = dynamic_cast<MyVuMeter*> (view);
+    //create your view here.
+    //	Note you don't need to apply attributes here as
+    //	the apply method will be called with this new view
+    CView* create(const UIAttributes& attributes, const IUIDescription* description) const SMTG_OVERRIDE
+    {
+        return new MyVuMeter(CRect(0,0,100,20), 2);
+    }
+    bool apply(
+        CView* view,
+        const UIAttributes& attributes,
+        const IUIDescription* description) const SMTG_OVERRIDE
+    {
+        auto* vuMeter = dynamic_cast<MyVuMeter*> (view);
 
-			if (!vuMeter)
-				return false;
+        if (!vuMeter)
+            return false;
 
-			const auto* attr = attributes.getAttributeValue(UIViewCreator::kAttrOrientation);
-			if (attr)
-				vuMeter->setStyle(*attr == UIViewCreator::strVertical ? MyVuMeter::kVertical : MyVuMeter::kHorizontal);
+        const auto* attr = attributes.getAttributeValue(UIViewCreator::kAttrOrientation);
+        if (attr)
+            vuMeter->setStyle(*attr == UIViewCreator::strVertical ? MyVuMeter::kVertical : MyVuMeter::kHorizontal);
 
-			CColor color;
-			if (UIViewCreator::stringToColor(attributes.getAttributeValue(kAttrVuOnColor), color, description))
-				vuMeter->setVuOnColor(color);
-			if (UIViewCreator::stringToColor(attributes.getAttributeValue(kAttrVuOffColor), color, description))
-				vuMeter->setVuOffColor(color);
+        CColor color;
+        if (UIViewCreator::stringToColor(attributes.getAttributeValue(kAttrVuOnColor), color, description))
+            vuMeter->setVuOnColor(color);
+        if (UIViewCreator::stringToColor(attributes.getAttributeValue(kAttrVuOffColor), color, description))
+            vuMeter->setVuOffColor(color);
 
-			return true;
-		}
+        return true;
+    }
 
-		bool getAttributeNames(StringList& attributeNames) const SMTG_OVERRIDE
-		{
-			attributeNames.emplace_back(UIViewCreator::kAttrOrientation);
-			attributeNames.emplace_back(kAttrVuOnColor);
-			attributeNames.emplace_back(kAttrVuOffColor);
-			return true;
-		}
+    bool getAttributeNames(StringList& attributeNames) const SMTG_OVERRIDE
+    {
+        attributeNames.emplace_back(UIViewCreator::kAttrOrientation);
+        attributeNames.emplace_back(kAttrVuOnColor);
+        attributeNames.emplace_back(kAttrVuOffColor);
+        return true;
+    }
 
-		AttrType getAttributeType(const std::string& attributeName) const SMTG_OVERRIDE
-		{
-			if (attributeName == UIViewCreator::kAttrOrientation)
-				return kListType;
-			if (attributeName == kAttrVuOnColor)
-				return kColorType;
-			if (attributeName == kAttrVuOffColor)
-				return kColorType;
-			return kUnknownType;
-		}
+    AttrType getAttributeType(const std::string& attributeName) const SMTG_OVERRIDE
+    {
+        if (attributeName == UIViewCreator::kAttrOrientation)
+            return kListType;
+        if (attributeName == kAttrVuOnColor)
+            return kColorType;
+        if (attributeName == kAttrVuOffColor)
+            return kColorType;
+        return kUnknownType;
+    }
 
-		//------------------------------------------------------------------------
-		bool getAttributeValue(
-			CView* view,
-			const string& attributeName,
-			string& stringValue,
-			const IUIDescription* desc) const SMTG_OVERRIDE
-		{
-			auto* vuMeter = dynamic_cast<MyVuMeter*> (view);
+    //------------------------------------------------------------------------
+    bool getAttributeValue(
+        CView* view,
+        const string& attributeName,
+        string& stringValue,
+        const IUIDescription* desc) const SMTG_OVERRIDE
+    {
+        auto* vuMeter = dynamic_cast<MyVuMeter*> (view);
 
-			if (!vuMeter)
-				return false;
+        if (!vuMeter)
+            return false;
 
-			if (attributeName == UIViewCreator::kAttrOrientation)
-			{
-				if (vuMeter->getStyle() & MyVuMeter::kVertical)
-					stringValue = UIViewCreator::strVertical;
-				else
-					stringValue = UIViewCreator::strHorizontal;
-				return true;
-			}
-			else if (attributeName == kAttrVuOnColor)
-			{
-				UIViewCreator::colorToString(vuMeter->getVuOnColor(), stringValue, desc);
-				return true;
-			}
-			else if (attributeName == kAttrVuOffColor)
-			{
-				UIViewCreator::colorToString(vuMeter->getVuOffColor(), stringValue, desc);
-				return true;
-			}
-			return false;
-		}
+        if (attributeName == UIViewCreator::kAttrOrientation)
+        {
+            if (vuMeter->getStyle() & MyVuMeter::kVertical)
+                stringValue = UIViewCreator::strVertical;
+            else
+                stringValue = UIViewCreator::strHorizontal;
+            return true;
+        }
+        else if (attributeName == kAttrVuOnColor)
+        {
+            UIViewCreator::colorToString(vuMeter->getVuOnColor(), stringValue, desc);
+            return true;
+        }
+        else if (attributeName == kAttrVuOffColor)
+        {
+            UIViewCreator::colorToString(vuMeter->getVuOffColor(), stringValue, desc);
+            return true;
+        }
+        return false;
+    }
 
-		//------------------------------------------------------------------------
-		bool getPossibleListValues(
-			const string& attributeName,
-			ConstStringPtrList& values) const SMTG_OVERRIDE
-		{
-			if (attributeName == UIViewCreator::kAttrOrientation)
-			{
-				return UIViewCreator::getStandardAttributeListValues(UIViewCreator::kAttrOrientation, values);
-			}
-			return false;
-		}
+    //------------------------------------------------------------------------
+    bool getPossibleListValues(
+        const string& attributeName,
+        ConstStringPtrList& values) const SMTG_OVERRIDE
+    {
+        if (attributeName == UIViewCreator::kAttrOrientation)
+        {
+            return UIViewCreator::getStandardAttributeListValues(UIViewCreator::kAttrOrientation, values);
+        }
+        return false;
+    }
 
-	};
+};
 
-	//create a static instance so that it registers itself with the view factory
-	myVuMeterFactory __gmyVuMeterFactory;
+//create a static instance so that it registers itself with the view factory
+myVuMeterFactory __gmyVuMeterFactory;
+
+Steinberg::tresult PLUGIN_API GUIEditor::canResize()
+{
+    return Steinberg::kResultFalse;
+}
+
 } // namespace VSTGUI
 
 namespace yg331 {
-Steinberg::tresult PLUGIN_API GUIEditor::canResize()
-	{
-		return Steinberg::kResultFalse;
-	}
+
 //------------------------------------------------------------------------
 // VuMeterController
 //------------------------------------------------------------------------
 template<> void JSIF_Controller::UIVuMeterController::setVuMeterValue(double inL, double inR, double outL, double outR, double GR)
 {
-    if (vuMeterInL) {
-        vuMeterInL->setValueNormalized(inL);
-        vuMeterInL->setDirty(true);
-    }
-    if (vuMeterInR) {
-        vuMeterInR->setValueNormalized(inR);
-        vuMeterInR->setDirty(true);
-    }
-    else if (vuMeterOutL) {
-        vuMeterOutL->setValueNormalized(outL);
-        vuMeterOutL->setDirty(true);
-    }
-    else if (vuMeterOutR) {
-        vuMeterOutR->setValueNormalized(outR);
-        vuMeterOutR->setDirty(true);
-    }
-    else if (vuMeterGR) {
-        vuMeterGR->setValueNormalized(GR);
-        vuMeterGR->setDirty(true);
-    }
+    if (vuMeterInL)  { vuMeterInL-> setValueNormalized(inL);  vuMeterInL-> setDirty(true); }
+    if (vuMeterInR)  { vuMeterInR-> setValueNormalized(inR);  vuMeterInR-> setDirty(true); }
+    if (vuMeterOutL) { vuMeterOutL->setValueNormalized(outL); vuMeterOutL->setDirty(true); }
+    if (vuMeterOutR) { vuMeterOutR->setValueNormalized(outR); vuMeterOutR->setDirty(true); }
+    if (vuMeterGR)   { vuMeterGR->  setValueNormalized(GR);   vuMeterGR->  setDirty(true); }
 }
 
-template<> VSTGUI::CView* JSIF_Controller::UIVuMeterController::verifyView(VSTGUI::CView* view,
-                                             const VSTGUI::UIAttributes& /*attributes*/,
-                                             const VSTGUI::IUIDescription* /*description*/
+template<> VSTGUI::CView* JSIF_Controller::UIVuMeterController::verifyView(
+                                            VSTGUI::CView* view,
+                                            const VSTGUI::UIAttributes&   /*attributes*/,
+                                            const VSTGUI::IUIDescription* /*description*/
 )
 {
     if (VSTGUI::CVuMeter* control = dynamic_cast<VSTGUI::CVuMeter*>(view); control) {
-        if (control->getTag() == kInVuPPML) {
-            vuMeterInL = control;
-            vuMeterInL->registerViewListener(this);
-        }
-        if (control->getTag() == kInVuPPMR) {
-            vuMeterInR = control;
-            vuMeterInR->registerViewListener(this);
-        }
-        if (control->getTag() == kOutVuPPML) {
-            vuMeterOutL = control;
-            vuMeterOutL->registerViewListener(this);
-        }
-        if (control->getTag() == kOutVuPPMR) {
-            vuMeterOutR = control;
-            vuMeterOutR->registerViewListener(this);
-        }
-        if (control->getTag() == kMeter) {
-            vuMeterGR = control;
-            vuMeterGR->registerViewListener(this);
-        }
+        if (control->getTag() == kInVuPPML)  { vuMeterInL  = control; vuMeterInL-> registerViewListener(this); }
+        if (control->getTag() == kInVuPPMR)  { vuMeterInR  = control; vuMeterInR-> registerViewListener(this); }
+        if (control->getTag() == kOutVuPPML) { vuMeterOutL = control; vuMeterOutL->registerViewListener(this); }
+        if (control->getTag() == kOutVuPPMR) { vuMeterOutR = control; vuMeterOutR->registerViewListener(this); }
+        if (control->getTag() == kMeter)     { vuMeterGR   = control; vuMeterGR->  registerViewListener(this); }
     }
     return view;
 }
 
 template<> void JSIF_Controller::UIVuMeterController::viewWillDelete(VSTGUI::CView* view)
 {
-    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterInL && vuMeterInL) {
-        vuMeterInL->unregisterViewListener(this);
-        vuMeterInL = nullptr;
-    }
-    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterInR && vuMeterInR) {
-        vuMeterInR->unregisterViewListener(this);
-        vuMeterInR = nullptr;
-    }
-    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterOutL && vuMeterOutL) {
-        vuMeterOutL->unregisterViewListener(this);
-        vuMeterOutL = nullptr;
-    }
-    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterOutR && vuMeterOutR) {
-        vuMeterOutR->unregisterViewListener(this);
-        vuMeterOutR = nullptr;
-    }
-    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterGR && vuMeterGR) {
-        vuMeterGR->unregisterViewListener(this);
-        vuMeterGR = nullptr;
-    }
+    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterInL  && vuMeterInL)  { vuMeterInL-> unregisterViewListener(this); vuMeterInL  = nullptr; }
+    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterInR  && vuMeterInR)  { vuMeterInR-> unregisterViewListener(this); vuMeterInR  = nullptr; }
+    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterOutL && vuMeterOutL) { vuMeterOutL->unregisterViewListener(this); vuMeterOutL = nullptr; }
+    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterOutR && vuMeterOutR) { vuMeterOutR->unregisterViewListener(this); vuMeterOutR = nullptr; }
+    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterGR   && vuMeterGR)   { vuMeterGR->  unregisterViewListener(this); vuMeterGR   = nullptr; }
 }
 
 //------------------------------------------------------------------------
@@ -224,14 +183,14 @@ template<> void JSIF_Controller::UIVuMeterController::viewWillDelete(VSTGUI::CVi
 //------------------------------------------------------------------------
 SliderParameter::SliderParameter(
 	const Vst::TChar* title,
-	int32 tag,
+	int32             tag,
 	const Vst::TChar* units,
-	Vst::ParamValue minPlain,
-	Vst::ParamValue maxPlain,
-	Vst::ParamValue defaultValuePlain,
-	int32 stepCount,
-	int32 flags,
-	Vst::UnitID unitID
+	Vst::ParamValue   minPlain,
+	Vst::ParamValue   maxPlain,
+	Vst::ParamValue   defaultValuePlain,
+	int32             stepCount,
+	int32             flags,
+	Vst::UnitID       unitID
 )
 {
 	UString(info.title, str16BufferSize(Vst::String128)).assign(title);
@@ -241,11 +200,11 @@ SliderParameter::SliderParameter(
 	setMin(minPlain);
 	setMax(maxPlain);
 
-	info.flags = flags;
-	info.id = tag;
+	info.flags     = flags;
+	info.id        = tag;
 	info.stepCount = stepCount;
 	info.defaultNormalizedValue = valueNormalized = toNormalized(defaultValuePlain);
-	info.unitId = Vst::kRootUnitId;
+	info.unitId    = Vst::kRootUnitId;
 }
 Vst::ParamValue SliderParameter::toPlain(Vst::ParamValue _valueNormalized) const {
 
@@ -325,108 +284,95 @@ tresult PLUGIN_API JSIF_Controller::initialize(FUnknown* context)
 	Vst::ParamValue maxPlain;
 	Vst::ParamValue defaultPlain;
 
-	tag = kParamInput;
-	flags = Vst::ParameterInfo::kCanAutomate;
-	minPlain = -12.0;
-	maxPlain = 12.0;
-	defaultPlain = 0.0;
-	stepCount = 0;
-	auto* ParamIn = new Vst::RangeParameter(STR16("Input"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, stepCount, flags);
-	ParamIn->setPrecision(2);
-	parameters.addParameter(ParamIn);
+    tag          = kParamInput;
+    flags        = Vst::ParameterInfo::kCanAutomate;
+    minPlain     = -12.0;
+    maxPlain     = 12.0;
+    defaultPlain = 0.0;
+    stepCount    = 0;
+    auto* ParamIn = new Vst::RangeParameter(STR16("Input"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, stepCount, flags);
+    ParamIn->setPrecision(2);
+    parameters.addParameter(ParamIn);
 
-	tag = kParamOutput;
-	flags = Vst::ParameterInfo::kCanAutomate;
-	minPlain = -12.0;
-	maxPlain = 0.0;
-	defaultPlain = 0.0;
-	stepCount = 0;
-	auto* ParamOut = new Vst::RangeParameter(STR16("Output"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, stepCount, flags);
-	ParamOut->setPrecision(2);
-	parameters.addParameter(ParamOut);
+    tag          = kParamOutput;
+    flags        = Vst::ParameterInfo::kCanAutomate;
+    minPlain     = -12.0;
+    maxPlain     = 0.0;
+    defaultPlain = 0.0;
+    stepCount    = 0;
+    auto* ParamOut = new Vst::RangeParameter(STR16("Output"), tag, STR16("dB"), minPlain, maxPlain, defaultPlain, stepCount, flags);
+    ParamOut->setPrecision(2);
+    parameters.addParameter(ParamOut);
 
-	tag = kParamEffect;
-	flags = Vst::ParameterInfo::kCanAutomate;
-	minPlain = 0;
-	maxPlain = 100;
-	defaultPlain = 0;
-	stepCount = 0;
-	auto* ParamEffect = new Vst::RangeParameter(STR16("Effect"), tag, STR16("%"), minPlain, maxPlain, defaultPlain, stepCount, flags);
-	ParamEffect->setPrecision(2);
-	parameters.addParameter(ParamEffect);
+    tag          = kParamEffect;
+    flags        = Vst::ParameterInfo::kCanAutomate;
+    minPlain     = 0;
+    maxPlain     = 100;
+    defaultPlain = 0;
+    stepCount    = 0;
+    auto* ParamEffect = new Vst::RangeParameter(STR16("Effect"), tag, STR16("%"), minPlain, maxPlain, defaultPlain, stepCount, flags);
+    ParamEffect->setPrecision(2);
+    parameters.addParameter(ParamEffect);
 
-	tag = kParamCurve;
-	flags = Vst::ParameterInfo::kCanAutomate;
-	minPlain = -50;
-	maxPlain = 50;
-	defaultPlain = 0;
-	stepCount = 0;
-	auto* ParamCurve = new Vst::RangeParameter(STR16("Curve"), tag, STR16("%"), minPlain, maxPlain, defaultPlain, stepCount, flags);
-	ParamCurve->setPrecision(2);
-	parameters.addParameter(ParamCurve);
+    tag          = kParamCurve;
+    flags        = Vst::ParameterInfo::kCanAutomate;
+    minPlain     = -50;
+    maxPlain     = 50;
+    defaultPlain = 0;
+    stepCount    = 0;
+    auto* ParamCurve = new Vst::RangeParameter(STR16("Curve"), tag, STR16("%"), minPlain, maxPlain, defaultPlain, stepCount, flags);
+    ParamCurve->setPrecision(2);
+    parameters.addParameter(ParamCurve);
 
-	tag = kParamClip;
-	stepCount = 1;
-	defaultVal = init_Clip ? 1 : 0;
-	flags = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsList;
-	parameters.addParameter(STR16("Clip"), nullptr, stepCount, defaultVal, flags, tag);
+    tag          = kParamClip;
+    stepCount    = 1;
+    defaultVal   = init_Clip ? 1 : 0;
+    flags        = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsList;
+    parameters.addParameter(STR16("Clip"), nullptr, stepCount, defaultVal, flags, tag);
 
-	Vst::StringListParameter* OS = new Vst::StringListParameter(STR("OS"), kParamOS);
-	OS->appendString(STR("x1"));
-	OS->appendString(STR("x2"));
-	OS->appendString(STR("x4"));
-	OS->appendString(STR("x8")); // stepCount is automzed!
-	OS->setNormalized(OS->toNormalized(0));
-	// OS->addDependent(this);
-	parameters.addParameter(OS);
+    Vst::StringListParameter* OS = new Vst::StringListParameter(STR("OS"), kParamOS);
+    OS->appendString(STR("x1"));
+    OS->appendString(STR("x2"));
+    OS->appendString(STR("x4"));
+    OS->appendString(STR("x8"));
+    OS->setNormalized(OS->toNormalized(0));
+    parameters.addParameter(OS);
 
-	tag = kParamSplit;
-	stepCount = 1;
-	defaultVal = init_Split ? 1 : 0;
-	flags = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsList;
-	parameters.addParameter(STR16("Split"), nullptr, stepCount, defaultVal, flags, tag);
+    tag          = kParamSplit;
+    stepCount    = 1;
+    defaultVal   = init_Split ? 1 : 0;
+    flags        = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsList;
+    parameters.addParameter(STR16("Split"), nullptr, stepCount, defaultVal, flags, tag);
 
-	Vst::StringListParameter* Phase = new Vst::StringListParameter(STR("Phase"), kParamPhase);
-	Phase->appendString(STR("Min"));
-	Phase->appendString(STR("Max")); // stepCount is automzed!
-	defaultVal = init_Phase ? 1 : 0;
-	Phase->setNormalized(Phase->toNormalized(defaultVal));
-	// Phase->addDependent(this);
-	parameters.addParameter(Phase);
+    Vst::StringListParameter* Phase = new Vst::StringListParameter(STR("Phase"), kParamPhase);
+    Phase->appendString(STR("Min"));
+    Phase->appendString(STR("Max"));
+    defaultVal = init_Phase ? 1 : 0;
+    Phase->setNormalized(Phase->toNormalized(defaultVal));
+    parameters.addParameter(Phase);
 
-	tag = kParamIn;
-	stepCount = 1;
-	defaultVal = init_In ? 1 : 0;
-	flags = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsList;
-	parameters.addParameter(STR16("In"), nullptr, stepCount, defaultVal, flags, tag);
+    tag          = kParamIn;
+    stepCount    = 1;
+    defaultVal   = init_In ? 1 : 0;
+    flags        = Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsList;
+    parameters.addParameter(STR16("In"), nullptr, stepCount, defaultVal, flags, tag);
 
-	tag = kParamBypass;
-	stepCount = 1;
-	defaultVal = init_Bypass ? 1 : 0;
-	flags = Vst::ParameterInfo::kIsBypass;
-	parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
+    tag          = kParamBypass;
+    stepCount    = 1;
+    defaultVal   = init_Bypass ? 1 : 0;
+    flags        = Vst::ParameterInfo::kIsBypass;
+    parameters.addParameter(STR16("Bypass"), nullptr, stepCount, defaultVal, flags, tag);
 
 	// GUI only parameter
-	/*
-	flags = Vst::ParameterInfo::kIsList;
-	Vst::StringListParameter* guiSwitch = new Vst::StringListParameter(STR("GuiSwitch"), kGuiSwitch, nullptr, flags );
-	guiSwitch->appendString(STR("Original"));
-	guiSwitch->appendString(STR("Twarch"));
-	defaultVal = 0;
-	guiSwitch->setNormalized(guiSwitch->toNormalized(defaultVal));
-	guiSwitch->addDependent(this);
-	parameters.addParameter(guiSwitch);
-	*/
-
 	if (zoomFactors.empty())
 	{
-		zoomFactors.push_back(ZoomFactor(STR("50%"), 0.5));  // 0/6
-		zoomFactors.push_back(ZoomFactor(STR("75%"), 0.75)); // 1/6
-		zoomFactors.push_back(ZoomFactor(STR("100%"), 1.0));  // 2/6
+		zoomFactors.push_back(ZoomFactor(STR("50%"),  0.50)); // 0/6
+		zoomFactors.push_back(ZoomFactor(STR("75%"),  0.75)); // 1/6
+		zoomFactors.push_back(ZoomFactor(STR("100%"), 1.00)); // 2/6
 		zoomFactors.push_back(ZoomFactor(STR("125%"), 1.25)); // 3/6
-		zoomFactors.push_back(ZoomFactor(STR("150%"), 1.5));  // 4/6
+		zoomFactors.push_back(ZoomFactor(STR("150%"), 1.50)); // 4/6
 		zoomFactors.push_back(ZoomFactor(STR("175%"), 1.75)); // 5/6
-		zoomFactors.push_back(ZoomFactor(STR("200%"), 2.0));  // 6/6
+		zoomFactors.push_back(ZoomFactor(STR("200%"), 2.00)); // 6/6
 	}
 
 	Vst::StringListParameter* zoomParameter = new Vst::StringListParameter(STR("Zoom"), kParamZoom);
@@ -436,17 +382,14 @@ tresult PLUGIN_API JSIF_Controller::initialize(FUnknown* context)
 	}
 	zoomParameter->setNormalized(zoomParameter->toNormalized(0));
 	zoomParameter->addDependent(this);
-	// zoomParameter->deferUpdate();
-	parameters.addParameter(zoomParameter);
+	uiParameters.addParameter(zoomParameter);
 
-	Vst::StringListParameter* GuiSwitch = new Vst::StringListParameter(STR("kGuiSwitch"), kGuiSwitch);
+	Vst::StringListParameter* GuiSwitch = new Vst::StringListParameter(STR("GUI Switch"), kGuiSwitch);
 	GuiSwitch->appendString(STR("Original"));
-	GuiSwitch->appendString(STR("Twarch")); // stepCount is automzed!
-	defaultVal = stateGUI == 0.0 ? 0 : 1;
-	GuiSwitch->setNormalized(Phase->toNormalized(defaultVal));
+	GuiSwitch->appendString(STR("Twarch"));
+	GuiSwitch->setNormalized(GuiSwitch->toNormalized(0));
 	GuiSwitch->addDependent(this);
-	// GuiSwitch->deferUpdate();
-	parameters.addParameter(GuiSwitch);
+	uiParameters.addParameter(GuiSwitch);
 
 	return result;
 }
@@ -550,36 +493,47 @@ tresult PLUGIN_API JSIF_Controller::setState(IBStream* state)
     Vst::ParamValue savedPhase  = 0.0;
     Vst::ParamValue savedGUI    = 0.0;
     //int32           savedBypass = 0;
-
-	if (streamer.readDouble(savedInput)  == true) { setParamNormalized(kParamInput,  savedInput);         stateInput  = savedInput;  }
-    if (streamer.readDouble(savedEffect) == true) { setParamNormalized(kParamEffect, savedEffect);        stateEffect = savedEffect; }
-    if (streamer.readDouble(savedCurve)  == true) { setParamNormalized(kParamCurve,  savedCurve);         stateCurve  = savedCurve;  }
-    if (streamer.readDouble(savedOutput) == true) { setParamNormalized(kParamOutput, savedOutput);        stateOutput = savedOutput; }
-    if (streamer.readDouble(savedOS)     == true) { setParamNormalized(kParamOS,     savedOS);            stateOS     = savedOS;     }
-    if (streamer.readInt32 (savedClip)   == true) { setParamNormalized(kParamClip,   savedClip  ? 1 : 0); stateClip   = savedClip;   }
-    if (streamer.readInt32 (savedIn)     == true) { setParamNormalized(kParamIn,     savedIn    ? 1 : 0); stateIn     = savedIn;     }
-    if (streamer.readInt32 (savedSplit)  == true) { setParamNormalized(kParamSplit,  savedSplit ? 1 : 0); stateSplit  = savedSplit;  }
-    if (streamer.readDouble(savedZoom)   == true) { setParamNormalized(kParamZoom,   savedZoom);          stateZoom   = savedZoom;   }
-    if (streamer.readDouble(savedPhase)  == true) { setParamNormalized(kParamPhase,  savedPhase);         statePhase  = savedPhase;  }
-	if (streamer.readDouble(savedGUI)    == true) 
-	{
-		setParamNormalized(kGuiSwitch, savedGUI);
-		if (mainView)
-		{
-			VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(mainView);
-			if (editor) {
-				if      (savedGUI == 0.0) editor->exchangeView("Original");
-				else if (savedGUI == 1.0) editor->exchangeView("Twarch");
-			}
-		}
-		stateGUI = savedGUI;
-	}
-
-    //if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
-    //setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
-    //stateBypass = savedBypass;
     
-	return kResultTrue;
+    if (streamer.readDouble(savedInput)  == false) savedInput  = 0.5;
+    if (streamer.readDouble(savedEffect) == false) savedEffect = 0.0;
+    if (streamer.readDouble(savedCurve)  == false) savedCurve  = 0.5;
+    if (streamer.readDouble(savedOutput) == false) savedOutput = 1.0;
+    if (streamer.readDouble(savedOS)     == false) savedOS     = 0.0;
+    if (streamer.readInt32 (savedClip)   == false) savedClip   = 0;
+    if (streamer.readInt32 (savedIn)     == false) savedIn     = 1;
+    if (streamer.readInt32 (savedSplit)  == false) savedSplit  = 0;
+    if (streamer.readDouble(savedZoom)   == false) savedZoom   = 0.0;
+    if (streamer.readDouble(savedPhase)  == false) savedPhase  = 0.0;
+    if (streamer.readDouble(savedGUI)    == false) savedGUI    = 0.0;
+    //if (streamer.readInt32 (savedBypass) == false) return kResultFalse;
+
+    setParamNormalized(kParamInput,  savedInput);
+    setParamNormalized(kParamEffect, savedEffect);
+    setParamNormalized(kParamCurve,  savedCurve);
+    setParamNormalized(kParamOutput, savedOutput);
+    setParamNormalized(kParamOS,     savedOS);
+    setParamNormalized(kParamClip,   savedClip   ? 1 : 0);
+    setParamNormalized(kParamIn,     savedIn     ? 1 : 0);
+    setParamNormalized(kParamSplit,  savedSplit  ? 1 : 0);
+    setParamNormalized(kParamZoom,   savedZoom);
+    setParamNormalized(kParamPhase,  savedPhase);
+    setParamNormalized(kGuiSwitch,   savedGUI);
+    //setParamNormalized(kParamBypass, savedBypass ? 1 : 0);
+
+    stateInput  = savedInput;
+    stateEffect = savedEffect;
+    stateCurve  = savedCurve;
+    stateOutput = savedOutput;
+    stateOS     = savedOS;
+    stateClip   = savedClip;
+    stateIn     = savedIn;
+    stateSplit  = savedSplit;
+    stateZoom   = savedZoom;
+    statePhase  = savedPhase;
+    stateGUI    = savedGUI;
+    //stateBypass = savedBypass;
+
+    return kResultTrue;
 }
 
 //------------------------------------------------------------------------
@@ -625,19 +579,27 @@ IPlugView* PLUGIN_API JSIF_Controller::createView(FIDString name)
 	// Here the Host wants to open your editor (if you have one)
 	if (FIDStringsEqual(name, Vst::ViewType::kEditor))
 	{
-		GUIEditor* view;
+        VSTGUI::GUIEditor* view;
 		// create your editor here and return a IPlugView ptr of it
 		if (stateGUI == 0.0) 
-			view = new GUIEditor(this, "Original", "JSIF_editor.uidesc");
-		else 
-			view = new GUIEditor(this, "Twarch", "JSIF_editor.uidesc");
-
+			view = new VSTGUI::GUIEditor(this, "Original", "JSIF_editor.uidesc");
+		else
+			view = new VSTGUI::GUIEditor(this, "Twarch", "JSIF_editor.uidesc");
+        view->setGuiState(stateGUI);
+        
+        std::vector<double> _zoomFactors;
+        _zoomFactors.push_back(0.50);
+        _zoomFactors.push_back(0.75);
+        _zoomFactors.push_back(1.00);
+        _zoomFactors.push_back(1.25);
+        _zoomFactors.push_back(1.50);
+        _zoomFactors.push_back(1.75);
+        _zoomFactors.push_back(2.00);
+        view->setAllowedZoomFactors(_zoomFactors);
 		view->setZoomFactor(0.5);
 		view->setIdleRate(1.0/60.0);
 
 		setKnobMode(Steinberg::Vst::KnobModes::kLinearMode);
-
-		mainView = dynamic_cast<Steinberg::Vst::EditorView*>(view);
 
 		return view;
 	}
@@ -703,32 +665,40 @@ void PLUGIN_API JSIF_Controller::update(FUnknown* changedUnknown, int32 message)
 	}
 	if (param->getInfo().id == kGuiSwitch)
 	{
-		Vst::ParamValue index = param->getNormalized();
-		if (index != stateGUI) {
-			stateGUI = index;
-			for (EditorVector::const_iterator it = editors.begin(), end = editors.end(); it != end; ++it)
-			{
-				/*
-				// CPluginView
-				tresult PLUGIN_API canResize() SMTG_OVERRIDE 
-					{ return kResultFalse; }
-				tresult PLUGIN_API checkSizeConstraint(ViewRect* rect) SMTG_OVERRIDE 
-					{ return kResultFalse; }
-				*/
-				VSTGUI::VST3Editor* editor = dynamic_cast<VSTGUI::VST3Editor*>(*it);
-				if (editor) {
-					if      (index == 0.0) editor->exchangeView("Original");
-					else if (index == 1.0) editor->exchangeView("Twarch");
-				}
-				
-			}
-		}
+        stateGUI = param->getNormalized();
+        for (EditorVector::const_iterator it = editors.begin(), end = editors.end(); it != end; ++it)
+        {
+            /*
+            // CPluginView
+            tresult PLUGIN_API canResize() SMTG_OVERRIDE
+                { return kResultFalse; }
+            tresult PLUGIN_API checkSizeConstraint(ViewRect* rect) SMTG_OVERRIDE
+                { return kResultFalse; }
+            */
+            VSTGUI::GUIEditor* editor = dynamic_cast<VSTGUI::GUIEditor*>(*it);
+            if (editor) {
+                if (editor->getGuiState() != stateGUI) {
+                    if      (stateGUI == 0.0) editor->exchangeView("Original");
+                    else if (stateGUI == 1.0) editor->exchangeView("Twarch");
+                    editor->setGuiState(stateGUI);
+                }
+            }
+        }
 	}
 }
+
 //------------------------------------------------------------------------
 void JSIF_Controller::editorAttached(Steinberg::Vst::EditorView* editor)
 {
-	editors.push_back(editor);
+    VSTGUI::GUIEditor* _editor = dynamic_cast<VSTGUI::GUIEditor*>(editor);
+    if (_editor) {
+        if (_editor->getGuiState() != stateGUI) {
+            if      (stateGUI == 0.0) _editor->exchangeView("Original");
+            else if (stateGUI == 1.0) _editor->exchangeView("Twarch");
+            _editor->setGuiState(stateGUI);
+        }
+    }
+	editors.push_back(_editor);
 }
 
 //------------------------------------------------------------------------
@@ -768,11 +738,11 @@ tresult PLUGIN_API JSIF_Controller::getParamValueByString(Vst::ParamID tag, Vst:
 //------------------------------------------------------------------------
 tresult PLUGIN_API JSIF_Controller::notify(Vst::IMessage* message)
 {
+    if (!message)
+        return kInvalidArgument;
+    
 	if (dataExchange.onMessage(message))
 		return kResultTrue;
-
-	if (!message)
-		return kInvalidArgument;
 
 	return EditControllerEx1::notify(message);
 }
@@ -815,17 +785,218 @@ void PLUGIN_API JSIF_Controller::onDataExchangeBlocksReceived(
 			}
 			
 		}
-		/*
-		FDebugPrint(
-			"Received Data Block: %f %f %f %f %f\n",
-			dataBlock->inL,
-			dataBlock->inR,
-			dataBlock->outL,
-			dataBlock->outR,
-			dataBlock->gR
-		);
-		*/
 	}
 }
 	//------------------------------------------------------------------------
 } // namespace yg331
+
+/*
+
+ //------------------------------------------------------------------------
+ // optionMenuController
+ //------------------------------------------------------------------------
+ optionMenuController::optionMenuController(Steinberg::Vst::Parameter* parameter, Steinberg::Vst::EditController* editController)
+     : parameter(parameter)
+     , editController(editController)
+ {
+     if (parameter)
+     {
+         //parameter->addRef();
+         parameter->addDependent(this);
+     }
+     vstgui_assert(parameter->getInfo().stepCount > 0);
+ }
+
+ //------------------------------------------------------------------------
+ optionMenuController::~optionMenuController()
+ {
+     if (parameter)
+     {
+         parameter->removeDependent(this);
+         //parameter->release();
+     }
+     for (const auto& c : controls)
+         c->forget();
+ }
+
+ //------------------------------------------------------------------------
+ VSTGUI::CView* optionMenuController::verifyView(VSTGUI::CView* view, const VSTGUI::UIAttributes& attributes, const VSTGUI::IUIDescription* description)
+ {
+     auto* control = dynamic_cast<VSTGUI::CControl*>(view);
+     if (control)
+     {
+         addControl(control);
+         // control->setListener(this); // <- why?
+         if (parameter)
+             parameter->changed();
+     }
+     return view;
+ }
+ // make sure that our UI only parameters doesn't call the following three EditController methods: beginEdit, endEdit, performEdit
+ //------------------------------------------------------------------------
+ void optionMenuController::valueChanged(VSTGUI::CControl* pControl)
+ {
+     Steinberg::Vst::ParamValue normValue = pControl->getValueNormalized();
+ //    editController->performEdit(parameter->getInfo().id, normValue);
+     parameter->setNormalized(normValue);
+ }
+
+ //------------------------------------------------------------------------
+ void optionMenuController::controlBeginEdit(VSTGUI::CControl* pControl)
+ {
+ //    for (const auto& c : controls)
+ //        c->setMouseEnabled(c == pControl);
+ //    if (parameter)
+ //        editController->beginEdit(getParameterID());
+ }
+
+ //------------------------------------------------------------------------
+ void optionMenuController::controlEndEdit(VSTGUI::CControl* pControl)
+ {
+ //    if (parameter)
+ //        editController->endEdit(getParameterID());
+ //    update(parameter, kChanged);
+ }
+
+ void optionMenuController::addControl(VSTGUI::CControl* control)
+ {
+     if (containsControl(control))
+         return;
+     control->remember();
+     controls.push_back(control);
+     Steinberg::Vst::ParamValue value = 0.;
+     if (parameter)
+     {
+         value = editController->getParamNormalized(getParameterID());
+     }
+     else
+     {
+         if (auto ctrl = controls.front())
+             value = ctrl->getValueNormalized();
+     }
+     auto* display = dynamic_cast<VSTGUI::CParamDisplay*> (control);
+     if (display)
+         display->setValueToStringFunction([this](float value, char utf8String[256], VSTGUI::CParamDisplay* display) {
+         return convertValueToString(value, utf8String);
+             });
+
+     if (parameter)
+         parameter->deferUpdate();
+     else
+         updateControlValue(value);
+ }
+
+ void optionMenuController::removeControl(VSTGUI::CControl* control)
+ {
+     for (const auto& c : controls)
+     {
+         if (c == control)
+         {
+             controls.remove(control);
+             control->forget();
+             return;
+         }
+     }
+ }
+
+ bool optionMenuController::containsControl(VSTGUI::CControl* control)
+ {
+     return std::find(controls.begin(), controls.end(), control) != controls.end();
+ }
+
+ Steinberg::Vst::ParamID optionMenuController::getParameterID()
+ {
+     if (parameter)
+         return parameter->getInfo().id;
+     VSTGUI::CControl* control = controls.front();
+     if (control)
+         return static_cast<Steinberg::Vst::ParamID> (control->getTag());
+     return 0xFFFFFFFF;
+ }
+
+ void PLUGIN_API optionMenuController::update(FUnknown* changedUnknown, Steinberg::int32 message)
+ {
+     if (message == IDependent::kChanged && parameter)
+     {
+         updateControlValue(editController->getParamNormalized(getParameterID()));
+     }
+ }
+
+ bool optionMenuController::convertValueToString(float value, char utf8String[256])
+ {
+     if (parameter)
+     {
+         Steinberg::Vst::String128 utf16Str;
+         if (parameter && parameter->getInfo().stepCount)
+         {
+             // convert back to normalized value
+             value = (float)editController->plainParamToNormalized(getParameterID(), (Steinberg::Vst::ParamValue)value);
+         }
+         editController->getParamStringByValue(getParameterID(), value, utf16Str);
+         Steinberg::String utf8Str(utf16Str);
+         utf8Str.toMultiByte(Steinberg::kCP_Utf8);
+         utf8Str.copyTo8(utf8String, 0, 256);
+         return true;
+     }
+     return false;
+ }
+
+ void optionMenuController::updateControlValue(Steinberg::Vst::ParamValue value)
+ {
+     bool mouseEnabled = true;
+     Steinberg::Vst::ParamValue defaultValue = 0.5;
+     float minValue = 0.f;
+     float maxValue = 1.f;
+
+     if (parameter)
+     {
+         defaultValue = parameter->getInfo().defaultNormalizedValue;
+
+         if (parameter->getInfo().flags & Steinberg::Vst::ParameterInfo::kIsReadOnly)
+             mouseEnabled = false;
+
+         value = parameter->toPlain(value);
+         defaultValue = parameter->toPlain(defaultValue);
+         minValue = (float)parameter->toPlain((Steinberg::Vst::ParamValue)minValue);
+         maxValue = (float)parameter->toPlain((Steinberg::Vst::ParamValue)maxValue);
+     }
+
+     for (const auto& c : controls)
+     {
+         c->setMouseEnabled(mouseEnabled);
+         if (parameter)
+         {
+             c->setDefaultValue((float)defaultValue);
+             c->setMin(minValue);
+             c->setMax(maxValue);
+         }
+
+         c->setMin(minValue);
+         c->setMax(maxValue);
+
+         auto getParamStringByIndex = [&](int32_t i) {
+             Steinberg::Vst::String128 utf16Str;
+             editController->getParamStringByValue(
+                 getParameterID(),
+                 (Steinberg::Vst::ParamValue)i /
+                 (Steinberg::Vst::ParamValue)parameter->getInfo().stepCount,
+                 utf16Str);
+             Steinberg::String utf8Str(utf16Str);
+             utf8Str.toMultiByte(Steinberg::kCP_Utf8);
+             return utf8Str;
+             };
+
+         // COptionMenu ONLY
+         auto optMenu = dynamic_cast<VSTGUI::COptionMenu*> (c);
+         optMenu->removeAllEntry();
+         for (Steinberg::int32 i = 0; i <= parameter->getInfo().stepCount; i++)
+             optMenu->addEntry(getParamStringByIndex(i).text8());
+         c->setValue((float)value - minValue);
+
+         c->valueChanged();
+         c->invalid();
+     }
+ }
+
+ 
+*/

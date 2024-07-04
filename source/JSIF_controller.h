@@ -15,157 +15,161 @@
 #include "base/source/fobject.h"
 
 namespace VSTGUI {
-	//------------------------------------------------------------------------
-	//  VU meter view
-	//------------------------------------------------------------------------
-	class MyVuMeter : public CControl {
-	private:
-		enum StyleEnum
-		{
-			StyleHorizontal = 0,
-			StyleVertical,
-		};
-	public:
-		enum Style
-		{
-			kHorizontal = 1 << StyleHorizontal,
-			kVertical = 1 << StyleVertical,
-		};
+//------------------------------------------------------------------------
+//  VU meter view
+//------------------------------------------------------------------------
+class MyVuMeter : public CControl {
+private:
+    enum StyleEnum
+    {
+        StyleHorizontal = 0,
+        StyleVertical,
+    };
+public:
+    enum Style
+    {
+        kHorizontal = 1 << StyleHorizontal,
+        kVertical = 1 << StyleVertical,
+    };
 
-		MyVuMeter(const CRect& size, int32_t style = kVertical)
-			: CControl(size, nullptr, 0)
-			, style(style)
-		{
-			vuOnColor = kWhiteCColor;
-			vuOffColor = kBlackCColor;
+    MyVuMeter(const CRect& size, int32_t style = kVertical)
+        : CControl(size, nullptr, 0)
+        , style(style)
+    {
+        vuOnColor = kWhiteCColor;
+        vuOffColor = kBlackCColor;
 
-			rectOn(size.left, size.top, size.right, size.bottom);
-			rectOff(size.left, size.top, size.right, size.bottom);
+        rectOn(size.left, size.top, size.right, size.bottom);
+        rectOff(size.left, size.top, size.right, size.bottom);
 
-			setWantsIdle(true);
-		}
-		MyVuMeter(const MyVuMeter& vuMeter)
-			: CControl(vuMeter)
-			, style(vuMeter.style)
-			, vuOnColor(vuMeter.vuOnColor)
-			, vuOffColor(vuMeter.vuOffColor)
-			, rectOn(vuMeter.rectOn)
-			, rectOff(vuMeter.rectOff)
-		{
-			setWantsIdle(true);
-		}
+        setWantsIdle(true);
+    }
+    MyVuMeter(const MyVuMeter& vuMeter)
+        : CControl(vuMeter)
+        , style(vuMeter.style)
+        , vuOnColor(vuMeter.vuOnColor)
+        , vuOffColor(vuMeter.vuOffColor)
+        , rectOn(vuMeter.rectOn)
+        , rectOff(vuMeter.rectOff)
+    {
+        setWantsIdle(true);
+    }
 
-		void setStyle(int32_t newStyle) { style = newStyle; invalid(); }
-		int32_t getStyle() const { return style; }
+    void setStyle(int32_t newStyle) { style = newStyle; invalid(); }
+    int32_t getStyle() const { return style; }
 
-		virtual void setVuOnColor(CColor color) {
-			if (vuOnColor != color) { vuOnColor = color; setDirty(true); }
-		}
-		CColor getVuOnColor() const { return vuOnColor; }
+    virtual void setVuOnColor(CColor color) {
+        if (vuOnColor != color) { vuOnColor = color; setDirty(true); }
+    }
+    CColor getVuOnColor() const { return vuOnColor; }
 
-		virtual void setVuOffColor(CColor color) {
-			if (vuOffColor != color) { vuOffColor = color; setDirty(true); }
-		}
-		CColor getVuOffColor() const { return vuOffColor; }
+    virtual void setVuOffColor(CColor color) {
+        if (vuOffColor != color) { vuOffColor = color; setDirty(true); }
+    }
+    CColor getVuOffColor() const { return vuOffColor; }
 
-		// overrides
-		void setDirty(bool state) override
-		{
-			CView::setDirty(state);
-		};
-		void draw(CDrawContext* _pContext) override {
-			CRect _rectOn(rectOn);
-			CRect _rectOff(rectOff);
-			CPoint pointOn;
-			CPoint pointOff;
-			CDrawContext* pContext = _pContext;
+    // overrides
+    void setDirty(bool state) override
+    {
+        CView::setDirty(state);
+    };
+    void draw(CDrawContext* _pContext) override {
+        CRect _rectOn(rectOn);
+        CRect _rectOff(rectOff);
+        CPoint pointOn;
+        CPoint pointOff;
+        CDrawContext* pContext = _pContext;
 
-			bounceValue();
+        bounceValue();
 
-			float newValue = getValueNormalized(); // normalize
+        float newValue = getValueNormalized(); // normalize
 
-			if (style & kHorizontal)
-			{
-				auto tmp = (CCoord)((int32_t)(newValue)*getViewSize().getWidth());
-				pointOff(tmp, 0);
+        if (style & kHorizontal)
+        {
+            auto tmp = (CCoord)((int32_t)(newValue)*getViewSize().getWidth());
+            pointOff(tmp, 0);
 
-				_rectOff.left += tmp;
-				_rectOn.right = tmp + rectOn.left;
-			}
-			else
-			{
-				auto tmp = (CCoord)((int32_t)(newValue * getViewSize().getHeight()));
-				pointOn(0, tmp);
+            _rectOff.left += tmp;
+            _rectOn.right = tmp + rectOn.left;
+        }
+        else
+        {
+            auto tmp = (CCoord)((int32_t)(newValue * getViewSize().getHeight()));
+            pointOn(0, tmp);
 
-				//_rectOff.bottom = tmp + rectOff.top;
-				//_rectOn.top += tmp;
-				_rectOn.top = _rectOff.bottom - tmp;
-			}
+            //_rectOff.bottom = tmp + rectOff.top;
+            //_rectOn.top += tmp;
+            _rectOn.top = _rectOff.bottom - tmp;
+        }
 
-			pContext->setFillColor(vuOffColor);
-			pContext->drawRect(rectOff, kDrawFilled);
+        pContext->setFillColor(vuOffColor);
+        pContext->drawRect(rectOff, kDrawFilled);
 
-			pContext->setFillColor(vuOnColor);
-			pContext->drawRect(_rectOn, kDrawFilled);
+        pContext->setFillColor(vuOnColor);
+        pContext->drawRect(_rectOn, kDrawFilled);
 
-			setDirty(false);
-		};
-		void setViewSize(const CRect& newSize, bool invalid = true) override
-		{
-			CControl::setViewSize(newSize, invalid);
-			rectOn = getViewSize();
-			rectOff = getViewSize();
-		};
-		bool sizeToFit() override {
-			if (getDrawBackground())
-			{
-				CRect vs(getViewSize());
-				vs.setWidth(getDrawBackground()->getWidth());
-				vs.setHeight(getDrawBackground()->getHeight());
-				setViewSize(vs);
-				setMouseableArea(vs);
-				return true;
-			}
-			return false;
-		};
-		
-		void onIdle() override {
-			invalid();
-		};
-		
-		CLASS_METHODS(MyVuMeter, CControl)
+        setDirty(false);
+    };
+    void setViewSize(const CRect& newSize, bool invalid = true) override
+    {
+        CControl::setViewSize(newSize, invalid);
+        rectOn = getViewSize();
+        rectOff = getViewSize();
+    };
+    bool sizeToFit() override {
+        if (getDrawBackground())
+        {
+            CRect vs(getViewSize());
+            vs.setWidth(getDrawBackground()->getWidth());
+            vs.setHeight(getDrawBackground()->getHeight());
+            setViewSize(vs);
+            setMouseableArea(vs);
+            return true;
+        }
+        return false;
+    };
+    
+    void onIdle() override {
+        invalid();
+    };
+    
+    CLASS_METHODS(MyVuMeter, CControl)
 
-	protected:
-		~MyVuMeter() noexcept override
-		{
-			//setOnBitmap(nullptr);
-			//setOffBitmap(nullptr);
-		};
+protected:
+    ~MyVuMeter() noexcept override
+    {
+        //setOnBitmap(nullptr);
+        //setOffBitmap(nullptr);
+    };
 
-		int32_t     style;
+    int32_t     style;
 
-		CColor		vuOnColor;
-		CColor		vuOffColor;
+    CColor		vuOnColor;
+    CColor		vuOffColor;
 
-		CRect    rectOn;
-		CRect    rectOff;
-	};
+    CRect    rectOn;
+    CRect    rectOff;
+};
+
+class GUIEditor : public VST3Editor
+{
+public:
+    using EditController = Steinberg::Vst::EditController;
+
+    GUIEditor(EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile)
+        : VSTGUI::VST3Editor(controller, templateName, xmlFile) {}
+
+    Steinberg::tresult PLUGIN_API canResize() SMTG_OVERRIDE;
+    
+    double getGuiState() {return guiState;}
+    void   setGuiState(double newState) {guiState = newState;}
+protected:
+    double guiState = 0.0;
+};
+
 }
 
 namespace yg331 {
-
-class GUIEditor : public VSTGUI::VST3Editor
-{
-public:
-	using UTF8StringPtr = VSTGUI::UTF8StringPtr;
-	using EditController = Steinberg::Vst::EditController;
-
-	GUIEditor(EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile) : VSTGUI::VST3Editor(controller, templateName, xmlFile)
-	{}
-
-	Steinberg::tresult PLUGIN_API canResize() override;
-};
-
 //------------------------------------------------------------------------
 // VuMeterController
 //------------------------------------------------------------------------
@@ -335,6 +339,10 @@ public:
 		}
 		return param;
 	}
+    bool isPrivateParameter(const Steinberg::Vst::ParamID paramID) SMTG_OVERRIDE
+    {
+        return uiParameters.getParameter(paramID) != 0 ? true : false;
+    }
 
 	// make sure that our UI only parameters doesn't call the following three EditController methods: beginEdit, endEdit, performEdit
 	//------------------------------------------------------------------------
@@ -388,7 +396,6 @@ private:
 	// editor list
 	typedef std::vector<Steinberg::Vst::EditorView*> EditorVector;
 	EditorVector editors;
-	Steinberg::Vst::EditorView* mainView = nullptr;
 
 	// zoom title-value struct
 	struct ZoomFactor 
@@ -426,3 +433,52 @@ private:
 	
 } // namespace yg331
  
+/*
+//------------------------------------------------------------------------
+// optionMenuController
+//------------------------------------------------------------------------
+class optionMenuController : public Steinberg::FObject, public VSTGUI::IController
+{
+    using Parameter      = Steinberg::Vst::Parameter;
+    using ParamID        = Steinberg::Vst::ParamID;
+    using EditController = Steinberg::Vst::EditController;
+    using CControl       = VSTGUI::CControl;
+    using CView          = VSTGUI::CView;
+    using UIAttributes   = VSTGUI::UIAttributes;
+    using IUIDescription = VSTGUI::IUIDescription;
+
+public:
+    optionMenuController(Parameter* parameter, EditController* editController);
+    ~optionMenuController();
+
+    //--- from IController      ----------------------
+    CView* verifyView      (CView* view, const UIAttributes& attributes, const IUIDescription* description) SMTG_OVERRIDE;
+
+    //--- from IControlListener ----------------------
+    void   valueChanged    (CControl* pControl) SMTG_OVERRIDE;
+    void   controlBeginEdit(CControl* pControl) SMTG_OVERRIDE;
+    void   controlEndEdit  (CControl* pControl) SMTG_OVERRIDE;
+
+    //--- Internal functions    ----------------------
+    void   addControl      (CControl* control);
+    void   removeControl   (CControl* control);
+    bool   containsControl (CControl* control);
+
+    ParamID    getParameterID();
+    Parameter* getParameter() const { return parameter; }
+
+    OBJ_METHODS(optionMenuController, FObject)
+
+protected:
+    void PLUGIN_API update(Steinberg::FUnknown* changedUnknown, Steinberg::int32 message) SMTG_OVERRIDE;
+
+    bool convertValueToString(float value, char utf8String[256]);
+    void updateControlValue(Steinberg::Vst::ParamValue value);
+
+    Parameter*      parameter;
+    EditController* editController;
+
+    using ControlList = std::list<VSTGUI::CControl*>;
+    ControlList controls;
+};
+*/
