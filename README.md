@@ -17,11 +17,11 @@ The alternative GUI is made by Twarch.
 ## Builds and Requirements  
 
 Windows - x64  
-Mac - macos 10.13 ~ 14.5  
+Mac - macos 10.13 ~ 14.5, Intel and Apple Silicon Native  
 
 ## Project Compability  
 
-Windows, Mac and Linux.  
+Windows, Mac and Linux(Change VSTSDK location in cmake and re-build any IDE project you prefer).  
 
 ## How to use  
 
@@ -129,7 +129,7 @@ v2.0.2.1: GUI recall state corrected(Bitwig).
 
 v2.0.2.2: Re-structure how GUI switching works to more safe way.  
 
-v2.0.3: Error in apple M-series build fixed.  
+v2.0.3: Error in Apple Silicon Native build fixed.  
 
 ## What I've learned
 
