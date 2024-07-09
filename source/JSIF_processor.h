@@ -65,6 +65,7 @@ public:
 		{
 			dest[Np + j] = A[j] * Ino(Alpha * std::sqrt(1.0 - (static_cast<double>(j * j) / static_cast<double>(Np * Np)))) / Inoalpha;
 		}
+		dest[Np + Np] = A[Np] * Ino(0.0) / Inoalpha; // ARM with optimizer level O3 returns NaN == sqrt(1.0 - n/n), while x64 does not...
 		for (int j = 0; j < Np; j++)
 		{
 			dest[j] = dest[M - 1 - j];
@@ -277,7 +278,7 @@ protected:
     void HB_upsample(Flt* filter, Sample64* out);
     void HB_dnsample(Flt* filter, Sample64* out);
 
-	float VuPPMconvert(float plainValue);
+    ParamValue VuPPMconvert(ParamValue plainValue);
 
 	template <typename SampleType>
 	void processVuPPM_In(SampleType** inputs, int32 numChannels, int32 sampleFrames);

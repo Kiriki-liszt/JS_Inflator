@@ -1,0 +1,79 @@
+/Applications/CMake.app/Contents/bin/cmake /Users/yoon/VST_SDK/VST3_Project_Generator/macOS/VST3_Project_Generator.app/Contents/Resources/GenerateVST3Plugin.cmake -DSMTG_VST3_SDK_SOURCE_DIR_CLI="/Users/yoon/VST_SDK/vst3sdk" -DSMTG_GENERATOR_OUTPUT_DIRECTORY_CLI="/Users/yoon/Documents/VSTSDK_Product" -DSMTG_PLUGIN_NAME_CLI="JS Inflator" -DSMTG_PLUGIN_CATEGORY_CLI="Fx" -DSMTG_CMAKE_PROJECT_NAME_CLI="JS_Inflator" -DSMTG_PLUGIN_BUNDLE_NAME_CLI="JS Inflator" -DSMTG_PLUGIN_IDENTIFIER_CLI="io.github.yg331.JS.Inflator" -DSMTG_MACOS_DEPLOYMENT_TARGET_CLI="10.13" -DSMTG_VENDOR_NAME_CLI="yg331" -DSMTG_VENDOR_HOMEPAGE_CLI="https://github.com/kiriki-liszt/" -DSMTG_VENDOR_EMAIL_CLI="kirikiaris@gmail.com" -DSMTG_PREFIX_FOR_FILENAMES_CLI="JSIF_" -DSMTG_VENDOR_NAMESPACE_CLI="yg331" -DSMTG_PLUGIN_CLASS_NAME_CLI="JSIF_" -DSMTG_ENABLE_VSTGUI_SUPPORT_CLI=ON -P /Users/yoon/VST_SDK/VST3_Project_Generator/macOS/VST3_Project_Generator.app/Contents/Resources/GenerateVST3Plugin.cmake
+==================================================
+
+ Steinberg Media Technologies GmbH
+ VST3 Project Generator
+
+==================================================
+
+-- Found Git: /usr/bin/git (found version "2.39.3 (Apple Git-146)")
+-- SMTG_CMAKE_SCRIPT_DIR           : /Users/yoon/VST_SDK/VST3_Project_Generator/macOS/VST3_Project_Generator.app/Contents/Resources
+-- SMTG_ENABLE_VSTGUI_SUPPORT      : ON
+-- SMTG_GENERATOR_OUTPUT_DIRECTORY : /Users/yoon/Documents/VSTSDK_Product
+-- SMTG_TEMPLATE_FILES_PATH        : /Users/yoon/VST_SDK/VST3_Project_Generator/macOS/VST3_Project_Generator.app/Contents/Resources/cmake/templates
+-- SMTG_VST3_SDK_SOURCE_DIR        : /Users/yoon/VST_SDK/vst3sdk
+
+-- SMTG_VENDOR_NAME            : yg331
+-- SMTG_VENDOR_HOMEPAGE        : https://github.com/kiriki-liszt/
+-- SMTG_VENDOR_EMAIL           : kirikiaris@gmail.com
+-- SMTG_SOURCE_COPYRIGHT_HEADER: Copyright(c) 2024 yg331.
+-- SMTG_PLUGIN_NAME            : JS Inflator
+-- SMTG_PREFIX_FOR_FILENAMES   : e.g. JSIF_controller.h
+-- SMTG_PLUGIN_IDENTIFIER      : io.github.yg331.JS.Inflator, used e.g. in Info.plist
+-- SMTG_PLUGIN_BUNDLE_NAME     : JS Inflator
+
+-- SMTG_CMAKE_PROJECT_NAME     : e.g. JS_Inflator will output JS_Inflator.vst3
+-- SMTG_VENDOR_NAMESPACE       : e.g. namespace yg331 {...}
+-- SMTG_PLUGIN_CLASS_NAME      : e.g. class JSIF_Processor : public AudioEffect {...}
+-- SMTG_PLUGIN_CATEGORY        : Fx
+-- SMTG_MACOS_DEPLOYMENT_TARGET: 10.13
+
+-- SMTG_Processor_UUID         : 0xA6B5CA9F, 0x4C4F5B93, 0x88F83777, 0x4504BD37
+-- SMTG_Controller_UUID        : 0x8565C317, 0x780F5A1E, 0x8E35F396, 0xB6745FC7
+
+-- Configured: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/CMakeLists.txt
+-- Copied    : /Users/yoon/Documents/VSTSDK_Product/JS Inflator/resource/A6B5CA9F4C4F5B9388F837774504BD37_snapshot.png
+-- Copied    : /Users/yoon/Documents/VSTSDK_Product/JS Inflator/resource/A6B5CA9F4C4F5B9388F837774504BD37_snapshot_2.0x.png
+-- Configured: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/resource/JSIF_editor.uidesc
+-- Configured: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/resource/win32resource.rc
+-- Configured: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/source/version.h
+-- Configured: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/source/JSIF_cids.h
+-- Configured: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/source/JSIF_controller.cpp
+-- Configured: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/source/JSIF_controller.h
+-- Configured: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/source/JSIF_entry.cpp
+-- Configured: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/source/JSIF_processor.cpp
+-- Configured: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/source/JSIF_processor.h
+
+/Applications/CMake.app/Contents/bin/cmake -G Xcode -S /Users/yoon/Documents/VSTSDK_Product/JS Inflator -B /Users/yoon/Documents/VSTSDK_Product/JS Inflator/build -DSMTG_ENABLE_VSTGUI_SUPPORT=ON 
+-- The C compiler identification is AppleClang 15.0.0.15000309
+-- The CXX compiler identification is AppleClang 15.0.0.15000309
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- [SMTG] Check C++ compiler
+-- [SMTG] Building with Xcode version: 15.4
+-- [SMTG] SMTG_VSTGUI_SOURCE_DIR is set to: /Users/yoon/VST_SDK/vst3sdk/vstgui4
+-- Found EXPAT: /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/lib/libexpat.tbd (found version "2.5.0")
+-- VSTGUI will use the Expat library at /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/lib/libexpat.tbd
+-- VSTGUI will use the Expat header found in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include
+-- [SMTG] SMTG_COREAUDIO_SDK_PATH is set to: /Users/yoon/VST_SDK/CoreAudio
+-- [SMTG] SMTG_AAX_SDK_PATH is not set. If you need it, please download the AAX SDK!
+-- Could NOT find LIBJACK (missing: LIBJACK_LIBRARIES LIBJACK_INCLUDE_DIR) 
+-- Performing Test SMTG_USE_STDATOMIC_H
+-- Performing Test SMTG_USE_STDATOMIC_H - Success
+-- [SMTG] Codesign validator for local machine only
+-- [SMTG] Codesign moduleinfotool for local machine only
+-- [SMTG] Codesign JS_Inflator for local machine only
+-- [SMTG] Setup running moduleinfotool for JS_Inflator
+-- [SMTG] Setup running validator for JS_Inflator
+-- [SMTG] Codesign JS_Inflator-au for local machine only
+-- Configuring done (4.4s)
+-- Generating done (0.1s)
+-- Build files have been written to: /Users/yoon/Documents/VSTSDK_Product/JS Inflator/build

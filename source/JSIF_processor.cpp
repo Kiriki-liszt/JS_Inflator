@@ -652,10 +652,10 @@ else if (filter[channel].TAP_CONDITION == 3) \
 	}
 
 
-	float JSIF_Processor::VuPPMconvert(float plainValue)
+    Vst::ParamValue JSIF_Processor::VuPPMconvert(Vst::ParamValue plainValue)
 	{
-		float dB = 20 * log10f(plainValue);
-		float normValue;
+        Vst::ParamValue dB = 20 * log10(plainValue);
+        Vst::ParamValue normValue;
 
 		if      (dB >=  6.0) normValue = 1.0;
 		else if (dB >=  5.0) normValue = 0.96;
@@ -828,6 +828,9 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		for (int32 channel = 0; channel < numChannels; channel++)
 			if (Band_Split[channel].SR != targetSampleRate) 
 				Band_Split_set(&Band_Split[channel], 240.0, 2400.0, targetSampleRate);
+        
+        double up_x[8] = {0.0, };
+        double up_y[8] = {0.0, };
 
 		Meter = 0.0;
 		double t = 0.0;
@@ -865,9 +868,6 @@ else if (filter[channel].TAP_CONDITION == 3) \
 				else if (inputSample < -2.0) inputSample = -2.0;
 
 				Vst::Sample64 drySample = inputSample;
-
-                double up_x[8] = {0.0, };
-                double up_y[8] = {0.0, };
 
 				// Upsampling
 				if              (fParamOS == overSample_1x) up_x[0] = inputSample;
@@ -975,20 +975,20 @@ else if (filter[channel].TAP_CONDITION == 3) \
         double acc = 0.0;
         for (int coef = filter->START, buff = 0; coef < filter->TAP_HALF; coef += 2, buff++)
         {
-        acc += filter->coef[coef] * (filter->buff[buff] + filter->buff[filter->TAP_HALF - buff - filter->START]);
+            acc += filter->coef[coef] * (filter->buff[buff] + filter->buff[filter->TAP_HALF - buff - filter->START]);
         }
 
         double acc_1 = 0.0;
         double acc_2 = 0.0;
         if (filter->TAP_CONDITION == 1)
         {
-        acc_1 = filter->coef[filter->TAP_HALF] * filter->buff[filter->TAP_HALF_HALF];
-        acc_2 = acc;
+            acc_1 = filter->coef[filter->TAP_HALF] * filter->buff[filter->TAP_HALF_HALF];
+            acc_2 = acc;
         }
-        else if (filter->TAP_CONDITION == 3)
+        else // if (filter->TAP_CONDITION == 3)
         {
-        acc_1 = acc;
-        acc_2 = filter->coef[filter->TAP_HALF] *  filter->buff[filter->TAP_HALF_HALF];
+            acc_1 = acc;
+            acc_2 = filter->coef[filter->TAP_HALF] *  filter->buff[filter->TAP_HALF_HALF];
         }
 
         *(out  ) = acc_1;

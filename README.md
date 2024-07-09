@@ -14,11 +14,6 @@ Also double precision input / output if supported.
 Comes in two GUIs.
 The alternative GUI is made by Twarch.  
 
-## Known Issues  
-
-In Apple macOS M-series native, oversampling over x4 are not working.  
-It works well in Rosetta.  
-
 ## Builds and Requirements  
 
 Windows - x64  
@@ -134,6 +129,8 @@ v2.0.2.1: GUI recall state corrected(Bitwig).
 
 v2.0.2.2: Re-structure how GUI switching works to more safe way.  
 
+v2.0.3: Error in apple M-series build fixed.  
+
 ## What I've learned
 
 * Volumefader  
@@ -242,6 +239,11 @@ IDK why, but in AUv2 wrapper overwrites values set from state to default UI valu
 
 The version number in plist is converted from hex to decimal.  
 For example, v1.7.2 -> 0x010702 -> 67330.  
+
+* VSTSDK with apple ARM Release setting  
+
+By default, VSTSDK sets Release setting with -O3 and -ffast-math.  
+It caused std::sqrt(1.0 - (i\*i)/(n\*n)) to return NaN instead of 0.0, when i == n.  
 
 ## references
 
