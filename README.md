@@ -33,7 +33,7 @@ Unzip Windows version from latest Release and copy to "C:\Program Files\Common F
 
 Unzip macOS version from latest Release and copy vst3 to "/Library/Audio/Plug-Ins/VST3" and component to "/Library/Audio/Plug-Ins/Components".  
 
-> If it doesn't go well, configure security options in console as  
+> If it doesn't go well, CodeSign plugins in console as  
 >
 > ``` console  
 > sudo xattr -r -d com.apple.quarantine /Library/Audio/Plug-Ins/VST3/JS_Inflator.vst3  
