@@ -5,7 +5,6 @@
 #pragma once
 
 #include "JSIF_shared.h"
-#include "JSIF_dataexchange.h"
 
 #include "public.sdk/source/vst/vstaudioeffect.h"
 
@@ -201,10 +200,6 @@ private:
 };
 
 //------------------------------------------------------------------------
-static constexpr Steinberg::Vst::DataExchangeBlock
-	InvalidDataExchangeBlock = { nullptr, 0, Steinberg::Vst::InvalidDataExchangeBlockID };
-
-//------------------------------------------------------------------------
 //  JSIF_Processor
 //------------------------------------------------------------------------
 class JSIF_Processor : public Steinberg::Vst::AudioEffect
@@ -257,12 +252,6 @@ public:
 	//------------------------------------------------------------------------
 	// IConnectionPoint overrides:
 	//------------------------------------------------------------------------
-	/** Connects this instance with another connection point. */
-	Steinberg::tresult PLUGIN_API connect(Steinberg::Vst::IConnectionPoint* other) SMTG_OVERRIDE;
-
-	/** Disconnects a given connection point from this. */
-	Steinberg::tresult PLUGIN_API disconnect(Steinberg::Vst::IConnectionPoint* other) SMTG_OVERRIDE;
-
 	/** Called when a message has been sent from the connection point to this. */
 	//Steinberg::tresult PLUGIN_API notify(Steinberg::Vst::IMessage* message) SMTG_OVERRIDE;
 
@@ -390,12 +379,6 @@ protected:
 	void Fir_x4_dn(Sample64* in, Sample64* out, int32 channel);
 	void Fir_x8_up(Sample64* in, Sample64* out, int32 channel);
 	void Fir_x8_dn(Sample64* in, Sample64* out, int32 channel);
-
-	// data exchange
-	void acquireNewExchangeBlock();
-	std::unique_ptr<Steinberg::Vst::DataExchangeHandler> dataExchange;
-	Steinberg::Vst::DataExchangeBlock currentExchangeBlock{ InvalidDataExchangeBlock };
-	uint16_t numChannels{ 0 };
 };
 //------------------------------------------------------------------------
 } // namespace yg331

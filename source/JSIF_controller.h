@@ -5,7 +5,6 @@
 #pragma once
 
 #include "JSIF_shared.h"
-#include "JSIF_dataexchange.h"
 
 #include "public.sdk/source/vst/vsteditcontroller.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
@@ -259,7 +258,6 @@ public:
 //------------------------------------------------------------------------
 class JSIF_Controller 
 	: public Steinberg::Vst::EditControllerEx1
-	, public Steinberg::Vst::IDataExchangeReceiver
 	, public VSTGUI::VST3EditorDelegate
 {
 public:
@@ -319,16 +317,6 @@ public:
 	                                          const VSTGUI::IUIDescription* description,
 	                                          VSTGUI::VST3Editor* editor) SMTG_OVERRIDE;
 
-	// IDataExchangeReceiver
-	void PLUGIN_API queueOpened (Steinberg::Vst::DataExchangeUserContextID userContextID,
-		                         Steinberg::uint32 blockSize,
-		                         Steinberg::TBool& dispatchOnBackgroundThread) SMTG_OVERRIDE;
-	void PLUGIN_API queueClosed (Steinberg::Vst::DataExchangeUserContextID userContextID) SMTG_OVERRIDE;
-	void PLUGIN_API onDataExchangeBlocksReceived (Steinberg::Vst::DataExchangeUserContextID userContextID,
-		                                          Steinberg::uint32 numBlocks, 
-		                                          Steinberg::Vst::DataExchangeBlock* blocks,
-		                                          Steinberg::TBool onBackgroundThread) SMTG_OVERRIDE;
-
 	//------------------------------------------------------------------------
 	Steinberg::Vst::Parameter* getParameterObject(Steinberg::Vst::ParamID tag) SMTG_OVERRIDE
 	{
@@ -384,7 +372,7 @@ public:
 	//---Interface---------
 	DEFINE_INTERFACES
 		// Here you can add more supported VST3 interfaces
-		DEF_INTERFACE(IDataExchangeReceiver)
+		//DEF_INTERFACE(IDataExchangeReceiver)
 	END_DEFINE_INTERFACES(EditController)
 	DELEGATE_REFCOUNT(EditController)
 
@@ -411,9 +399,6 @@ private:
 	// sub-controller list
 	using UIVuMeterControllerList = std::vector<UIVuMeterController*>;
 	UIVuMeterControllerList vuMeterControllers;
-
-	// data exchange
-	Steinberg::Vst::DataExchangeReceiverHandler dataExchange{ this };
     
     // AUv2 - state saving
     Steinberg::Vst::ParamValue stateInput  = 0.0;
@@ -429,56 +414,9 @@ private:
     Steinberg::int32           stateBypass = 0;
 
 	Steinberg::Vst::ParamValue stateGUI    = 0.0;
+    
+    Steinberg::Vst::ParamValue inL = 0.0, inR = 0.0, outL = 0.0, outR = 0.0, gR = 0.0;
 };
 	
 } // namespace yg331
- 
-/*
-//------------------------------------------------------------------------
-// optionMenuController
-//------------------------------------------------------------------------
-class optionMenuController : public Steinberg::FObject, public VSTGUI::IController
-{
-    using Parameter      = Steinberg::Vst::Parameter;
-    using ParamID        = Steinberg::Vst::ParamID;
-    using EditController = Steinberg::Vst::EditController;
-    using CControl       = VSTGUI::CControl;
-    using CView          = VSTGUI::CView;
-    using UIAttributes   = VSTGUI::UIAttributes;
-    using IUIDescription = VSTGUI::IUIDescription;
 
-public:
-    optionMenuController(Parameter* parameter, EditController* editController);
-    ~optionMenuController();
-
-    //--- from IController      ----------------------
-    CView* verifyView      (CView* view, const UIAttributes& attributes, const IUIDescription* description) SMTG_OVERRIDE;
-
-    //--- from IControlListener ----------------------
-    void   valueChanged    (CControl* pControl) SMTG_OVERRIDE;
-    void   controlBeginEdit(CControl* pControl) SMTG_OVERRIDE;
-    void   controlEndEdit  (CControl* pControl) SMTG_OVERRIDE;
-
-    //--- Internal functions    ----------------------
-    void   addControl      (CControl* control);
-    void   removeControl   (CControl* control);
-    bool   containsControl (CControl* control);
-
-    ParamID    getParameterID();
-    Parameter* getParameter() const { return parameter; }
-
-    OBJ_METHODS(optionMenuController, FObject)
-
-protected:
-    void PLUGIN_API update(Steinberg::FUnknown* changedUnknown, Steinberg::int32 message) SMTG_OVERRIDE;
-
-    bool convertValueToString(float value, char utf8String[256]);
-    void updateControlValue(Steinberg::Vst::ParamValue value);
-
-    Parameter*      parameter;
-    EditController* editController;
-
-    using ControlList = std::list<VSTGUI::CControl*>;
-    ControlList controls;
-};
-*/

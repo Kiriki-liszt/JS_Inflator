@@ -707,8 +707,6 @@ void JSIF_Controller::editorRemoved(Steinberg::Vst::EditorView* editor)
 	editors.erase(std::find(editors.begin(), editors.end(), editor));
 }
 
-
-
 //------------------------------------------------------------------------
 tresult PLUGIN_API JSIF_Controller::setParamNormalized(Vst::ParamID tag, Vst::ParamValue value)
 {
@@ -734,269 +732,29 @@ tresult PLUGIN_API JSIF_Controller::getParamValueByString(Vst::ParamID tag, Vst:
 }
 
 //------------------------------------------------------------------------
-// DataExchangeController Implementation
-//------------------------------------------------------------------------
 tresult PLUGIN_API JSIF_Controller::notify(Vst::IMessage* message)
 {
     if (!message)
         return kInvalidArgument;
     
-	if (dataExchange.onMessage(message))
-		return kResultTrue;
+    if (strcmp (message->getMessageID (), "VUmeter") == 0)
+    {
+        double data = 0.0;
+        if (message->getAttributes ()->getFloat ("inL", data) == kResultTrue) inL = data;
+        if (message->getAttributes ()->getFloat ("inR", data) == kResultTrue) inR = data;
+        if (message->getAttributes ()->getFloat ("outL", data) == kResultTrue) outL = data;
+        if (message->getAttributes ()->getFloat ("outR", data) == kResultTrue) outR = data;
+        if (message->getAttributes ()->getFloat ("gR", data) == kResultTrue) gR = data;
+        if (message->getAttributes ()->getFloat ("gR", data) == kResultTrue) {
+            if (!vuMeterControllers.empty()) {
+                for (auto iter = vuMeterControllers.begin(); iter != vuMeterControllers.end(); iter++) {
+                    (*iter)->setVuMeterValue(inL, inR, outL, outR, gR);
+                }
+            }
+        }
+        return kResultOk;
+    }
 
 	return EditControllerEx1::notify(message);
 }
-
-
-//------------------------------------------------------------------------
-void PLUGIN_API JSIF_Controller::queueOpened(
-	Vst::DataExchangeUserContextID userContextID,
-	uint32 blockSize,
-	TBool& dispatchOnBackgroundThread)
-{
-	//FDebugPrint("Data Exchange Queue opened.\n");
-}
-
-//------------------------------------------------------------------------
-void PLUGIN_API JSIF_Controller::queueClosed(Vst::DataExchangeUserContextID userContextID)
-{
-	//FDebugPrint("Data Exchange Queue closed.\n");
-}
-
-//------------------------------------------------------------------------
-void PLUGIN_API JSIF_Controller::onDataExchangeBlocksReceived(
-	Vst::DataExchangeUserContextID userContextID,
-	uint32 numBlocks,
-	Vst::DataExchangeBlock* blocks,
-	TBool onBackgroundThread
-)
-{
-	for (auto index = 0u; index < numBlocks; ++index)
-	{
-		auto dataBlock = toDataBlock(blocks[index]);
-
-		if (!vuMeterControllers.empty()) {
-			for (auto iter = vuMeterControllers.begin(); iter != vuMeterControllers.end(); iter++) {
-				(*iter)->setVuMeterValue(
-					dataBlock->inL, dataBlock->inR,
-					dataBlock->outL, dataBlock->outR,
-					dataBlock->gR
-				);
-			}
-			
-		}
-	}
-}
-	//------------------------------------------------------------------------
 } // namespace yg331
-
-/*
-
- //------------------------------------------------------------------------
- // optionMenuController
- //------------------------------------------------------------------------
- optionMenuController::optionMenuController(Steinberg::Vst::Parameter* parameter, Steinberg::Vst::EditController* editController)
-     : parameter(parameter)
-     , editController(editController)
- {
-     if (parameter)
-     {
-         //parameter->addRef();
-         parameter->addDependent(this);
-     }
-     vstgui_assert(parameter->getInfo().stepCount > 0);
- }
-
- //------------------------------------------------------------------------
- optionMenuController::~optionMenuController()
- {
-     if (parameter)
-     {
-         parameter->removeDependent(this);
-         //parameter->release();
-     }
-     for (const auto& c : controls)
-         c->forget();
- }
-
- //------------------------------------------------------------------------
- VSTGUI::CView* optionMenuController::verifyView(VSTGUI::CView* view, const VSTGUI::UIAttributes& attributes, const VSTGUI::IUIDescription* description)
- {
-     auto* control = dynamic_cast<VSTGUI::CControl*>(view);
-     if (control)
-     {
-         addControl(control);
-         // control->setListener(this); // <- why?
-         if (parameter)
-             parameter->changed();
-     }
-     return view;
- }
- // make sure that our UI only parameters doesn't call the following three EditController methods: beginEdit, endEdit, performEdit
- //------------------------------------------------------------------------
- void optionMenuController::valueChanged(VSTGUI::CControl* pControl)
- {
-     Steinberg::Vst::ParamValue normValue = pControl->getValueNormalized();
- //    editController->performEdit(parameter->getInfo().id, normValue);
-     parameter->setNormalized(normValue);
- }
-
- //------------------------------------------------------------------------
- void optionMenuController::controlBeginEdit(VSTGUI::CControl* pControl)
- {
- //    for (const auto& c : controls)
- //        c->setMouseEnabled(c == pControl);
- //    if (parameter)
- //        editController->beginEdit(getParameterID());
- }
-
- //------------------------------------------------------------------------
- void optionMenuController::controlEndEdit(VSTGUI::CControl* pControl)
- {
- //    if (parameter)
- //        editController->endEdit(getParameterID());
- //    update(parameter, kChanged);
- }
-
- void optionMenuController::addControl(VSTGUI::CControl* control)
- {
-     if (containsControl(control))
-         return;
-     control->remember();
-     controls.push_back(control);
-     Steinberg::Vst::ParamValue value = 0.;
-     if (parameter)
-     {
-         value = editController->getParamNormalized(getParameterID());
-     }
-     else
-     {
-         if (auto ctrl = controls.front())
-             value = ctrl->getValueNormalized();
-     }
-     auto* display = dynamic_cast<VSTGUI::CParamDisplay*> (control);
-     if (display)
-         display->setValueToStringFunction([this](float value, char utf8String[256], VSTGUI::CParamDisplay* display) {
-         return convertValueToString(value, utf8String);
-             });
-
-     if (parameter)
-         parameter->deferUpdate();
-     else
-         updateControlValue(value);
- }
-
- void optionMenuController::removeControl(VSTGUI::CControl* control)
- {
-     for (const auto& c : controls)
-     {
-         if (c == control)
-         {
-             controls.remove(control);
-             control->forget();
-             return;
-         }
-     }
- }
-
- bool optionMenuController::containsControl(VSTGUI::CControl* control)
- {
-     return std::find(controls.begin(), controls.end(), control) != controls.end();
- }
-
- Steinberg::Vst::ParamID optionMenuController::getParameterID()
- {
-     if (parameter)
-         return parameter->getInfo().id;
-     VSTGUI::CControl* control = controls.front();
-     if (control)
-         return static_cast<Steinberg::Vst::ParamID> (control->getTag());
-     return 0xFFFFFFFF;
- }
-
- void PLUGIN_API optionMenuController::update(FUnknown* changedUnknown, Steinberg::int32 message)
- {
-     if (message == IDependent::kChanged && parameter)
-     {
-         updateControlValue(editController->getParamNormalized(getParameterID()));
-     }
- }
-
- bool optionMenuController::convertValueToString(float value, char utf8String[256])
- {
-     if (parameter)
-     {
-         Steinberg::Vst::String128 utf16Str;
-         if (parameter && parameter->getInfo().stepCount)
-         {
-             // convert back to normalized value
-             value = (float)editController->plainParamToNormalized(getParameterID(), (Steinberg::Vst::ParamValue)value);
-         }
-         editController->getParamStringByValue(getParameterID(), value, utf16Str);
-         Steinberg::String utf8Str(utf16Str);
-         utf8Str.toMultiByte(Steinberg::kCP_Utf8);
-         utf8Str.copyTo8(utf8String, 0, 256);
-         return true;
-     }
-     return false;
- }
-
- void optionMenuController::updateControlValue(Steinberg::Vst::ParamValue value)
- {
-     bool mouseEnabled = true;
-     Steinberg::Vst::ParamValue defaultValue = 0.5;
-     float minValue = 0.f;
-     float maxValue = 1.f;
-
-     if (parameter)
-     {
-         defaultValue = parameter->getInfo().defaultNormalizedValue;
-
-         if (parameter->getInfo().flags & Steinberg::Vst::ParameterInfo::kIsReadOnly)
-             mouseEnabled = false;
-
-         value = parameter->toPlain(value);
-         defaultValue = parameter->toPlain(defaultValue);
-         minValue = (float)parameter->toPlain((Steinberg::Vst::ParamValue)minValue);
-         maxValue = (float)parameter->toPlain((Steinberg::Vst::ParamValue)maxValue);
-     }
-
-     for (const auto& c : controls)
-     {
-         c->setMouseEnabled(mouseEnabled);
-         if (parameter)
-         {
-             c->setDefaultValue((float)defaultValue);
-             c->setMin(minValue);
-             c->setMax(maxValue);
-         }
-
-         c->setMin(minValue);
-         c->setMax(maxValue);
-
-         auto getParamStringByIndex = [&](int32_t i) {
-             Steinberg::Vst::String128 utf16Str;
-             editController->getParamStringByValue(
-                 getParameterID(),
-                 (Steinberg::Vst::ParamValue)i /
-                 (Steinberg::Vst::ParamValue)parameter->getInfo().stepCount,
-                 utf16Str);
-             Steinberg::String utf8Str(utf16Str);
-             utf8Str.toMultiByte(Steinberg::kCP_Utf8);
-             return utf8Str;
-             };
-
-         // COptionMenu ONLY
-         auto optMenu = dynamic_cast<VSTGUI::COptionMenu*> (c);
-         optMenu->removeAllEntry();
-         for (Steinberg::int32 i = 0; i <= parameter->getInfo().stepCount; i++)
-             optMenu->addEntry(getParamStringByIndex(i).text8());
-         c->setValue((float)value - minValue);
-
-         c->valueChanged();
-         c->invalid();
-     }
- }
-
- 
-*/

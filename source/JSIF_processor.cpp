@@ -189,52 +189,11 @@ namespace yg331 {
 	}
 
 	//------------------------------------------------------------------------
-	tresult PLUGIN_API JSIF_Processor::connect(Vst::IConnectionPoint* other)
-	{
-		auto result = Vst::AudioEffect::connect(other);
-		if (result == kResultTrue)
-		{
-			auto configCallback = [this](
-				Vst::DataExchangeHandler::Config& config,
-				const Vst::ProcessSetup& setup
-				)
-				{
-					Vst::SpeakerArrangement arr;
-					getBusArrangement(Vst::BusDirections::kInput, 0, arr);
-					numChannels = static_cast<uint16_t> (Vst::SpeakerArr::getChannelCount(arr));
-					auto sampleSize = sizeof(float);
-
-					config.blockSize = (numChannels * sampleSize) + sizeof(DataBlock);
-					config.numBlocks = 2;
-					config.alignment = 16;
-					config.userContextID = 0;
-					return true;
-				};
-
-			dataExchange = std::make_unique<Vst::DataExchangeHandler>(this, configCallback);
-			dataExchange->onConnect(other, getHostContext());
-		}
-		return result;
-	}
-
-	//------------------------------------------------------------------------
-	tresult PLUGIN_API JSIF_Processor::disconnect(Vst::IConnectionPoint* other)
-	{
-		if (dataExchange)
-		{
-			dataExchange->onDisconnect(other);
-			dataExchange.reset();
-		}
-		return AudioEffect::disconnect(other);
-	}
-
-
-	//------------------------------------------------------------------------
 	tresult PLUGIN_API JSIF_Processor::setupProcessing(Vst::ProcessSetup& newSetup)
 	{
 		Vst::SpeakerArrangement arr;
 		getBusArrangement(Vst::BusDirections::kInput, 0, arr);
-		numChannels = static_cast<uint16_t> (Vst::SpeakerArr::getChannelCount(arr));
+        uint16_t numChannels = static_cast<uint16_t> (Vst::SpeakerArr::getChannelCount(arr));
 
 		Band_Split.resize(numChannels);
 		for (int32 channel = 0; channel < numChannels; channel++)
@@ -384,34 +343,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 	tresult PLUGIN_API JSIF_Processor::setActive(TBool state)
 	{
 		//--- called when the Plug-in is enable/disable (On/Off) -----
-
-		if (state) {
-			if (dataExchange)
-				dataExchange->onActivate(processSetup);
-		}
-		else {
-			if (dataExchange)
-				dataExchange->onDeactivate();
-		}
 		return AudioEffect::setActive(state);
-	}
-
-	//------------------------------------------------------------------------
-	void JSIF_Processor::acquireNewExchangeBlock()
-	{
-		currentExchangeBlock = dataExchange->getCurrentOrNewBlock();
-		if (auto block = toDataBlock(currentExchangeBlock))
-		{
-			block->sampleRate = static_cast<uint32_t> (processSetup.sampleRate);
-			//block->numChannels = numChannels;
-			//block->sampleSize = sizeof(float);
-			block->numSamples = 0;
-			block->inL = 0.0;
-			block->inR = 0.0;
-			block->outL = 0.0;
-			block->outR = 0.0;
-			block->gR = 0.0;
-		}
 	}
 
 	//------------------------------------------------------------------------
@@ -469,7 +401,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		void** in  = getChannelBuffersPointer(processSetup, data.inputs[0]);
 		void** out = getChannelBuffersPointer(processSetup, data.outputs[0]);
 		Vst::SampleRate SampleRate = processSetup.sampleRate;
-		int32 numChannels = data.inputs[0].numChannels;
+        int32 numChannels = data.inputs[0].numChannels;
 
 		// init VuMeters
 		for (auto& loop : fInputVu) loop = init_meter;
@@ -543,20 +475,42 @@ else if (filter[channel].TAP_CONDITION == 3) \
 			fMeterVu *= monoIn;
 		}
         
-		if (currentExchangeBlock.blockID == Vst::InvalidDataExchangeBlockID)
-			acquireNewExchangeBlock();
-
-		if (auto block = toDataBlock(currentExchangeBlock))
-		{
-			block->inL = (numChannels > 0) ? fInputVu[0] : 0.0;
-			block->inR = (numChannels > 1) ? fInputVu[1] : ((numChannels > 0) ? fInputVu[0] : 0.0);
-			block->outL = (numChannels > 0) ? fOutputVu[0] : 0.0;
-			block->outR = (numChannels > 1) ? fOutputVu[1] : ((numChannels > 0) ? fOutputVu[0] : 0.0);
-			block->gR = fMeterVu;
-			// FDebugPrint("%f | %f \n", block->inL, block->outL);
-			dataExchange->sendCurrentBlock();
-			acquireNewExchangeBlock();
-		}
+        //---send a message
+        if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
+        {
+            message->setMessageID ("VUmeter");
+            double data = (numChannels > 0) ? fInputVu[0] : 0.0;
+            message->getAttributes()->setFloat ("inL", data);
+            sendMessage (message);
+        }
+        if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
+        {
+            message->setMessageID ("VUmeter");
+            double data = (numChannels > 1) ? fInputVu[1] : ((numChannels > 0) ? fInputVu[0] : 0.0);
+            message->getAttributes ()->setFloat ("inR", data);
+            sendMessage (message);
+        }
+        if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
+        {
+            message->setMessageID ("VUmeter");
+            double data = (numChannels > 0) ? fOutputVu[0] : 0.0;
+            message->getAttributes ()->setFloat ("outL", data);
+            sendMessage (message);
+        }
+        if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
+        {
+            message->setMessageID ("VUmeter");
+            double data = (numChannels > 1) ? fOutputVu[1] : ((numChannels > 0) ? fOutputVu[0] : 0.0);
+            message->getAttributes ()->setFloat ("outR", data);
+            sendMessage (message);
+        }
+        if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
+        {
+            message->setMessageID ("VUmeter");
+            double data = fMeterVu;
+            message->getAttributes ()->setFloat ("gR", data);
+            sendMessage (message);
+        }
 
 		return kResultOk;
 	}

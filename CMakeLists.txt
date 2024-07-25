@@ -15,7 +15,7 @@ project(JS_Inflator
     # This is your plug-in version number. Change it here only.
     # Version number symbols usable in C++ can be found in
     # source/version.h and ${PROJECT_BINARY_DIR}/projectversion.h.
-    VERSION 2.0.3.0
+    VERSION 2.0.3.1
     DESCRIPTION "JS Inflator VST 3 Plug-in"
 )
 
@@ -28,7 +28,6 @@ smtg_add_vst3plugin(JS_Inflator
     source/version.h
     source/JSIF_cids.h
     source/JSIF_shared.h
-    source/JSIF_dataexchange.h
     source/JSIF_processor.h
     source/JSIF_processor.cpp
     source/JSIF_controller.h
