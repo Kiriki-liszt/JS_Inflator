@@ -1,0 +1,52 @@
+name: Windows Build
+
+on: 
+  workflow_dispatch: 
+
+env:
+  build-dir: build
+  build-type: Release
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    steps:
+    - name: Base plugin Repo checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+        
+    - name: Custom VSTSDK Repo checkout
+      uses: actions/checkout@v4
+      with:
+        repository: Kiriki-liszt/vst3sdk
+        ref: 'v3.7.9_mod'
+        path: "./vst3sdk" 
+        submodules: 'recursive'
+
+    - name: Configure CMake
+      run: >
+        cmake 
+        -S ${{ github.workspace }}
+        -B ${{ github.workspace }}/${{ env.build-dir }} 
+        -G "Visual Studio 17 2022" 
+        -A x64
+        -DCMAKE_BUILD_TYPE=${{ env.build-type }}
+        -DSMTG_ENABLE_VSTGUI_SUPPORT=ON
+        -DSMTG_ENABLE_VST3_PLUGIN_EXAMPLES=OFF
+        -DSMTG_ENABLE_VST3_HOSTING_EXAMPLES=OFF
+        -DGITHUB_ACTIONS=ON
+
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/${{ env.build-dir }}  --config ${{ env.build-type }}
+        
+    - name: Upload VST
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-VST3-${{ matrix.os }}-${{ env.build-type }}
+        path: build/VST3
