@@ -7,6 +7,10 @@ elseif(SMTG_WIN)
     set(vst3sdk_SOURCE_DIR "C:/VST_SDK/vst3sdk")
 endif(SMTG_MAC)
 
+if(GITHUB_ACTIONS) 
+    set(vst3sdk_SOURCE_DIR ${CMAKE_SOURCE_DIR}/vst3sdk)
+endif()
+
 if(NOT vst3sdk_SOURCE_DIR)
     message(FATAL_ERROR "Path to VST3 SDK is empty!")
 endif()
