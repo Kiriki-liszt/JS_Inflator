@@ -131,6 +131,8 @@ v2.0.2.2: Re-structure how GUI switching works to more safe way.
 
 v2.0.3: Error in Apple Silicon Native build fixed.  
 
+v2.0.3.1: Using 'DataExchange' method in Cubase 13 was not working. Fixed by reverting to lagacy method(sendMesseage).  
+
 ## What I've learned
 
 * Volumefader  
