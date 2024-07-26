@@ -144,13 +144,15 @@ namespace yg331 {
 //------------------------------------------------------------------------
 // VuMeterController
 //------------------------------------------------------------------------
-template<> void JSIF_Controller::UIVuMeterController::setVuMeterValue(double inL, double inR, double outL, double outR, double GR)
+template<> void JSIF_Controller::UIVuMeterController::updateVuMeterValue()
 {
-    if (vuMeterInL)  { vuMeterInL-> setValueNormalized(inL);  vuMeterInL-> setDirty(true); }
-    if (vuMeterInR)  { vuMeterInR-> setValueNormalized(inR);  vuMeterInR-> setDirty(true); }
-    if (vuMeterOutL) { vuMeterOutL->setValueNormalized(outL); vuMeterOutL->setDirty(true); }
-    if (vuMeterOutR) { vuMeterOutR->setValueNormalized(outR); vuMeterOutR->setDirty(true); }
-    if (vuMeterGR)   { vuMeterGR->  setValueNormalized(GR);   vuMeterGR->  setDirty(true); }
+    if (mainController) {
+        if (vuMeterInL)       vuMeterInL->   setValueNormalized(mainController->getVuMeterByTag(VuMeter_inL));
+        if (vuMeterInR)       vuMeterInR->   setValueNormalized(mainController->getVuMeterByTag(VuMeter_inR));
+        if (vuMeterOutL)      vuMeterOutL->  setValueNormalized(mainController->getVuMeterByTag(VuMeter_outL));
+        if (vuMeterOutR)      vuMeterOutR->  setValueNormalized(mainController->getVuMeterByTag(VuMeter_outR));
+        if (vuMeterEffect)    vuMeterEffect->setValueNormalized(mainController->getVuMeterByTag(VuMeter_effect));
+    }
 }
 
 template<> VSTGUI::CView* JSIF_Controller::UIVuMeterController::verifyView(
@@ -160,22 +162,22 @@ template<> VSTGUI::CView* JSIF_Controller::UIVuMeterController::verifyView(
 )
 {
     if (VSTGUI::CVuMeter* control = dynamic_cast<VSTGUI::CVuMeter*>(view); control) {
-        if (control->getTag() == kInVuPPML)  { vuMeterInL  = control; vuMeterInL-> registerViewListener(this); }
-        if (control->getTag() == kInVuPPMR)  { vuMeterInR  = control; vuMeterInR-> registerViewListener(this); }
-        if (control->getTag() == kOutVuPPML) { vuMeterOutL = control; vuMeterOutL->registerViewListener(this); }
-        if (control->getTag() == kOutVuPPMR) { vuMeterOutR = control; vuMeterOutR->registerViewListener(this); }
-        if (control->getTag() == kMeter)     { vuMeterGR   = control; vuMeterGR->  registerViewListener(this); }
+        if (control->getTag() == kInVuPPML)  { vuMeterInL    = control; vuMeterInL->   registerViewListener(this); }
+        if (control->getTag() == kInVuPPMR)  { vuMeterInR    = control; vuMeterInR->   registerViewListener(this); }
+        if (control->getTag() == kOutVuPPML) { vuMeterOutL   = control; vuMeterOutL->  registerViewListener(this); }
+        if (control->getTag() == kOutVuPPMR) { vuMeterOutR   = control; vuMeterOutR->  registerViewListener(this); }
+        if (control->getTag() == kMeter)     { vuMeterEffect = control; vuMeterEffect->registerViewListener(this); }
     }
     return view;
 }
 
 template<> void JSIF_Controller::UIVuMeterController::viewWillDelete(VSTGUI::CView* view)
 {
-    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterInL  && vuMeterInL)  { vuMeterInL-> unregisterViewListener(this); vuMeterInL  = nullptr; }
-    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterInR  && vuMeterInR)  { vuMeterInR-> unregisterViewListener(this); vuMeterInR  = nullptr; }
-    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterOutL && vuMeterOutL) { vuMeterOutL->unregisterViewListener(this); vuMeterOutL = nullptr; }
-    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterOutR && vuMeterOutR) { vuMeterOutR->unregisterViewListener(this); vuMeterOutR = nullptr; }
-    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterGR   && vuMeterGR)   { vuMeterGR->  unregisterViewListener(this); vuMeterGR   = nullptr; }
+    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterInL    && vuMeterInL)   { vuMeterInL->   unregisterViewListener(this); vuMeterInL    = nullptr; }
+    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterInR    && vuMeterInR)   { vuMeterInR->   unregisterViewListener(this); vuMeterInR    = nullptr; }
+    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterOutL   && vuMeterOutL)  { vuMeterOutL->  unregisterViewListener(this); vuMeterOutL   = nullptr; }
+    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterOutR   && vuMeterOutR)  { vuMeterOutR->  unregisterViewListener(this); vuMeterOutR   = nullptr; }
+    if (dynamic_cast<VSTGUI::CVuMeter*>(view) == vuMeterEffect && vuMeterEffect){ vuMeterEffect->unregisterViewListener(this); vuMeterEffect = nullptr; }
 }
 
 //------------------------------------------------------------------------
@@ -740,15 +742,16 @@ tresult PLUGIN_API JSIF_Controller::notify(Vst::IMessage* message)
     if (strcmp (message->getMessageID (), "VUmeter") == 0)
     {
         double data = 0.0;
-        if (message->getAttributes ()->getFloat ("inL", data) == kResultTrue) inL = data;
-        if (message->getAttributes ()->getFloat ("inR", data) == kResultTrue) inR = data;
-        if (message->getAttributes ()->getFloat ("outL", data) == kResultTrue) outL = data;
-        if (message->getAttributes ()->getFloat ("outR", data) == kResultTrue) outR = data;
-        if (message->getAttributes ()->getFloat ("gR", data) == kResultTrue) gR = data;
-        if (message->getAttributes ()->getFloat ("gR", data) == kResultTrue) {
+        int64 update = 0.0;
+        if (message->getAttributes ()->getFloat ("vuInL",    data) == kResultTrue) vuInL    = data;
+        if (message->getAttributes ()->getFloat ("vuInR",    data) == kResultTrue) vuInR    = data;
+        if (message->getAttributes ()->getFloat ("vuOutL",   data) == kResultTrue) vuOutL   = data;
+        if (message->getAttributes ()->getFloat ("vuOutR",   data) == kResultTrue) vuOutR   = data;
+        if (message->getAttributes ()->getFloat ("vuEffect", data) == kResultTrue) vuEffect = data;
+        if (message->getAttributes ()->getInt   ("update", update) == kResultTrue) {
             if (!vuMeterControllers.empty()) {
                 for (auto iter = vuMeterControllers.begin(); iter != vuMeterControllers.end(); iter++) {
-                    (*iter)->setVuMeterValue(inL, inR, outL, outR, gR);
+                    (*iter)->updateVuMeterValue();
                 }
             }
         }

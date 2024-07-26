@@ -183,30 +183,30 @@ public:
 		vuMeterInL(nullptr),
 		vuMeterInR(nullptr),
 		vuMeterOutL(nullptr),
-		vuMeterOutR(nullptr),
-		vuMeterGR(nullptr)
-	{}
+        vuMeterOutR(nullptr),
+		vuMeterEffect(nullptr)
+    {}
     
 	~VuMeterController() SMTG_OVERRIDE
 	{
-		if (vuMeterInL)  viewWillDelete(vuMeterInL);
-		if (vuMeterInR)  viewWillDelete(vuMeterInR);
-		if (vuMeterOutL) viewWillDelete(vuMeterOutL);
-		if (vuMeterOutR) viewWillDelete(vuMeterOutR);
-		if (vuMeterGR)   viewWillDelete(vuMeterGR);
+		if (vuMeterInL)    viewWillDelete(vuMeterInL);
+		if (vuMeterInR)    viewWillDelete(vuMeterInR);
+		if (vuMeterOutL)   viewWillDelete(vuMeterOutL);
+		if (vuMeterOutR)   viewWillDelete(vuMeterOutR);
+		if (vuMeterEffect) viewWillDelete(vuMeterEffect);
 
 		mainController->removeUIVuMeterController(this);
 	}
 
-    void setVuMeterValue(double inL, double inR, double outL, double outR, double GR);
+    void updateVuMeterValue();
 
 private:
-	using CControl = VSTGUI::CControl;
-	using CView = VSTGUI::CView;
-	using CParamDisplay = VSTGUI::CParamDisplay;
-	using CVuMeter = VSTGUI::CVuMeter;
-	using UTF8String = VSTGUI::UTF8String;
-	using UIAttributes = VSTGUI::UIAttributes;
+	using CControl       = VSTGUI::CControl;
+	using CView          = VSTGUI::CView;
+	using CParamDisplay  = VSTGUI::CParamDisplay;
+	using CVuMeter       = VSTGUI::CVuMeter;
+	using UTF8String     = VSTGUI::UTF8String;
+	using UIAttributes   = VSTGUI::UIAttributes;
 	using IUIDescription = VSTGUI::IUIDescription;
 
 	//--- from IControlListener ----------------------
@@ -215,7 +215,7 @@ private:
 	void controlEndEdit(CControl* pControl) SMTG_OVERRIDE {}
 	//--- is called when a view is created -----
 	CView* verifyView(CView* view,
-	                  const UIAttributes& /*attributes*/,
+	                  const UIAttributes&   /*attributes*/,
                       const IUIDescription* /*description*/) SMTG_OVERRIDE;
 	//--- from IViewListenerAdapter ----------------------
 	//--- is called when a view will be deleted: the editor is closed -----
@@ -226,7 +226,7 @@ private:
     CVuMeter* vuMeterInR;
     CVuMeter* vuMeterOutL;
     CVuMeter* vuMeterOutR;
-    CVuMeter* vuMeterGR;
+    CVuMeter* vuMeterEffect;
 };
 
 //------------------------------------------------------------------------
@@ -368,7 +368,19 @@ public:
 		if (it != vuMeterControllers.end())
 			vuMeterControllers.erase(it);
 	};
-
+    Steinberg::Vst::ParamValue getVuMeterByTag(Steinberg::Vst::ParamID tag)
+    {
+        switch (tag) {
+            case VuMeter_inL:    return vuInL;    break;
+            case VuMeter_inR:    return vuInR;    break;
+            case VuMeter_outL:   return vuOutL;   break;
+            case VuMeter_outR:   return vuOutR;   break;
+            case VuMeter_effect: return vuEffect; break;
+            default: break;
+        }
+        return 0;
+    }
+    
 	//---Interface---------
 	DEFINE_INTERFACES
 		// Here you can add more supported VST3 interfaces
@@ -415,7 +427,7 @@ private:
 
 	Steinberg::Vst::ParamValue stateGUI    = 0.0;
     
-    Steinberg::Vst::ParamValue inL = 0.0, inR = 0.0, outL = 0.0, outR = 0.0, gR = 0.0;
+    Steinberg::Vst::ParamValue vuInL = 0.0, vuInR = 0.0, vuOutL = 0.0, vuOutR = 0.0, vuEffect = 0.0;
 };
 	
 } // namespace yg331

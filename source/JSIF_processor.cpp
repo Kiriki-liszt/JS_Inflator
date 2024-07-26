@@ -480,35 +480,41 @@ else if (filter[channel].TAP_CONDITION == 3) \
         {
             message->setMessageID ("VUmeter");
             double data = (numChannels > 0) ? fInputVu[0] : 0.0;
-            message->getAttributes()->setFloat ("inL", data);
+            message->getAttributes()->setFloat ("vuInL", data);
             sendMessage (message);
         }
         if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
         {
             message->setMessageID ("VUmeter");
             double data = (numChannels > 1) ? fInputVu[1] : ((numChannels > 0) ? fInputVu[0] : 0.0);
-            message->getAttributes ()->setFloat ("inR", data);
+            message->getAttributes ()->setFloat ("vuInR", data);
             sendMessage (message);
         }
         if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
         {
             message->setMessageID ("VUmeter");
             double data = (numChannels > 0) ? fOutputVu[0] : 0.0;
-            message->getAttributes ()->setFloat ("outL", data);
+            message->getAttributes ()->setFloat ("vuOutL", data);
             sendMessage (message);
         }
         if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
         {
             message->setMessageID ("VUmeter");
             double data = (numChannels > 1) ? fOutputVu[1] : ((numChannels > 0) ? fOutputVu[0] : 0.0);
-            message->getAttributes ()->setFloat ("outR", data);
+            message->getAttributes ()->setFloat ("vuOutR", data);
             sendMessage (message);
         }
         if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
         {
             message->setMessageID ("VUmeter");
             double data = fMeterVu;
-            message->getAttributes ()->setFloat ("gR", data);
+            message->getAttributes ()->setFloat ("vuEffect", data);
+            sendMessage (message);
+        }
+        if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
+        {
+            message->setMessageID ("VUmeter");
+            message->getAttributes ()->setInt ("update", true);
             sendMessage (message);
         }
 

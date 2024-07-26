@@ -50,5 +50,13 @@ init_Phase = false; // Min phase
 
 static const overSample
 init_OS = overSample_1x;
+
+enum VuMeterTag {
+    VuMeter_inL,
+    VuMeter_inR,
+    VuMeter_outL,
+    VuMeter_outR,
+    VuMeter_effect
+};
 //------------------------------------------------------------------------
 } // namespace yg331

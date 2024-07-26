@@ -154,7 +154,7 @@
 		"custom": {
 			"FocusDrawing": {},
 			"VST3Editor": {
-				"Path": "D:\\0. Production\\VST_Production\\Generator\\JS Inflator\\resource\\JSIF_editor.uidesc"
+				"Path": "/Users/yoon/Documents/VSTSDK_Product/JS Inflator/resource/JSIF_editor.uidesc"
 			},
 			"UIGridController": {
 				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
@@ -175,7 +175,7 @@
 				"WriteRCFile": "false"
 			},
 			"UITemplateController": {
-				"SelectedTemplate": "Original"
+				"SelectedTemplate": "Twarch"
 			},
 			"UIAttributesController": {},
 			"UIViewCreatorDataSource": {
@@ -437,6 +437,7 @@
 							"opacity": "1",
 							"origin": "273, 52",
 							"size": "175, 270",
+							"sub-controller": "myVuMeterController",
 							"transparent": "true",
 							"uidesc-label": "VU Meters",
 							"wants-focus": "false"
@@ -458,7 +459,6 @@
 									"orientation": "vertical",
 									"origin": "10, 10",
 									"size": "20, 250",
-									"sub-controller": "myVuMeterController",
 									"transparent": "false",
 									"uidesc-label": "Input L",
 									"wants-focus": "false",
@@ -481,7 +481,6 @@
 									"orientation": "vertical",
 									"origin": "38, 10",
 									"size": "20, 250",
-									"sub-controller": "myVuMeterController",
 									"transparent": "false",
 									"uidesc-label": "Input R",
 									"wants-focus": "false",
@@ -504,7 +503,6 @@
 									"orientation": "vertical",
 									"origin": "117, 10",
 									"size": "20, 250",
-									"sub-controller": "myVuMeterController",
 									"transparent": "false",
 									"uidesc-label": "Output L",
 									"wants-focus": "false",
@@ -527,7 +525,6 @@
 									"orientation": "vertical",
 									"origin": "145, 10",
 									"size": "20, 250",
-									"sub-controller": "myVuMeterController",
 									"transparent": "false",
 									"uidesc-label": "Output R",
 									"wants-focus": "false",
@@ -550,9 +547,8 @@
 									"orientation": "vertical",
 									"origin": "77, 10",
 									"size": "20, 150",
-									"sub-controller": "myVuMeterController",
 									"transparent": "false",
-									"uidesc-label": "Diff",
+									"uidesc-label": "Effect",
 									"wants-focus": "false",
 									"wheel-inc-value": "0.1"
 								}
@@ -1256,72 +1252,6 @@
 							"wheel-inc-value": "0.1"
 						}
 					},
-					"CVuMeter": {
-						"attributes": {
-							"bitmap": "twarch_meter_on",
-							"class": "CVuMeter",
-							"control-tag": "InVuPPML",
-							"decrease-step-value": "0.1",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"num-led": "25",
-							"off-bitmap": "twarch_meter_off",
-							"opacity": "1",
-							"orientation": "vertical",
-							"origin": "530, 247",
-							"size": "40, 392",
-							"sub-controller": "myVuMeterController",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CVuMeter": {
-						"attributes": {
-							"bitmap": "twarch_meter_on",
-							"class": "CVuMeter",
-							"control-tag": "OutVuPPML",
-							"decrease-step-value": "0.1",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"num-led": "25",
-							"off-bitmap": "twarch_meter_off",
-							"opacity": "1",
-							"orientation": "vertical",
-							"origin": "731, 247",
-							"size": "40, 392",
-							"sub-controller": "myVuMeterController",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CVuMeter": {
-						"attributes": {
-							"bitmap": "twarch_meter_fx_on",
-							"class": "CVuMeter",
-							"control-tag": "Meter",
-							"decrease-step-value": "0.1",
-							"default-value": "0",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"num-led": "25",
-							"off-bitmap": "twarch_meter_off",
-							"opacity": "1",
-							"orientation": "vertical",
-							"origin": "632, 249",
-							"size": "40, 392",
-							"sub-controller": "myVuMeterController",
-							"transparent": "false",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
 					"CTextLabel": {
 						"attributes": {
 							"back-color": "coverup",
@@ -1356,6 +1286,85 @@
 							"value-precision": "2",
 							"wants-focus": "false",
 							"wheel-inc-value": "0.1"
+						}
+					},
+					"CViewContainer": {
+						"attributes": {
+							"background-color": "~ TransparentCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "520, 237",
+							"size": "261, 414",
+							"sub-controller": "myVuMeterController",
+							"transparent": "true",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CVuMeter": {
+								"attributes": {
+									"bitmap": "twarch_meter_on",
+									"class": "CVuMeter",
+									"control-tag": "InVuPPML",
+									"decrease-step-value": "0.1",
+									"default-value": "0",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"num-led": "25",
+									"off-bitmap": "twarch_meter_off",
+									"opacity": "1",
+									"orientation": "vertical",
+									"origin": "10, 10",
+									"size": "40, 392",
+									"transparent": "false",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CVuMeter": {
+								"attributes": {
+									"bitmap": "twarch_meter_on",
+									"class": "CVuMeter",
+									"control-tag": "OutVuPPML",
+									"decrease-step-value": "0.1",
+									"default-value": "0",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"num-led": "25",
+									"off-bitmap": "twarch_meter_off",
+									"opacity": "1",
+									"orientation": "vertical",
+									"origin": "211, 10",
+									"size": "40, 392",
+									"transparent": "false",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CVuMeter": {
+								"attributes": {
+									"bitmap": "twarch_meter_fx_on",
+									"class": "CVuMeter",
+									"control-tag": "Meter",
+									"decrease-step-value": "0.1",
+									"default-value": "0",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"num-led": "25",
+									"off-bitmap": "twarch_meter_off",
+									"opacity": "1",
+									"orientation": "vertical",
+									"origin": "112, 12",
+									"size": "40, 392",
+									"transparent": "false",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							}
 						}
 					}
 				}
