@@ -264,9 +264,6 @@ Modified for my need: Fractional resampling, Interpolation parts are deleted.
 
 ## Todo
 
-* [ ] Preset save & import menu bar.  
-* [x] malloc/realloc/free to new/delete change. -> stick with it.
-* [x] Oversampling options : Linear phase, Balanced.  
-* [x] GUI : resizing, and HDDPI.  
 * [ ] GUI : double click to enter value.
-* [x] soft bypass latency.  
+* [ ] Double click to reset to default.
+* [ ] Bypass automation flag.
