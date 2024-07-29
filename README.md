@@ -11,25 +11,32 @@ Also double precision input / output if supported.
 
 <img src="https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/raw/main/screenshots/screenshot_both.png"  width="600"/>  
 
-Comes in two GUIs.
-The alternative GUI is made by Twarch.  
+Comes in two GUIs. The alternative GUI is made by Twarch.  
 
-## Builds and Requirements  
+### Compatibility  
 
-Windows - x64  
-Mac - macos 10.13 ~ 14.5, Intel and Apple Silicon Native  
+VST3, AUv2  
 
-## Project Compability  
+### System Requirements
 
-Windows, Mac and Linux(Change VSTSDK location in cmake and re-build any IDE project you prefer).  
+Audio Units  
+* Mac OS X 10.13 or later (Intel or Apple Silicon Native) 
+
+VST3  
+* Mac OS X 10.13 or later (Intel or Apple Silicon Native) 
+* Windows 10 or later
+
+### Supported DAW
+
+Cubase, Ableton Live, Logic Pro, Cakewalk by Bandlab, Bitwig are tested as working.  
 
 ## How to use  
 
-* Windows  
+### Windows  
 
 Unzip Windows version from latest Release and copy to "C:\Program Files\Common Files\VST3".  
 
-* MacOS  
+### MacOS  
 
 Unzip macOS version from latest Release and copy vst3 to "/Library/Audio/Plug-Ins/VST3" and component to "/Library/Audio/Plug-Ins/Components".  
 
@@ -45,7 +52,7 @@ Unzip macOS version from latest Release and copy vst3 to "/Library/Audio/Plug-In
 >
 > tested by @jonasborneland [here](https://github.com/Kiriki-liszt/JS_Inflator_to_VST2_VST3/issues/12#issuecomment-1616671177)
 
-* From v1.x.x to v2.x.x  
+### Version upgrade from v1.x.x to v2.x.x  
 
 Just delete old one and use new one!  
 Any DAW with steinberg standard will automatically replace old plugins while opening project.  
@@ -79,6 +86,11 @@ Tested as working are;
 
 VSTSDK 3.7.9 used  
 VSTGUI 4.12 used  
+
+## Project Build  
+
+Use CMake to build itself or make IDE project file.  
+Supports Windows, Mac, Linux(same as VSTSDK).  
 
 ## Version logs
 
