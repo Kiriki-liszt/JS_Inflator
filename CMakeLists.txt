@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14.0)
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13 CACHE STRING "")
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11 CACHE STRING "")
 
 if(SMTG_MAC)
     set(vst3sdk_SOURCE_DIR "/Users/yoon/VST_SDK/vst3sdk")
@@ -140,6 +140,8 @@ endif(SMTG_WIN)
 
 # Add an AUv2 target
 if (SMTG_MAC AND XCODE AND SMTG_COREAUDIO_SDK_PATH)
+    list(APPEND CMAKE_MODULE_PATH "${vst3sdk_SOURCE_DIR}/cmake/modules")
+    include(SMTG_AddVST3AuV2) 
 	smtg_target_add_auv2(JS_Inflator-au
 		BUNDLE_NAME JS_Inflator
 		BUNDLE_IDENTIFIER io.github.yg331.JS.Inflator.audiounit

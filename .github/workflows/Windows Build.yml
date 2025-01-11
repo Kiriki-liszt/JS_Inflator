@@ -24,8 +24,7 @@ jobs:
     - name: Custom VSTSDK Repo checkout
       uses: actions/checkout@v4
       with:
-        repository: Kiriki-liszt/vst3sdk
-        ref: 'v3.7.9_mod'
+        repository: steinbergmedia/vst3sdk
         path: "./vst3sdk" 
         submodules: 'recursive'
 
@@ -40,6 +39,7 @@ jobs:
         -DSMTG_ENABLE_VSTGUI_SUPPORT=ON
         -DSMTG_ENABLE_VST3_PLUGIN_EXAMPLES=OFF
         -DSMTG_ENABLE_VST3_HOSTING_EXAMPLES=OFF
+        -DSMTG_CREATE_BUNDLE_FOR_WINDOWS=OFF
         -DGITHUB_ACTIONS=ON
 
     - name: Build
@@ -48,5 +48,5 @@ jobs:
     - name: Upload VST
       uses: actions/upload-artifact@v4
       with:
-        name: build-VST3-${{ matrix.os }}-${{ env.build-type }}
+        name: ${{ github.event.repository.name }}-${{ matrix.os }}-${{ github.sha }}
         path: build/VST3
