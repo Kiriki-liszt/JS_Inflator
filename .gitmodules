@@ -1,3 +1,6 @@
 [submodule "libs/r8brain-free-src"]
 	path = libs/r8brain-free-src
 	url = https://github.com/avaneev/r8brain-free-src.git
+[submodule "libs/vst3sdk"]
+	path = libs/vst3sdk
+	url = https://github.com/steinbergmedia/vst3sdk.git

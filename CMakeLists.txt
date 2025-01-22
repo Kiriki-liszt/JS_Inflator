@@ -1,19 +1,7 @@
 cmake_minimum_required(VERSION 3.14.0)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11 CACHE STRING "")
 
-if(SMTG_MAC)
-    set(vst3sdk_SOURCE_DIR "/Users/yoon/VST_SDK/vst3sdk")
-elseif(SMTG_WIN)
-    set(vst3sdk_SOURCE_DIR "C:/VST_SDK/vst3sdk")
-endif(SMTG_MAC)
-
-if(GITHUB_ACTIONS) 
-    set(vst3sdk_SOURCE_DIR ${CMAKE_SOURCE_DIR}/vst3sdk)
-endif()
-
-if(NOT vst3sdk_SOURCE_DIR)
-    message(FATAL_ERROR "Path to VST3 SDK is empty!")
-endif()
+set(vst3sdk_SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/vst3sdk)
 
 project(JS_Inflator
     # This is your plug-in version number. Change it here only.
@@ -101,7 +89,7 @@ project(r8brain-free-src)
 add_library(r8brain-free-src r8bbase.cpp)
 ]=]
 )
-    
+
 add_subdirectory(${R8B_PATH} ${PROJECT_BINARY_DIR}/r8brain-free-src-build EXCLUDE_FROM_ALL)
 include_directories(${R8B_PATH})
 target_link_libraries(JS_Inflator PUBLIC r8brain-free-src)
@@ -119,7 +107,7 @@ if(SMTG_MAC)
         "--pluginfolder;$(BUILT_PRODUCTS_DIR)"
     )
 elseif(SMTG_WIN)
-    target_sources(JS_Inflator PRIVATE 
+    target_sources(JS_Inflator PRIVATE
         resource/win32resource.rc
     )
     if(MSVC)
@@ -141,7 +129,7 @@ endif(SMTG_WIN)
 # Add an AUv2 target
 if (SMTG_MAC AND XCODE AND SMTG_COREAUDIO_SDK_PATH)
     list(APPEND CMAKE_MODULE_PATH "${vst3sdk_SOURCE_DIR}/cmake/modules")
-    include(SMTG_AddVST3AuV2) 
+    include(SMTG_AddVST3AuV2)
 	smtg_target_add_auv2(JS_Inflator-au
 		BUNDLE_NAME JS_Inflator
 		BUNDLE_IDENTIFIER io.github.yg331.JS.Inflator.audiounit
