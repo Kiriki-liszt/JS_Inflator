@@ -77,7 +77,7 @@ namespace yg331 {
 		clear_delete(fInputVu);
 		clear_delete(fOutputVu);
 
-		for (auto& loop : buff) 
+		for (auto& loop : buff)
 			clear_delete(loop);
 		clear_delete(buff);
 		clear_delete(buff_head);
@@ -195,9 +195,9 @@ namespace yg331 {
 		getBusArrangement(Vst::BusDirections::kInput, 0, arr);
         uint16_t numChannels = static_cast<uint16_t> (Vst::SpeakerArr::getChannelCount(arr));
 
-		Band_Split.resize(numChannels);
+		fBand_Split.resize(numChannels);
 		for (int32 channel = 0; channel < numChannels; channel++)
-			Band_Split_set(&Band_Split[channel], 240.0, 2400.0, newSetup.sampleRate);
+			Band_Split_set(&fBand_Split[channel], 240.0, 2400.0, newSetup.sampleRate);
 
 		upSample_21.resize(numChannels);
 		upSample_41.resize(numChannels);
@@ -220,7 +220,7 @@ namespace yg331 {
 		dnSample_4x_Lin.resize(numChannels);
 		dnSample_8x_Lin.resize(numChannels);
 
-		for (int channel = 0; channel < numChannels; channel++) 
+		for (int channel = 0; channel < numChannels; channel++)
 		{
 			memset(upSample_21[channel].coef, 0, sizeof(upSample_21[channel].coef));
 			memset(upSample_41[channel].coef, 0, sizeof(upSample_41[channel].coef));
@@ -228,14 +228,14 @@ namespace yg331 {
 			memset(upSample_81[channel].coef, 0, sizeof(upSample_81[channel].coef));
 			memset(upSample_82[channel].coef, 0, sizeof(upSample_82[channel].coef));
 			memset(upSample_83[channel].coef, 0, sizeof(upSample_83[channel].coef));
-            
+
 			memset(dnSample_21[channel].coef, 0, sizeof(dnSample_21[channel].coef));
 			memset(dnSample_41[channel].coef, 0, sizeof(dnSample_41[channel].coef));
 			memset(dnSample_42[channel].coef, 0, sizeof(dnSample_42[channel].coef));
 			memset(dnSample_81[channel].coef, 0, sizeof(dnSample_81[channel].coef));
 			memset(dnSample_82[channel].coef, 0, sizeof(dnSample_82[channel].coef));
 			memset(dnSample_83[channel].coef, 0, sizeof(dnSample_83[channel].coef));
-            
+
 			// Strictly HALF_BAND
 			Kaiser::calcFilter(96000.0,  0.0, 24000.0, upTap_21, 100.0, upSample_21[channel].coef); //
 			Kaiser::calcFilter(96000.0,  0.0, 24000.0, upTap_41, 100.0, upSample_41[channel].coef); //
@@ -348,7 +348,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 
 	//------------------------------------------------------------------------
 	tresult PLUGIN_API JSIF_Processor::process(Vst::ProcessData& data)
-	{		        
+	{
 		Vst::IParameterChanges* paramChanges = data.inputParameterChanges;
 
 		if (paramChanges)
@@ -391,7 +391,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 			}
 		}
 
-		if (data.numInputs == 0 || data.numOutputs == 0) 
+		if (data.numInputs == 0 || data.numOutputs == 0)
 		{
 			return kResultOk;
 		}
@@ -425,7 +425,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 					memset(out[channel], 0, sampleFramesSize);
 				}
 			}
-			// Even Silence, we should process VU meter and send data. 
+			// Even Silence, we should process VU meter and send data.
 			// return kResultOk;
 		}
 		else
@@ -474,7 +474,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 			monoIn /= (double)numChannels;
 			fMeterVu *= monoIn;
 		}
-        
+
         //---send a message
         if (IPtr<Vst::IMessage> message = owned (allocateMessage ()))
         {
@@ -710,7 +710,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 			SampleType* ptrIn  = (SampleType*) inputs[channel];
 			SampleType* ptrOut = (SampleType*)outputs[channel];
 			int32 samples = sampleFrames;
-			
+
 			if (fParamOS == overSample_1x) {
 				memcpy(ptrOut, ptrIn, sizeof(SampleType) * sampleFrames);
 				continue;
@@ -718,9 +718,9 @@ else if (filter[channel].TAP_CONDITION == 3) \
 
 			if (latency != latency_q[channel].size()) {
 				int32 diff = latency - (int32)latency_q[channel].size();
-				if (diff > 0) 
+				if (diff > 0)
 					for (int i = 0; i <  diff; i++) latency_q[channel].push_back(0.0);
-				else 
+				else
 					for (int i = 0; i < -diff; i++) latency_q[channel].pop_front();
 			}
 
@@ -737,7 +737,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		}
 		VuInput.update(inputs, numChannels, sampleFrames);
 		VuOutput.update(outputs, numChannels, sampleFrames);
- 
+
 		for (int ch = 0; ch < numChannels; ch++)
 		{
 			fInputVu[ch]  = VuInput.getEnv(ch);
@@ -750,10 +750,10 @@ else if (filter[channel].TAP_CONDITION == 3) \
 
 	template <typename SampleType>
 	void JSIF_Processor::processAudio(
-		SampleType** inputs, 
-		SampleType** outputs, 
+		SampleType** inputs,
+		SampleType** outputs,
 		int32 numChannels,
-		Vst::SampleRate SampleRate, 
+		Vst::SampleRate SampleRate,
 		int32 sampleFrames
 	)
 	{
@@ -761,10 +761,10 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		Vst::Sample64 Out_db = expf(logf(10.f) * (12.0 * fOutput - 12.0) / 20.f);
 
 		curvepct = fCurve - 0.5;
-		curveA =        1.5 + curvepct; 
-		curveB = -(curvepct + curvepct); 
-		curveC =   curvepct - 0.5; 
-		curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;	
+		curveA =        1.5 + curvepct;
+		curveB = -(curvepct + curvepct);
+		curveC =   curvepct - 0.5;
+		curveD = 0.0625 - curvepct * 0.25 + (curvepct * curvepct) * 0.25;
 
 		int32 latency = 0;
 		if (!fParamPhase) {
@@ -784,11 +784,11 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		else if (fParamOS == overSample_8x) oversampling = 8;
 
 		Vst::SampleRate targetSampleRate = SampleRate * oversampling;
-		
+
 		for (int32 channel = 0; channel < numChannels; channel++)
-			if (Band_Split[channel].SR != targetSampleRate) 
-				Band_Split_set(&Band_Split[channel], 240.0, 2400.0, targetSampleRate);
-        
+			if (fBand_Split[channel].SR != targetSampleRate)
+				Band_Split_set(&fBand_Split[channel], 240.0, 2400.0, targetSampleRate);
+
         double up_x[8] = {0.0, };
         double up_y[8] = {0.0, };
 
@@ -800,7 +800,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 			SampleType* ptrIn  = (SampleType*) inputs[channel];
 			SampleType* ptrOut = (SampleType*)outputs[channel];
 			double* buff_in = buff[channel].data();
-			
+
 			if (latency != latency_q[channel].size()) {
 				int32 diff = latency - (int32)latency_q[channel].size();
 				if (diff > 0) {
@@ -854,18 +854,18 @@ else if (filter[channel].TAP_CONDITION == 3) \
 					}
 					Vst::Sample64 sampleOS = up_x[k];
 					if (bSplit) {
-						Band_Split[channel].LP.R =      Band_Split[channel].LP.I  + Band_Split[channel].LP.C * (sampleOS - Band_Split[channel].LP.I);
-						Band_Split[channel].LP.I =  2 * Band_Split[channel].LP.R  - Band_Split[channel].LP.I;
+						fBand_Split[channel].LP.R =      fBand_Split[channel].LP.I  + fBand_Split[channel].LP.C * (sampleOS - fBand_Split[channel].LP.I);
+						fBand_Split[channel].LP.I =  2 * fBand_Split[channel].LP.R  - fBand_Split[channel].LP.I;
 
-						Band_Split[channel].HP.R = (1 - Band_Split[channel].HP.C) * Band_Split[channel].HP.I + Band_Split[channel].HP.C * sampleOS;
-						Band_Split[channel].HP.I =  2 * Band_Split[channel].HP.R  - Band_Split[channel].HP.I;
+						fBand_Split[channel].HP.R = (1 - fBand_Split[channel].HP.C) * fBand_Split[channel].HP.I + fBand_Split[channel].HP.C * sampleOS;
+						fBand_Split[channel].HP.I =  2 * fBand_Split[channel].HP.R  - fBand_Split[channel].HP.I;
 
-						Vst::Sample64 inputSample_L = Band_Split[channel].LP.R;
-						Vst::Sample64 inputSample_H = sampleOS - Band_Split[channel].HP.R;
-						Vst::Sample64 inputSample_M = Band_Split[channel].HP.R - Band_Split[channel].LP.R;
+						Vst::Sample64 inputSample_L = fBand_Split[channel].LP.R;
+						Vst::Sample64 inputSample_H = sampleOS - fBand_Split[channel].HP.R;
+						Vst::Sample64 inputSample_M = fBand_Split[channel].HP.R - fBand_Split[channel].LP.R;
 
 						up_y[k] = process_inflator(inputSample_L) +
-						          process_inflator(inputSample_M * Band_Split[channel].G) * Band_Split[channel].GR +
+						          process_inflator(inputSample_M * fBand_Split[channel].G) * fBand_Split[channel].GR +
 						          process_inflator(inputSample_H);
 					}
 					else {
@@ -900,9 +900,9 @@ else if (filter[channel].TAP_CONDITION == 3) \
 				delayed = latency_q[channel].front();
 				latency_q[channel].pop_front();
 				*buff_in = delayed;  buff_in++;
-                
+
 				inputSample = (delayed * (1.0 - fEffect)) + (inputSample * fEffect);
-                
+
 				t += std::abs(inputSample) - std::abs(delayed);
 				// Meter += 20.0 * (std::log10(std::abs(inputSample)) - std::log10(std::abs(delayed)));
 
@@ -937,7 +937,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		{
 			acc += filter->coef[coef] * (filter->buff[buff] + filter->buff[filter->TAP_HALF - buff - filter->START]);
 		}
-		
+
 		double acc_1 = 0.0;
 		double acc_2 = 0.0;
 		if (filter->TAP_CONDITION == 1)
@@ -950,7 +950,7 @@ else if (filter[channel].TAP_CONDITION == 3) \
 			acc_1 = acc;
 			acc_2 = filter->coef[filter->TAP_HALF] *  filter->buff[filter->TAP_HALF_HALF];
 		}
-		
+
 		*(out  ) = acc_1;
 		*(out+1) = acc_2;
 	}
@@ -966,15 +966,15 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		acc += filter->coef[filter->TAP_HALF] * filter->buff[2 + filter->TAP_HALF];
 		*out = acc;
 	}
-	
+
 	// 1 in 2 out
-	void JSIF_Processor::Fir_x2_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
+	void JSIF_Processor::Fir_x2_up(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
 	{
 		static constexpr size_t upTap_21_size = sizeof(double) * (upTap_21 - 1) / 2;
 		memmove(upSample_21[channel].buff + 1, upSample_21[channel].buff, upTap_21_size);
 		upSample_21[channel].buff[0] = *in;
 		HB_upsample(&upSample_21[channel], out);
-		
+
 		return;
 	}
 	// 1 in 4 out
@@ -985,16 +985,16 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		memmove(upSample_41[channel].buff + 1, upSample_41[channel].buff, upTap_41_size);
 		upSample_41[channel].buff[0] = *in;
 		HB_upsample(&upSample_41[channel], &inter_41[0]);
-		
+
 		static constexpr size_t upTap_42_size = sizeof(double) * (upTap_42 - 1) / 2;
 		memmove(upSample_42[channel].buff + 1, upSample_42[channel].buff, upTap_42_size);
 		upSample_42[channel].buff[0] = inter_41[0];
 		HB_upsample(&upSample_42[channel], &out[0]);
-		
+
 		memmove(upSample_42[channel].buff + 1, upSample_42[channel].buff, upTap_42_size);
 		upSample_42[channel].buff[0] = inter_41[1];
 		HB_upsample(&upSample_42[channel], &out[2]);
-		
+
 		return;
 	}
 	// 1 in 8 out
@@ -1005,47 +1005,47 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		memmove(upSample_81[channel].buff + 1, upSample_81[channel].buff, upTap_81_size);
 		upSample_81[channel].buff[0] = *in;
 		HB_upsample(&upSample_81[channel], &inter_81[0]);
-		
+
 		Vst::Sample64 inter_82[4];
 		static constexpr size_t upTap_82_size = sizeof(double) * (upTap_82 - 1) / 2;
 		memmove(upSample_82[channel].buff + 1, upSample_82[channel].buff, upTap_82_size);
 		upSample_82[channel].buff[0] = inter_81[0];
 		HB_upsample(&upSample_82[channel], &inter_82[0]);
-		
+
 		memmove(upSample_82[channel].buff + 1, upSample_82[channel].buff, upTap_82_size);
 		upSample_82[channel].buff[0] = inter_81[1];
 		HB_upsample(&upSample_82[channel], &inter_82[2]);
-		
+
 		static constexpr size_t upTap_83_size = sizeof(double) * (upTap_83 - 1) / 2;
 		memmove(upSample_83[channel].buff + 1, upSample_83[channel].buff, upTap_83_size);
 		upSample_83[channel].buff[0] = inter_82[0];
 		HB_upsample(&upSample_83[channel], &out[0]);
-		
+
 		memmove(upSample_83[channel].buff + 1, upSample_83[channel].buff, upTap_83_size);
 		upSample_83[channel].buff[0] = inter_82[1];
 		HB_upsample(&upSample_83[channel], &out[2]);
-		
+
 		memmove(upSample_83[channel].buff + 1, upSample_83[channel].buff, upTap_83_size);
 		upSample_83[channel].buff[0] = inter_82[2];
 		HB_upsample(&upSample_83[channel], &out[4]);
-		
+
 		memmove(upSample_83[channel].buff + 1, upSample_83[channel].buff, upTap_83_size);
 		upSample_83[channel].buff[0] = inter_82[3];
 		HB_upsample(&upSample_83[channel], &out[6]);
-		
+
 		return;
 	}
-	
-	
+
+
 	// 2 in 1 out
-	void JSIF_Processor::Fir_x2_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
+	void JSIF_Processor::Fir_x2_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
 	{
 		static constexpr size_t dnTap_21_size = sizeof(double) * (dnTap_21 - 2);
 		memmove(dnSample_21[channel].buff + 3, dnSample_21[channel].buff + 1, dnTap_21_size);
 		dnSample_21[channel].buff[2] = in[0];
 		dnSample_21[channel].buff[1] = in[1];
 		HB_dnsample(&dnSample_21[channel], out);
-		
+
 		return;
 	}
 	// 4 in 1 out
@@ -1057,22 +1057,22 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		dnSample_42[channel].buff[2] = in[0];
 		dnSample_42[channel].buff[1] = in[1];
 		HB_dnsample(&dnSample_42[channel], &inter_42[0]);
-		
+
 		memmove(dnSample_42[channel].buff + 3, dnSample_42[channel].buff + 1, dnTap_42_size);
 		dnSample_42[channel].buff[2] = in[2];
 		dnSample_42[channel].buff[1] = in[3];
 		HB_dnsample(&dnSample_42[channel], &inter_42[1]);
-		
+
 		const size_t dnTap_41_size = sizeof(double) * (dnTap_41-2);
 		memmove(dnSample_41[channel].buff + 3, dnSample_41[channel].buff + 1, dnTap_41_size);
 		dnSample_41[channel].buff[2] = inter_42[0];
 		dnSample_41[channel].buff[1] = inter_42[1];
 		HB_dnsample(&dnSample_41[channel], out);
-		
+
 		return;
 	}
 	// 8 in 1 out
-	void JSIF_Processor::Fir_x8_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel) 
+	void JSIF_Processor::Fir_x8_dn(Vst::Sample64* in, Vst::Sample64* out, int32 channel)
 	{
 		Vst::Sample64 inter_83[4];
 		static constexpr size_t dnTap_83_size = sizeof(double) * (dnTap_83-2);
@@ -1080,40 +1080,40 @@ else if (filter[channel].TAP_CONDITION == 3) \
 		dnSample_83[channel].buff[2] = in[0];
 		dnSample_83[channel].buff[1] = in[1];
 		HB_dnsample(&dnSample_83[channel], &inter_83[0]);
-		
+
 		memmove(dnSample_83[channel].buff + 3, dnSample_83[channel].buff + 1, dnTap_83_size);
 		dnSample_83[channel].buff[2] = in[2];
 		dnSample_83[channel].buff[1] = in[3];
 		HB_dnsample(&dnSample_83[channel], &inter_83[1]);
-		
+
 		memmove(dnSample_83[channel].buff + 3, dnSample_83[channel].buff + 1, dnTap_83_size);
 		dnSample_83[channel].buff[2] = in[4];
 		dnSample_83[channel].buff[1] = in[5];
 		HB_dnsample(&dnSample_83[channel], &inter_83[2]);
-		
+
 		memmove(dnSample_83[channel].buff + 3, dnSample_83[channel].buff + 1, dnTap_83_size);
 		dnSample_83[channel].buff[2] = in[6];
 		dnSample_83[channel].buff[1] = in[7];
 		HB_dnsample(&dnSample_83[channel], &inter_83[3]);
-		
+
 		Vst::Sample64 inter_82[2];
 		static constexpr size_t dnTap_82_size = sizeof(double) * (dnTap_82-2);
 		memmove(dnSample_82[channel].buff + 3, dnSample_82[channel].buff + 1, dnTap_82_size);
 		dnSample_82[channel].buff[2] = inter_83[0];
 		dnSample_82[channel].buff[1] = inter_83[1];
 		HB_dnsample(&dnSample_82[channel], &inter_82[0]);
-		
+
 		memmove(dnSample_82[channel].buff + 3, dnSample_82[channel].buff + 1, dnTap_82_size);
 		dnSample_82[channel].buff[2] = inter_83[2];
 		dnSample_82[channel].buff[1] = inter_83[3];
 		HB_dnsample(&dnSample_82[channel], &inter_82[1]);
-		
+
 		static constexpr size_t dnTap_81_size = sizeof(double) * (dnTap_81-2);
 		memmove(dnSample_81[channel].buff + 3, dnSample_81[channel].buff + 1, dnTap_81_size);
 		dnSample_81[channel].buff[2] = inter_82[0];
 		dnSample_81[channel].buff[1] = inter_82[1];
 		HB_dnsample(&dnSample_81[channel], out);
-		
+
 		return;
 	}
 

@@ -93,7 +93,7 @@ public:
 		Type minusInfinityDb = Type(defaultMinusInfinitydB)
 	)
 	{
-		return decibels > minusInfinityDb 
+		return decibels > minusInfinityDb
 		                ? std::pow(Type(10.0), decibels * Type(0.05))
 		                : Type();
 	}
@@ -104,14 +104,14 @@ public:
 		Type minusInfinityDb = Type(defaultMinusInfinitydB)
 	)
 	{
-		return gain > Type() 
+		return gain > Type()
 		            ? (std::max)(minusInfinityDb, static_cast<Type> (std::log10(gain)) * Type(20.0))
 		            : minusInfinityDb;
 	}
 
 private:
 	enum { defaultMinusInfinitydB = -100 };
-	Decibels() = delete; 
+	Decibels() = delete;
 };
 
 class LevelEnvelopeFollower
@@ -144,10 +144,10 @@ public:
 		sampleRate = fs;
 
 		double attackTimeInSeconds = 0.01 * DecayInSeconds;
-		alphaAttack = exp(-1.0 / (sampleRate * attackTimeInSeconds)); 
+		alphaAttack = exp(-1.0 / (sampleRate * attackTimeInSeconds));
 
-		double releaseTimeInSeconds = DecayInSeconds; 
-		alphaRelease = exp(-1.0 / (sampleRate * releaseTimeInSeconds));  
+		double releaseTimeInSeconds = DecayInSeconds;
+		alphaRelease = exp(-1.0 / (sampleRate * releaseTimeInSeconds));
 
 		for (auto& s : state)
 			s = Decibels::gainToDecibels(0.0);
@@ -173,11 +173,11 @@ public:
 					double pwr = Decibels::gainToDecibels(std::abs(channelData[ch][i]) * std::abs(channelData[ch][i]));
 					state[ch] = alphaRelease * state[ch] + (1.0 - alphaRelease) * pwr;
 				}
-				
+
 			}
-		} 
+		}
     }
-	
+
 	double getEnv(int channel) {
 		if (channel < 0) return 0.0;
 		if (channel >= state.size()) return 0.0;
@@ -224,9 +224,9 @@ public:
 	Steinberg::tresult PLUGIN_API terminate() SMTG_OVERRIDE;
 
 	/** Try to set (host => plug-in) a wanted arrangement for inputs and outputs. */
-	Steinberg::tresult PLUGIN_API setBusArrangements(Steinberg::Vst::SpeakerArrangement* inputs, 
+	Steinberg::tresult PLUGIN_API setBusArrangements(Steinberg::Vst::SpeakerArrangement* inputs,
 	                                                 Steinberg::int32 numIns,
-	                                                 Steinberg::Vst::SpeakerArrangement* outputs, 
+	                                                 Steinberg::Vst::SpeakerArrangement* outputs,
 	                                                 Steinberg::int32 numOuts) SMTG_OVERRIDE;
 
 
@@ -263,7 +263,7 @@ protected:
 	using ParamValue = Steinberg::Vst::ParamValue;
 	using Sample64 = Steinberg::Vst::Sample64;
 	using int32 = Steinberg::int32;
-    
+
     void HB_upsample(Flt* filter, Sample64* out);
     void HB_dnsample(Flt* filter, Sample64* out);
 
@@ -293,7 +293,7 @@ protected:
 	};
 
 	std::deque<double> latency_q[2];
-	
+
 	// Plugin controls ------------------------------------------------------------------
 	ParamValue fInput;
 	ParamValue fOutput;
@@ -313,7 +313,7 @@ protected:
 	Sample64   curveB;
 	Sample64   curveC;
 	Sample64   curveD;
-	std::vector<Band_Split> Band_Split;
+	std::vector<Band_Split> fBand_Split;
 	overSample fParamOS;
 
 	// VU metering ----------------------------------------------------------------
