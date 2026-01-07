@@ -219,7 +219,7 @@ Anyone trying to do so, check and compare!
 
 * Latency change reporting  
 
-Restarting plugin should be from Contorller side.  
+Restarting plugin should be from Controller side.  
 One example would be using 'sendTextMessage' and 'receiveText' pair, so when Processor detects parameter change related to latency, it sends textMessage and Controller receives it and restarts.  
 
 However, In AUv2, the restartComponent should call setupProcess, but it does not...  
@@ -279,3 +279,4 @@ Modified for my need: Fractional resampling, Interpolation parts are deleted.
 * [ ] GUI : double click to enter value.
 * [ ] Double click to reset to default.
 * [ ] Bypass automation flag.
+
