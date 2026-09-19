@@ -598,7 +598,12 @@ IPlugView* PLUGIN_API JSIF_Controller::createView(FIDString name)
         _zoomFactors.push_back(1.75);
         _zoomFactors.push_back(2.00);
         view->setAllowedZoomFactors(_zoomFactors);
-		view->setZoomFactor(0.5);
+		if (auto* zoomParam = getParameterObject(kParamZoom))
+		{
+			const auto index = static_cast<size_t>(zoomParam->toPlain(zoomParam->getNormalized()));
+			if (index < zoomFactors.size())
+				view->setZoomFactor(zoomFactors[index].factor);
+		}
 		view->setIdleRate(1.0/60.0);
 
 		setKnobMode(Steinberg::Vst::KnobModes::kLinearMode);
@@ -683,6 +688,11 @@ void PLUGIN_API JSIF_Controller::update(FUnknown* changedUnknown, int32 message)
                     if      (stateGUI == 0.0) editor->exchangeView("Original");
                     else if (stateGUI == 1.0) editor->exchangeView("Twarch");
                     editor->setGuiState(stateGUI);
+                    if (auto* zoomParam = getParameterObject(kParamZoom)) {
+                        const auto index = static_cast<size_t>(zoomParam->toPlain(zoomParam->getNormalized()));
+                        if (index < zoomFactors.size())
+                            editor->setZoomFactor(zoomFactors[index].factor);
+                    }
                 }
             }
         }
@@ -698,6 +708,11 @@ void JSIF_Controller::editorAttached(Steinberg::Vst::EditorView* editor)
             if      (stateGUI == 0.0) _editor->exchangeView("Original");
             else if (stateGUI == 1.0) _editor->exchangeView("Twarch");
             _editor->setGuiState(stateGUI);
+            if (auto* zoomParam = getParameterObject(kParamZoom)) {
+                const auto index = static_cast<size_t>(zoomParam->toPlain(zoomParam->getNormalized()));
+                if (index < zoomFactors.size())
+                    _editor->setZoomFactor(zoomFactors[index].factor);
+            }
         }
     }
 	editors.push_back(_editor);
